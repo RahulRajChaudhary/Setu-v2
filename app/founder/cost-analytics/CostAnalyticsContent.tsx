@@ -38,7 +38,7 @@ function CostBigIcon() {
 function CostTab() {
   return (
     <div className="flex flex-col gap-[var(--space-md)]">
-      <div className="grid grid-cols-1 gap-[var(--space-md)] sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-[var(--space-md)] screen-sm:grid-cols-2">
         <Card title="Total platform cost, MTD">
           <div className="flex items-center gap-3">
             <span
@@ -95,7 +95,7 @@ function AdoptionTab() {
       </Card>
 
       <Card title="Usage trend, last 30 days" description="Daily usage index with change vs the start of the period">
-        <div className="grid grid-cols-1 gap-[var(--space-md)] sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-[var(--space-md)] screen-sm:grid-cols-2 screen-xl:grid-cols-4">
           {products.map((p) => {
             const series = p.usageTrend30d.map((y, x) => ({ x, y }));
             const first = p.usageTrend30d[0];

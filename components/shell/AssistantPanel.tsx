@@ -35,7 +35,7 @@ export default function AssistantPanel({
         role="dialog"
         aria-modal="true"
         aria-label="Sahayogi assistant"
-        className={`fixed right-0 top-0 z-50 flex h-full w-full max-w-[26rem] flex-col overflow-hidden bg-gradient-to-b from-[#EEF1FF] via-[#F1F6FF] to-white shadow-2xl transition-transform duration-300 ease-out sm:rounded-l-3xl ${
+        className={`fixed right-0 top-0 z-50 flex h-full w-full max-w-[26rem] flex-col overflow-hidden bg-gradient-to-b from-[#EEF1FF] via-[#F1F6FF] to-white shadow-2xl transition-transform duration-300 ease-out screen-sm:rounded-l-3xl ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >

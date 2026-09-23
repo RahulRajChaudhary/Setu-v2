@@ -30,7 +30,7 @@ export default function FrameworkScoreGrid({
 }) {
   const big = size === "lg";
   return (
-    <div className={`grid grid-cols-1 gap-[var(--space-md)] ${columns === 3 ? "sm:grid-cols-3" : ""}`}>
+    <div className={`grid grid-cols-1 gap-[var(--space-md)] ${columns === 3 ? "screen-sm:grid-cols-3" : ""}`}>
       {data.map((d) => {
         const band = bandFor(d.value);
         return (

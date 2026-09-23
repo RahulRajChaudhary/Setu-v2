@@ -27,7 +27,7 @@ export default function AdoptionBarList({ data, average }: { data: AdoptionDatum
           Fleet average is {average}% — deltas below are vs. this line
         </p>
       )}
-      <div className="grid grid-cols-1 gap-[var(--space-sm)] sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-[var(--space-sm)] screen-sm:grid-cols-2 screen-xl:grid-cols-3">
         {sorted.map((d) => {
           const tier = tierFor(d.value);
           const delta = average !== undefined ? Math.round(d.value - average) : undefined;

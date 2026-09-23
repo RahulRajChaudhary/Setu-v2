@@ -38,7 +38,7 @@ export default function ProductDetailPage() {
         <h1 className="text-[length:var(--font-page-title)] font-bold tracking-tight text-[var(--text-heading)]">{product.name}</h1>
       </div>
 
-      <div className="grid grid-cols-1 gap-[var(--space-md)] sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-[var(--space-md)] screen-sm:grid-cols-3">
         <Card title="Health">
           <StatusBadge status={product.health} label={product.health} />
           {healthRow && (

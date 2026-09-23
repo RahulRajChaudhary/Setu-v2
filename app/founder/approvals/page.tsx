@@ -41,7 +41,7 @@ export default function ApprovalsPage() {
           description="Approvals routed to the Founder will show up here as they're escalated."
         />
       ) : (
-        <div className="grid grid-cols-1 gap-[var(--space-md)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
+        <div className="grid grid-cols-1 gap-[var(--space-md)] screen-lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
           <ul className="flex flex-col gap-2">
             {queue.map((item) => (
               <li key={item.id}>

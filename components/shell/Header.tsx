@@ -48,17 +48,17 @@ export default function Header() {
         bg-[var(--shell-bg)]
         px-3
 
-        sm:h-[68px]
-        sm:gap-2.5
-        sm:px-4
+        screen-sm:h-[68px]
+        screen-sm:gap-2.5
+        screen-sm:px-4
 
-        lg:h-[72px]
-        lg:px-5
+        screen-lg:h-[72px]
+        screen-lg:px-5
 
-        xl:h-[76px]
+        screen-xl:h-[76px]
 
-        2xl:h-[80px]
-        2xl:px-6
+        screen-2xl:h-[80px]
+        screen-2xl:px-6
       "
     >
       {/* Backdrop to close menus */}
@@ -70,7 +70,7 @@ export default function Header() {
       )}
 
       {/* Workspace */}
-      <div className="relative z-50 hidden sm:block">
+      <div className="relative z-50 hidden screen-sm:block">
         <button
           type="button"
           onClick={() => toggle("workspace")}
@@ -87,14 +87,14 @@ export default function Header() {
             transition-colors
             hover:bg-[var(--search-bg)]
 
-            2xl:h-10
-            2xl:px-4
-            2xl:text-sm
+            screen-2xl:h-10
+            screen-2xl:px-4
+            screen-2xl:text-sm
 
             ${openMenu === "workspace" ? "border-[var(--icon-btn-navy)] bg-white hover:bg-white" : "border-transparent"}
           `}
         >
-          <span className="max-w-[140px] truncate 2xl:max-w-none">
+          <span className="max-w-[140px] truncate screen-2xl:max-w-none">
             {WORKSPACES.find((w) => w.id === activeWorkspace)?.name ?? "Setu Founder"}
           </span>
           <span className={`shrink-0 transition-transform ${openMenu === "workspace" ? "rotate-180" : ""}`}>
@@ -165,7 +165,7 @@ export default function Header() {
       </div>
 
       {/* Search */}
-      <div className="flex min-w-0 flex-1 justify-center px-1 sm:px-2">
+      <div className="flex min-w-0 flex-1 justify-center px-1 screen-sm:px-2">
         <div
           className="
             flex h-9 w-full
@@ -178,24 +178,30 @@ export default function Header() {
             bg-[var(--search-bg)]
             px-3
 
-            sm:h-10
-            sm:max-w-[480px]
-            sm:border-[var(--divider)]
-            sm:px-3.5
+            screen-sm:h-10
+            screen-sm:max-w-[480px]
+            screen-sm:border-[var(--divider)]
+            screen-sm:px-3.5
 
-            lg:h-11
-            lg:max-w-[500px]
+            screen-lg:h-11
+            screen-lg:max-w-[500px]
 
-            xl:h-12
-            xl:max-w-[520px]
+            screen-xl:h-12
+            screen-xl:max-w-[520px]
 
-            2xl:h-[54px]
-            2xl:max-w-[529px]
-            2xl:gap-[10px]
-            2xl:rounded-lg
-            2xl:pl-[25px]
-            2xl:pr-[25px]
-            2xl:py-[15px]
+            screen-1366:h-[48px]!
+            screen-1366:max-w-[300px]!
+
+            screen-1440:h-[60px]!
+            screen-1440:max-w-[375px]!
+
+            screen-2xl:h-[54px]!
+            screen-2xl:max-w-[529px]!
+            screen-2xl:gap-[10px]
+            screen-2xl:rounded-lg
+            screen-2xl:pl-[25px]
+            screen-2xl:pr-[25px]
+            screen-2xl:py-[15px]
           "
         >
           <SearchIcon />
@@ -211,7 +217,7 @@ export default function Header() {
               outline-none
               placeholder:text-[var(--search-placeholder)]
 
-              sm:text-sm
+              screen-sm:text-sm
             "
           />
 
@@ -226,7 +232,7 @@ export default function Header() {
               text-xs
               text-[var(--search-placeholder)]
 
-              sm:inline-block
+              screen-sm:inline-block
             "
           >
             &#8984;K
@@ -235,9 +241,9 @@ export default function Header() {
       </div>
 
       {/* Right side actions */}
-      <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+      <div className="flex shrink-0 items-center gap-1.5 screen-sm:gap-2">
         {/* Resources */}
-        <span className="hidden sm:inline-flex">
+        <span className="hidden screen-sm:inline-flex">
           <IconButton
             label="Resources"
             bg="var(--icon-btn-bg)"
@@ -297,9 +303,9 @@ export default function Header() {
                 bg-white
                 shadow-xl
 
-                sm:w-80
+                screen-sm:w-80
 
-                2xl:w-[420px]
+                screen-2xl:w-[420px]
               "
             >
               {/* Header */}
@@ -413,13 +419,25 @@ export default function Header() {
               items-center
               gap-2
               rounded-full
+              border
+              border-[var(--divider)]
               py-1
               pl-1
               pr-2.5
               transition-colors
               hover:bg-[var(--surface-muted)]
 
-              sm:pr-3
+              screen-sm:pr-3
+
+              screen-1366:h-[65px]!
+              screen-1366:w-[220px]!
+              screen-1366:justify-between
+              screen-1366:px-3!
+              screen-1366:py-2!
+
+              screen-1440:h-[53px]!
+
+              screen-2xl:h-[66px]!
             "
           >
             {/* Avatar */}
@@ -437,9 +455,9 @@ export default function Header() {
                 font-semibold
                 text-[var(--avatar-text)]
 
-                2xl:h-10
-                2xl:w-10
-                2xl:text-sm
+                screen-2xl:h-10
+                screen-2xl:w-10
+                screen-2xl:text-sm
               "
             >
               DS
@@ -451,7 +469,7 @@ export default function Header() {
                 hidden
                 text-left
                 leading-tight
-                sm:inline
+                screen-sm:inline
               "
             >
               <span
@@ -461,7 +479,7 @@ export default function Header() {
                   font-semibold
                   text-[var(--text-secondary)]
 
-                  2xl:text-sm
+                  screen-2xl:text-sm
                 "
               >
                 Dhruv Singla
@@ -473,7 +491,7 @@ export default function Header() {
                   text-[10px]
                   text-[var(--role-text)]
 
-                  2xl:text-xs
+                  screen-2xl:text-xs
                 "
               >
                 Founder
@@ -481,7 +499,7 @@ export default function Header() {
             </span>
 
             {/* Chevron */}
-            <span className="hidden sm:inline">
+            <span className="hidden screen-sm:inline">
               <ChevronDownIcon />
             </span>
           </button>
@@ -603,14 +621,14 @@ function IconButton({
         duration-150
         hover:scale-105
 
-        sm:h-10
-        sm:w-10
+        screen-sm:h-10
+        screen-sm:w-10
 
-        lg:h-11
-        lg:w-11
+        screen-lg:h-11
+        screen-lg:w-11
 
-        2xl:h-12
-        2xl:w-12
+        screen-1366:h-[46px]!
+        screen-1366:w-[46px]!
       "
     >
       {children}

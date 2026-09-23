@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Card from "@/components/shared/Card";
 import CalendarCard from "@/components/shared/CalendarCard";
 import GreetingCard from "@/components/shared/GreetingCard";
@@ -18,8 +18,8 @@ import {
   topRisks,
   controlsEffectiveByFramework,
   growthLast30Days,
-  growthTrend,
-  newCustomersTotal,
+  buildGrowthTrend,
+  type GrowthRangeDays,
   type KpiSnapshot,
 } from "@/lib/mock-data/control-room";
 import type { Severity } from "@/lib/mock-data/types";
@@ -60,8 +60,17 @@ const SEVERITY_STATUS: Record<Severity, "healthy" | "warning" | "critical"> = {
   critical: "critical",
 };
 
+const GROWTH_RANGE_OPTIONS: { label: string; value: GrowthRangeDays }[] = [
+  { label: "7D", value: 7 },
+  { label: "30D", value: 30 },
+  { label: "90D", value: 90 },
+];
+
 export default function ControlRoomPage() {
   const { snapshot, updatedAt, stale } = useKpiSnapshot();
+  const [growthRangeDays, setGrowthRangeDays] = useState<GrowthRangeDays>(30);
+  const growthTrend = useMemo(() => buildGrowthTrend(growthRangeDays), [growthRangeDays]);
+  const newCustomersTotal = growthTrend[growthTrend.length - 1]?.newCustomers ?? 0;
 
   const decisionColumns: Column<(typeof needsYourDecision)[number]>[] = [
     { key: "type", header: "Type", render: (r) => r.type, sortValue: (r) => r.type },
@@ -83,11 +92,11 @@ export default function ControlRoomPage() {
   return (
     <div className="flex flex-col gap-[var(--space-lg)]">
 
-      <div className="grid grid-cols-1 gap-[var(--space-md)] xl:grid-cols-[1fr_383px]">
-      <div className="grid grid-cols-1 gap-[var(--space-md)] sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-[var(--space-md)] screen-xl:grid-cols-[1fr_383px]">
+      <div className="grid grid-cols-1 gap-[var(--space-md)] screen-sm:grid-cols-2 screen-xl:grid-cols-5">
         <GreetingCard name="Dhruv Singla" />
         <KPITile
-          title="Products healthy"
+          title="Product health"
           value={`${snapshot.productsHealthy.healthy}/${snapshot.productsHealthy.active}`}
           note="active products reporting healthy"
           status={snapshot.productsHealthy.status}
@@ -97,9 +106,9 @@ export default function ControlRoomPage() {
           icon={<HealthIcon />}
         />
         <KPITile
-          title="Waiting for your approval"
+          title="Pending approvals"
           value={snapshot.waitingForApproval.count}
-          note="approvals need Founder sign-off"
+          note="need Founder sign-off"
           status={snapshot.waitingForApproval.status}
           drillHref="/founder/approvals"
           updatedAt={updatedAt}
@@ -117,7 +126,7 @@ export default function ControlRoomPage() {
           icon={<IncidentIcon />}
         />
         <KPITile
-          title="Platform cost vs last month"
+          title="Cost trend (MoM)"
           value={`+${snapshot.platformCostTrend.pctChange}%`}
           note="projected month-end vs last month"
           status={snapshot.platformCostTrend.status}
@@ -169,7 +178,7 @@ export default function ControlRoomPage() {
           icon={<ComplianceIcon />}
         />
         <KPITile
-          title="Platform cost, MTD"
+          title="Platform cost (MTD)"
           value={`₹${(costKpis.mtdTotal / 100000).toFixed(1)}L`}
           note={`+${costKpis.pctChangeVsLastMonth}% vs last month`}
           status={costKpis.pctChangeVsLastMonth > 15 ? "warning" : "healthy"}
@@ -182,9 +191,9 @@ export default function ControlRoomPage() {
         <CalendarCard />
       </div>
 
-      <div className="grid grid-cols-1 items-start gap-[var(--space-md)] lg:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-[var(--space-md)] screen-lg:grid-cols-2">
         <Card title="Controls effective by framework" description="Effective controls ÷ total controls, per compliance framework">
-          <div className="flex flex-col items-center gap-[var(--space-md)] sm:flex-row sm:items-center">
+          <div className="flex flex-col items-center gap-[var(--space-md)] screen-sm:flex-row screen-sm:items-center">
             <DonutChart
               data={controlsEffectiveByFramework.map((f) => ({ label: f.label, value: f.effective, color: f.color }))}
               size={132}
@@ -232,9 +241,27 @@ export default function ControlRoomPage() {
         </Card>
 
         <Card
-          title="Growth, last 30 days"
+          title="Growth"
           description="New customers vs. trial-to-paid conversions, cumulative"
-          action={<span className="rounded-full bg-[var(--surface-muted)] px-2.5 py-1 text-xs font-medium text-[var(--text-muted)]">Last 30 days</span>}
+          action={
+            <div className="flex items-center gap-0.5 rounded-full bg-[var(--surface-muted)] p-0.5">
+              {GROWTH_RANGE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setGrowthRangeDays(opt.value)}
+                  aria-pressed={growthRangeDays === opt.value}
+                  className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+                    growthRangeDays === opt.value
+                      ? "bg-white text-[var(--text-heading)] shadow-sm"
+                      : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          }
         >
           <AreaTrendChart
             series={[
@@ -243,14 +270,14 @@ export default function ControlRoomPage() {
             ]}
             xLabels={growthTrend.map((d) => d.label)}
           />
-          <dl className="mt-[var(--space-sm)] grid grid-cols-2 gap-[var(--space-sm)] border-t border-[var(--divider)] pt-[var(--space-sm)] sm:grid-cols-4">
+          <dl className="mt-[var(--space-sm)] grid grid-cols-2 gap-[var(--space-sm)] border-t border-[var(--divider)] pt-[var(--space-sm)] screen-sm:grid-cols-4">
             <div>
-              <dt className="text-xs text-[var(--role-text)]">New customers</dt>
+              <dt className="text-xs text-[var(--role-text)]">New customers ({growthRangeDays}d)</dt>
               <dd className="text-lg font-semibold text-[var(--text-secondary)]">{newCustomersTotal}</dd>
             </div>
             {growthLast30Days.map((g) => (
               <div key={g.label}>
-                <dt className="text-xs text-[var(--role-text)]">{g.label}</dt>
+                <dt className="text-xs text-[var(--role-text)]">{g.label} (30d)</dt>
                 <dd className="text-lg font-semibold text-[var(--text-secondary)]">{g.value}</dd>
               </div>
             ))}
@@ -269,7 +296,7 @@ export default function ControlRoomPage() {
       </Card>
 
       <Card title="Nine Areas at a Glance" description="One tile per area — colour, cause and a link to the full section">
-        <div className="grid grid-cols-1 gap-[var(--space-sm)] sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-[var(--space-sm)] screen-sm:grid-cols-2 screen-lg:grid-cols-3">
           {areasAtGlance.map((area) => {
             const tone = AREA_TONE[area.status];
             return (

@@ -8,7 +8,6 @@ import type { ReactNode } from "react";
 type NavItem = {
   label: string;
   href: string;
-  pinned: boolean;
   bg: string;
   fg: string;
   icon: (color: string) => ReactNode;
@@ -18,7 +17,6 @@ const NAV_ITEMS: NavItem[] = [
   {
     label: "Dashboard",
     href: "/founder/dashboard",
-    pinned: true,
     bg: "#FCE7F3",
     fg: "#DB2777",
     icon: (color) => <GridIcon color={color} />,
@@ -26,7 +24,6 @@ const NAV_ITEMS: NavItem[] = [
   {
     label: "Approvals",
     href: "/founder/approvals",
-    pinned: true,
     bg: "#D1FAE5",
     fg: "#059669",
     icon: (color) => <CheckClipboardIcon color={color} />,
@@ -34,7 +31,6 @@ const NAV_ITEMS: NavItem[] = [
   {
     label: "Operations",
     href: "/founder/operations",
-    pinned: true,
     bg: "#DBEAFE",
     fg: "#2563EB",
     icon: (color) => <GearIcon color={color} />,
@@ -42,7 +38,6 @@ const NAV_ITEMS: NavItem[] = [
   {
     label: "Cost & Analytics",
     href: "/founder/cost-analytics",
-    pinned: true,
     bg: "#CCFBF1",
     fg: "#0D9488",
     icon: (color) => <TrendingUpIcon color={color} />,
@@ -50,7 +45,6 @@ const NAV_ITEMS: NavItem[] = [
   {
     label: "Compliance & Risk",
     href: "/founder/compliance-risk",
-    pinned: true,
     bg: "#CFFAFE",
     fg: "#0891B2",
     icon: (color) => <ShieldCheckIcon color={color} />,
@@ -58,7 +52,6 @@ const NAV_ITEMS: NavItem[] = [
   {
     label: "Audit Explorer",
     href: "/founder/audit-explorer",
-    pinned: false,
     bg: "#FFEDD5",
     fg: "#EA580C",
     icon: (color) => <SearchDocIcon color={color} />,
@@ -66,7 +59,6 @@ const NAV_ITEMS: NavItem[] = [
   {
     label: "Product 360",
     href: "/founder/products",
-    pinned: true,
     bg: "#EDE9FE",
     fg: "#7C3AED",
     icon: (color) => <CubeIcon color={color} />,
@@ -88,16 +80,20 @@ export default function Sidebar() {
         bg-[var(--shell-bg)]
         px-1 py-1
 
-        sm:static
-        sm:h-full
-        sm:w-[clamp(4.75rem,5.94vw,114px)]
-        sm:flex-col
-        sm:items-center
-        sm:justify-start
-        sm:gap-1
-        sm:overflow-visible
-        sm:px-0
-        sm:py-0
+        screen-sm:static
+        screen-sm:h-full
+        screen-sm:w-[76px]
+        screen-sm:flex-col
+        screen-sm:items-center
+        screen-sm:justify-start
+        screen-sm:gap-1
+        screen-sm:overflow-visible
+        screen-sm:px-0
+        screen-sm:py-0
+
+        screen-1366:w-[81px]
+        screen-1440:w-[86px]
+        screen-2xl:w-[114px]
       "
       aria-label="Primary navigation"
     >
@@ -112,29 +108,29 @@ export default function Sidebar() {
           items-center
           justify-center
 
-          sm:flex
-          sm:h-[68px]
+          screen-sm:flex
+          screen-sm:h-[68px]
 
-          lg:h-[72px]
+          screen-lg:h-[72px]
 
-          xl:h-[76px]
+          screen-xl:h-[76px]
 
-          2xl:h-[80px]
+          screen-2xl:h-[80px]
         "
       >
         <Image
-          src="/logo.png"
+          src="/logo.svg"
           alt="Setu"
-          width={32}
-          height={32}
+          width={63}
+          height={77}
           className="
-            h-6 w-6
+            h-6 w-[20px]
 
-            sm:h-7 sm:w-7
+            screen-sm:h-7 screen-sm:w-[23px]
 
-            lg:h-7 lg:w-7
+            screen-lg:h-7 screen-lg:w-[23px]
 
-            2xl:h-8 2xl:w-8
+            screen-2xl:h-8 screen-2xl:w-[26px]
           "
           priority
         />
@@ -150,15 +146,15 @@ export default function Sidebar() {
           justify-around
           gap-1
 
-          sm:flex-1
-          sm:flex-col
-          sm:items-center
-          sm:justify-start
-          sm:gap-1.5
-          sm:overflow-y-auto
-          sm:overflow-x-hidden
-          sm:px-1.5
-          sm:pt-1
+          screen-sm:flex-1
+          screen-sm:flex-col
+          screen-sm:items-center
+          screen-sm:justify-start
+          screen-sm:gap-1.5
+          screen-sm:overflow-y-auto
+          screen-sm:overflow-x-hidden
+          screen-sm:px-1.5
+          screen-sm:pt-1
         "
       >
         {NAV_ITEMS.map((item) => {
@@ -174,7 +170,7 @@ export default function Sidebar() {
               href={item.href}
               title={item.label}
               aria-current={isActive ? "page" : undefined}
-              className={`
+              className="
                 group
                 tap-pop
                 flex
@@ -182,11 +178,7 @@ export default function Sidebar() {
                 flex-col
                 items-center
                 gap-1
-                transition-opacity
-                duration-200
-
-                ${item.pinned ? "" : "opacity-60"}
-              `}
+              "
             >
               {/* Icon */}
               <span
@@ -200,11 +192,11 @@ export default function Sidebar() {
                   duration-200
                   group-hover:scale-105
 
-                  sm:h-9 sm:w-9
+                  screen-sm:h-9 screen-sm:w-9
 
-                  lg:h-9 lg:w-9
+                  screen-lg:h-9 screen-lg:w-9
 
-                  2xl:h-11 2xl:w-11
+                  screen-2xl:h-11 screen-2xl:w-11
                 "
                 style={{
                   backgroundColor: isActive ? ACTIVE_BG : item.bg,
@@ -217,19 +209,20 @@ export default function Sidebar() {
               <span
                 className={`
                   hidden
-                  max-w-[64px]
+                  min-h-[22px]
+                  max-w-[68px]
                   text-center
                   text-[9px]
                   font-medium
                   leading-[11px]
                   tracking-tight
 
-                  min-[420px]:block
+                  screen-420:block
 
-                  sm:block
-                  sm:max-w-[80px]
+                  screen-sm:block
+                  screen-sm:max-w-[86px]
 
-                  ${isActive ? "text-[#0B1B3B]" : "text-slate-600"}
+                  ${isActive ? "font-semibold text-[#0B1B3B]" : "text-slate-600"}
                 `}
               >
                 {item.label}

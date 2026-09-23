@@ -50,7 +50,7 @@ export default function ProductsPage() {
   return (
     <div className="flex flex-col gap-[var(--space-lg)]">
 
-      <div className="grid grid-cols-1 gap-[var(--space-sm)] sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-[var(--space-sm)] screen-sm:grid-cols-3">
         <Stat label="Products live" value={productKpis.live} />
         <Stat label="Average adoption" value={`${productKpis.averageAdoptionPct}%`} />
         <Stat label="Workspaces near plan limit" value={productKpis.workspacesNearLimit} />

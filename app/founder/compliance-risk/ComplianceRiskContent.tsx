@@ -84,7 +84,7 @@ export default function ComplianceRiskContent() {
 
       {active === "compliance" ? (
         <div className="flex flex-col gap-[var(--space-md)]">
-          <div className="grid grid-cols-1 gap-[var(--space-sm)] sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-[var(--space-sm)] screen-sm:grid-cols-3">
             <Stat label="Controls failed / exception" value={complianceKpis.controlsFailedException} tone="critical" />
             <Stat label="Evidence due this month" value={complianceKpis.evidenceDueThisMonth} tone="warning" />
             <Stat label="Findings overdue" value={complianceKpis.findingsOverdue} tone="critical" />

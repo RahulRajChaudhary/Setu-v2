@@ -81,7 +81,7 @@ export default function OperationsPage() {
   return (
     <div className="flex flex-col gap-[var(--space-lg)]">
       <Card title="Workspaces" description="Provisioning health and lifecycle across every workspace">
-        <div className="mb-4 grid grid-cols-2 gap-[var(--space-sm)] sm:grid-cols-4">
+        <div className="mb-4 grid grid-cols-2 gap-[var(--space-sm)] screen-sm:grid-cols-4">
           <StatTile label="Total" value={workspaceKpis.total} tone="info" icon={<GridDotsIcon />} />
           <StatTile label="Active" value={workspaceKpis.active} tone="healthy" icon={<CheckIcon />} />
           <StatTile label="Grace / restricted" value={workspaceKpis.graceOrRestricted} tone="warning" icon={<ClockIcon />} />
@@ -92,7 +92,7 @@ export default function OperationsPage() {
             icon={<AlertIcon />}
           />
         </div>
-        <div className="grid grid-cols-1 gap-[var(--space-md)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+        <div className="grid grid-cols-1 gap-[var(--space-md)] screen-lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
           <div className="rounded-xl border border-[var(--divider)] bg-white p-4" style={{ boxShadow: "var(--card-shadow)" }}>
             <Funnel stages={workspaceFunnel} />
           </div>
@@ -129,7 +129,7 @@ export default function OperationsPage() {
       </Card>
 
       <Card title="Releases — DORA scorecard" description="Deployment performance benchmarked against DORA elite/high/medium/low bands">
-        <div className="grid grid-cols-2 gap-[var(--space-sm)] sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-[var(--space-sm)] screen-sm:grid-cols-4">
           {doraScorecard.map((k) => {
             const tone = DORA_TONE[k.band];
             return (
@@ -153,7 +153,7 @@ export default function OperationsPage() {
             );
           })}
         </div>
-        <div className="mt-4 grid grid-cols-1 gap-[var(--space-md)] lg:grid-cols-2">
+        <div className="mt-4 grid grid-cols-1 gap-[var(--space-md)] screen-lg:grid-cols-2">
           <div>
             <p className="mb-2 text-xs font-semibold text-[var(--role-text)]">Error rate before/after release</p>
             <PairedBarChart data={releaseErrorRates} />
@@ -187,7 +187,7 @@ export default function OperationsPage() {
       </Card>
 
       <Card title="Health" description="Golden-signal status per product, last 30 days">
-        <div className="grid grid-cols-2 gap-[var(--space-sm)] sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-[var(--space-sm)] screen-sm:grid-cols-4">
           {productHealthGrid.map((p) => {
             const tone = AREA_TONE[p.status];
             const StatusIcon = p.status === "healthy" ? CheckIcon : p.status === "warning" ? ClockIcon : AlertIcon;

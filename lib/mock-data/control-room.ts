@@ -79,21 +79,42 @@ export const growthLast30Days = [
   { label: "Setup success rate", value: "97%" },
 ];
 
-// Daily deltas for the last 30 days (index 0 = 29 days ago, last index = today).
-const NEW_CUSTOMERS_DAILY = [1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1];
-const TRIAL_TO_PAID_DAILY = [0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1];
+// Deterministic pseudo-random daily deltas (seeded — same output on every run,
+// so the mock data and its snapshot tests never drift between renders).
+function mulberry32(seed: number) {
+  return function random() {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
+const GROWTH_WINDOW_DAYS = 90;
+
+function buildDailySeries(seed: number, dailyChance: number) {
+  const random = mulberry32(seed);
+  return Array.from({ length: GROWTH_WINDOW_DAYS }, () => (random() < dailyChance ? 1 : 0));
+}
+
+const NEW_CUSTOMERS_DAILY = buildDailySeries(42, 0.55);
+const TRIAL_TO_PAID_DAILY = buildDailySeries(1337, 0.4);
+
+export type GrowthRangeDays = 7 | 30 | 90;
 export type GrowthTrendPoint = { label: string; newCustomers: number; trialToPaid: number };
 
-export function buildGrowthTrend(referenceDate: Date = new Date()): GrowthTrendPoint[] {
+export function buildGrowthTrend(rangeDays: GrowthRangeDays = 30, referenceDate: Date = new Date()): GrowthTrendPoint[] {
+  const customerSlice = NEW_CUSTOMERS_DAILY.slice(GROWTH_WINDOW_DAYS - rangeDays);
+  const trialSlice = TRIAL_TO_PAID_DAILY.slice(GROWTH_WINDOW_DAYS - rangeDays);
+
   let cumCustomers = 0;
   let cumTrial = 0;
-  const days = NEW_CUSTOMERS_DAILY.length;
-  return NEW_CUSTOMERS_DAILY.map((customerDelta, i) => {
+  return customerSlice.map((customerDelta, i) => {
     cumCustomers += customerDelta;
-    cumTrial += TRIAL_TO_PAID_DAILY[i];
+    cumTrial += trialSlice[i];
     const date = new Date(referenceDate);
-    date.setDate(date.getDate() - (days - 1 - i));
+    date.setDate(date.getDate() - (rangeDays - 1 - i));
     return {
       label: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
       newCustomers: cumCustomers,
@@ -102,5 +123,5 @@ export function buildGrowthTrend(referenceDate: Date = new Date()): GrowthTrendP
   });
 }
 
-export const growthTrend = buildGrowthTrend();
+export const growthTrend = buildGrowthTrend(30);
 export const newCustomersTotal = growthTrend[growthTrend.length - 1]?.newCustomers ?? 0;

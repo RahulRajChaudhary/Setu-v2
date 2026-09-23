@@ -43,7 +43,7 @@ export default function AuditExplorerPage() {
   return (
     <div className="flex flex-col gap-[var(--space-lg)]">
 
-      <div className="grid grid-cols-2 gap-[var(--space-sm)] sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-[var(--space-sm)] screen-sm:grid-cols-4">
         <Stat label="Total events" value={auditKpis.totalEvents.toLocaleString()} />
         <Stat label="Today's events" value={auditKpis.todaysEvents.toLocaleString()} />
         <Stat label="Human-actioned" value={auditKpis.humanActionedEvents.toLocaleString()} />
@@ -83,7 +83,7 @@ export default function AuditExplorerPage() {
           emptyTitle="No events match"
           emptyDescription="Try a different search term or result filter."
           renderExpanded={(r) => (
-            <dl className="grid grid-cols-2 gap-[var(--space-sm)] text-xs sm:grid-cols-4">
+            <dl className="grid grid-cols-2 gap-[var(--space-sm)] text-xs screen-sm:grid-cols-4">
               <div>
                 <dt className="text-[var(--role-text)]">Before</dt>
                 <dd className="font-medium text-[var(--text-secondary)]">{r.before}</dd>

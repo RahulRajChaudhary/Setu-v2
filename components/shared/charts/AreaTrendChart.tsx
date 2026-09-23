@@ -11,15 +11,14 @@ const PAD_BOTTOM = 22;
 const PAD_TOP = 10;
 const PAD_RIGHT = 10;
 
-function niceMax(value: number) {
-  if (value <= 0) return 4;
-  const magnitude = Math.pow(10, Math.floor(Math.log10(value)));
-  const steps = [1, 2, 2.5, 5, 10];
-  for (const step of steps) {
-    const candidate = step * magnitude;
-    if (candidate >= value) return candidate;
-  }
-  return Math.ceil(value / magnitude) * magnitude;
+// Picks a whole-number tick step (never a fraction — these are integer counts)
+// so evenly spaced ticks never round to the same displayed value.
+function niceIntegerStep(roughStep: number) {
+  const s = Math.max(1, roughStep);
+  const magnitude = Math.pow(10, Math.floor(Math.log10(s)));
+  const candidates = [1, 2, 5, 10].map((m) => m * magnitude);
+  const step = candidates.find((c) => c >= s) ?? candidates[candidates.length - 1] * 10;
+  return Math.max(1, Math.round(step));
 }
 
 export default function AreaTrendChart({
@@ -33,11 +32,16 @@ export default function AreaTrendChart({
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
   const n = xLabels.length;
-  const maxY = useMemo(() => niceMax(Math.max(...series.flatMap((s) => s.data), 1) * 1.15), [series]);
-  const yTicks = useMemo(() => {
-    const count = 4;
-    return Array.from({ length: count + 1 }, (_, i) => Math.round((maxY / count) * i));
-  }, [maxY]);
+  const tickCount = 4;
+  const yStep = useMemo(
+    () => niceIntegerStep(Math.max(...series.flatMap((s) => s.data), 1) / tickCount),
+    [series],
+  );
+  const maxY = yStep * tickCount;
+  const yTicks = useMemo(
+    () => Array.from({ length: tickCount + 1 }, (_, i) => yStep * i),
+    [yStep],
+  );
 
   const plotW = W - PAD_LEFT - PAD_RIGHT;
   const plotH = H - PAD_TOP - PAD_BOTTOM;
@@ -79,8 +83,8 @@ export default function AreaTrendChart({
         onMouseLeave={() => setHoverIndex(null)}
       >
         <svg width="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role="img" aria-label="Trend chart">
-          {yTicks.map((t) => (
-            <g key={t}>
+          {yTicks.map((t, i) => (
+            <g key={i}>
               <line
                 x1={PAD_LEFT}
                 x2={W - PAD_RIGHT}

@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+/* Physical-screen-size breakpoints — keyed off `window.screen.width` (see
+   components/shell/ScreenTierSync.tsx), not the CSS viewport. Browser zoom
+   shrinks the viewport but never changes `screen.width`, so these variants
+   keep the layout locked to the actual device/monitor and only change when
+   the user is genuinely on a different screen, not when they zoom in/out. */
+@custom-variant screen-420 (&:where([data-screen~="420"] *));
+@custom-variant screen-sm (&:where([data-screen~="sm"] *));
+@custom-variant screen-lg (&:where([data-screen~="lg"] *));
+@custom-variant screen-xl (&:where([data-screen~="xl"] *));
+@custom-variant screen-1366 (&:where([data-screen~="1366"] *));
+@custom-variant screen-1440 (&:where([data-screen~="1440"] *));
+@custom-variant screen-2xl (&:where([data-screen~="2xl"] *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -18,12 +31,36 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Fluid root font size — every rem-based Tailwind utility (padding, gap, sizing, text)
-   scales off this, so resizing the window or browser-zooming continuously rescales the
-   whole UI instead of only jumping at fixed breakpoints. Deliberately capped low (16px)
-   so the layout stays compact even on large/high-res screens. */
+/* Root font size — every rem-based Tailwind utility (padding, gap, sizing, text)
+   scales off this. Stepped by physical screen tier (see the screen-* custom
+   variants above), not by viewport width: a `vw`-based formula here would
+   shrink/grow with browser zoom (since zoom shrinks the viewport) while
+   fixed-px elements (icons, the header pill, etc.) only scale with zoom
+   itself — the two drifting apart is exactly what widens gaps inside cards
+   as you zoom. Keeping this in lockstep with screen size instead means zoom
+   scales rem and px sizing uniformly, and only a genuine screen-size change
+   changes the base density. Capped low on purpose so the layout stays
+   compact even on large/high-res screens. */
 html {
-  font-size: clamp(13px, 12px + 0.2vw, 16px);
+  font-size: 13px;
+}
+html[data-screen~="sm"] {
+  font-size: 13.5px;
+}
+html[data-screen~="lg"] {
+  font-size: 14px;
+}
+html[data-screen~="xl"] {
+  font-size: 14.5px;
+}
+html[data-screen~="1366"] {
+  font-size: 14.75px;
+}
+html[data-screen~="1440"] {
+  font-size: 15px;
+}
+html[data-screen~="2xl"] {
+  font-size: 16px;
 }
 
 :root {
