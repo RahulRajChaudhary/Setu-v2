@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Fluid root font size — every rem-based Tailwind utility (padding, gap, sizing, text)
+   scales off this, so resizing the window or browser-zooming continuously rescales the
+   whole UI instead of only jumping at fixed breakpoints. Deliberately capped low (16px)
+   so the layout stays compact even on large/high-res screens. */
+html {
+  font-size: clamp(13px, 12px + 0.2vw, 16px);
+}
+
+:root {
+  --chevron: #1F1F1F;
+  --avatar-bg: #DBEAFE;
+  --avatar-text: #0058CE;
+  --text-secondary: #383838;
+  --role-text: #6B7280;
+  --workspace-pill-border: #E5E7EB;
+  --search-bg: #F3F4F6;
+  --search-placeholder: #9CA3AF;
+  --kbd-border: #E5E7EB;
+  --icon-btn-bg: #F3F4F6;
+  --icon-btn-navy: #0B1B3B;
+  --divider: #E5E7EB;
+
+  --shell-bg: #FFFFFF;
+  --page-bg: #FFFFFF;
+  --surface-muted: #F3F4F6;
+
+  --status-healthy-fg: #17603A;
+  --status-healthy-bg: #E3F4EA;
+  --status-warning-fg: #7A4B00;
+  --status-warning-bg: #FDF3DC;
+  --status-critical-fg: #9B1C1C;
+  --status-critical-bg: #FDECEA;
+  --status-info-fg: #2A36A0;
+  --status-info-bg: #E8EBFB;
+  --status-neutral-fg: #4B5563;
+  --status-neutral-bg: #F3F4F6;
+
+  --chart-1: #2563EB;
+  --chart-2: #059669;
+  --chart-3: #D97706;
+  --chart-4: #DC2626;
+  --chart-5: #7C3AED;
+  --chart-6: #0891B2;
+  --card-border: transparent;
+
+  --card-radius: 12px;
+  --card-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  --card-shadow-hover: 0 8px 24px rgba(15, 23, 42, 0.1);
+  --text-heading: #0F172A;
+  --text-muted: #64748B;
+
+  --icon-chip-bg: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%);
+  --icon-chip-fg: #003FC9;
+
+  --trend-up-bg: #F0FDF4;
+  --trend-up-fg: #008236;
+  --trend-down-bg: #FEF2F2;
+  --trend-down-fg: #C10007;
+
+  /* Compact spacing/type scale, in rem — these ride on the fluid html font-size above,
+     so they already scale continuously with viewport/zoom without needing their own clamp(). */
+  --space-2xs: 0.25rem;
+  --space-xs: 0.375rem;
+  --space-sm: 0.5rem;
+  --space-md: 0.625rem;
+  --space-lg: 0.875rem;
+
+  --card-pad: 0.625rem;
+  --page-pad-x: 0.75rem;
+  --page-pad-y: 0.5rem;
+
+  --font-page-title: 1.0625rem;
+  --font-card-title: 0.875rem;
+  --font-body: 0.8125rem;
+  --font-value-lg: 1.25rem;
+  --font-value-md: 0.9375rem;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+* {
+  scrollbar-width: thin;
+}
+
+.font-mono-id {
+  font-family: ui-monospace, SFMono-Regular, "IBM Plex Mono", Menlo, monospace;
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-transition {
+  animation: page-fade-in 0.25s ease-out;
+}
+
+@keyframes tap-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(0.97);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.tap-pop:active {
+  animation: tap-pop 0.18s ease-out;
+}
+
+.card-interactive {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.card-interactive:active {
+  transform: translateY(0) scale(0.99);
+}
