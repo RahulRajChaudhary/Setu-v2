@@ -84,14 +84,15 @@ function DonutRing({ data, size, centerLabel, total }: { data: DonutSlice[]; siz
   const circumference = 2 * Math.PI * radius;
   const gapPx = 6;
 
-  let cumulative = 0;
-  const segments = data.map((d) => {
-    const fraction = d.value / total;
-    const dash = Math.max(fraction * circumference - gapPx, 0);
-    const offset = -((cumulative / total) * circumference);
-    cumulative += d.value;
-    return { ...d, dash, offset };
-  });
+  const segments = data.reduce<{ cumulative: number; rows: (DonutSlice & { dash: number; offset: number })[] }>(
+    (acc, d) => {
+      const fraction = d.value / total;
+      const dash = Math.max(fraction * circumference - gapPx, 0);
+      const offset = -((acc.cumulative / total) * circumference);
+      return { cumulative: acc.cumulative + d.value, rows: [...acc.rows, { ...d, dash, offset }] };
+    },
+    { cumulative: 0, rows: [] },
+  ).rows;
 
   return (
     <div className="relative shrink-0" style={{ width: `${size / 16}rem`, height: `${size / 16}rem` }}>
