@@ -1,17 +1,15 @@
 @import "tailwindcss";
 
-/* Physical-screen-size breakpoints — keyed off `window.screen.width` (see
-   components/shell/ScreenTierSync.tsx), not the CSS viewport. Browser zoom
-   shrinks the viewport but never changes `screen.width`, so these variants
-   keep the layout locked to the actual device/monitor and only change when
-   the user is genuinely on a different screen, not when they zoom in/out. */
-@custom-variant screen-420 (&:where([data-screen~="420"] *));
-@custom-variant screen-sm (&:where([data-screen~="sm"] *));
-@custom-variant screen-lg (&:where([data-screen~="lg"] *));
-@custom-variant screen-xl (&:where([data-screen~="xl"] *));
-@custom-variant screen-1366 (&:where([data-screen~="1366"] *));
-@custom-variant screen-1440 (&:where([data-screen~="1440"] *));
-@custom-variant screen-2xl (&:where([data-screen~="2xl"] *));
+/* Responsive breakpoints — real viewport media queries in rem, so the layout
+   reflows on window resize AND browser zoom (zoom shrinks the CSS viewport).
+   Names are kept from the earlier screen-tier variants so page markup is unchanged. */
+@custom-variant screen-420 (@media (min-width: 26.25rem));
+@custom-variant screen-sm (@media (min-width: 36rem));
+@custom-variant screen-lg (@media (min-width: 56rem));
+@custom-variant screen-xl (@media (min-width: 72rem));
+@custom-variant screen-1366 (@media (min-width: 85.375rem));
+@custom-variant screen-1440 (@media (min-width: 90rem));
+@custom-variant screen-2xl (@media (min-width: 96rem));
 
 :root {
   --background: #ffffff;
@@ -21,46 +19,23 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, Arial, Helvetica, sans-serif;
 }
 
-/* Root font size — every rem-based Tailwind utility (padding, gap, sizing, text)
-   scales off this. Stepped by physical screen tier (see the screen-* custom
-   variants above), not by viewport width: a `vw`-based formula here would
-   shrink/grow with browser zoom (since zoom shrinks the viewport) while
-   fixed-px elements (icons, the header pill, etc.) only scale with zoom
-   itself — the two drifting apart is exactly what widens gaps inside cards
-   as you zoom. Keeping this in lockstep with screen size instead means zoom
-   scales rem and px sizing uniformly, and only a genuine screen-size change
-   changes the base density. Capped low on purpose so the layout stays
-   compact even on large/high-res screens. */
+/* Root font size — fluid on viewport width. Every rem-based utility (padding, gap,
+   sizing, text, icons) scales off this, so the whole UI scales smoothly with window
+   size and browser zoom instead of jumping between fixed steps. The px term keeps
+   zoom-in slightly enlarging things; the vh term stops short viewports (e.g. a 1080p
+   screen at 150% scale = 720px tall) from inflating every tile; clamp keeps it legible. */
 html {
-  font-size: 13px;
-}
-html[data-screen~="sm"] {
-  font-size: 13.5px;
-}
-html[data-screen~="lg"] {
-  font-size: 14px;
-}
-html[data-screen~="xl"] {
-  font-size: 14.5px;
-}
-html[data-screen~="1366"] {
-  font-size: 14.75px;
-}
-html[data-screen~="1440"] {
-  font-size: 15px;
-}
-html[data-screen~="2xl"] {
-  font-size: 16px;
+  font-size: clamp(13px, min(calc(9.5px + 0.4vw), calc(5px + 1.2vh)), 17px);
 }
 
 :root {
@@ -100,9 +75,12 @@ html[data-screen~="2xl"] {
   --chart-6: #0891B2;
   --card-border: transparent;
 
-  --card-radius: 12px;
-  --card-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-  --card-shadow-hover: 0 8px 24px rgba(15, 23, 42, 0.1);
+  --card-radius: 0.75rem;
+  --card-shadow: 0 0 0.3rem rgba(0, 0, 0, 0.1);
+  --card-shadow-hover: 0 0.5rem 1.5rem rgba(15, 23, 42, 0.1);
+
+  --sidebar-w: 5.75rem;
+  --header-h: 4.5rem;
   --text-heading: #0F172A;
   --text-muted: #64748B;
 
@@ -126,11 +104,12 @@ html[data-screen~="2xl"] {
   --page-pad-x: 0.75rem;
   --page-pad-y: 0.5rem;
 
-  --font-page-title: 1.0625rem;
-  --font-card-title: 0.875rem;
-  --font-body: 0.8125rem;
-  --font-value-lg: 1.25rem;
-  --font-value-md: 0.9375rem;
+  --font-page-title: 1.3125rem;
+  --font-card-title: 1rem;
+  --font-body: 0.9375rem;
+  --font-caption: 0.8125rem;
+  --font-value-lg: 1.75rem;
+  --font-value-md: 1.125rem;
 }
 
 html,
@@ -139,7 +118,22 @@ body {
 }
 
 * {
-  scrollbar-width: thin;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
 }
 
 .font-mono-id {

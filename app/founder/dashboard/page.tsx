@@ -84,8 +84,6 @@ const GROWTH_RANGE_OPTIONS: { label: string; value: GrowthRangeDays }[] = [
   { label: "90D", value: 90 },
 ];
 
-const CONTROL_RING_COLORS = ["var(--chart-grad-indigo)", "var(--chart-grad-purple)", "var(--chart-grad-teal)"];
-
 export default function ControlRoomPage() {
   const router = useRouter();
   const { snapshot, updatedAt, stale } = useKpiSnapshot();
@@ -230,21 +228,19 @@ export default function ControlRoomPage() {
         <Card title="Controls effective by framework" description="Effective controls per framework">
           <div className="flex flex-col items-center gap-[var(--space-md)] screen-sm:flex-row screen-sm:items-center">
             <DonutChart
-              data={controlsEffectiveByFramework.map((f, i) => ({ label: f.label, value: f.effective, color: CONTROL_RING_COLORS[i] ?? f.color }))}
+              data={controlsEffectiveByFramework.map((f) => ({ label: f.label, value: f.effective, color: f.color }))}
               size={132}
               centerLabel="controls"
               legend={false}
-              variant="ring"
             />
             <ul className="flex w-full flex-col gap-2.5">
-              {controlsEffectiveByFramework.map((f, i) => {
+              {controlsEffectiveByFramework.map((f) => {
                 const status = f.value >= 90 ? "healthy" : f.value >= 75 ? "warning" : "critical";
                 const bandWord = f.value >= 90 ? "Effective" : f.value >= 75 ? "Needs attention" : "At risk";
-                const ringColor = CONTROL_RING_COLORS[i] ?? f.color;
                 return (
                   <li key={f.label} className="flex items-center justify-between gap-2 text-sm">
                     <span className="flex items-center gap-2 text-[var(--role-text)]">
-                      <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: ringColor }} />
+                      <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: f.color }} />
                       {f.label}
                       <span className="text-xs text-[var(--text-muted)]">({f.effective}/{f.total})</span>
                     </span>
@@ -302,11 +298,10 @@ export default function ControlRoomPage() {
         >
           <AreaTrendChart
             series={[
-              { key: "newCustomers", label: "New customers", color: "var(--chart-grad-indigo)", data: growthTrend.map((d) => d.newCustomers) },
-              { key: "trialToPaid", label: "Trial → paid", color: "var(--chart-grad-teal)", data: growthTrend.map((d) => d.trialToPaid) },
+              { key: "newCustomers", label: "New customers", color: "var(--chart-1)", data: growthTrend.map((d) => d.newCustomers) },
+              { key: "trialToPaid", label: "Trial → paid", color: "var(--chart-3)", data: growthTrend.map((d) => d.trialToPaid) },
             ]}
             xLabels={growthTrend.map((d) => d.label)}
-            variant="spline"
           />
           <dl className="mt-[var(--space-sm)] grid grid-cols-2 gap-[var(--space-sm)] border-t border-[var(--divider)] pt-[var(--space-sm)] screen-sm:grid-cols-4">
             <div>

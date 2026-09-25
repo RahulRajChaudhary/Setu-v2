@@ -19,40 +19,12 @@ function niceIntegerStep(roughStep: number) {
   return Math.max(1, Math.round(step));
 }
 
-type Point = { x: number; y: number };
-
-// Catmull-Rom to cubic Bezier conversion (tension 1/6) — draws a smooth
-// spline through every point instead of straight line segments.
-function smoothPath(points: Point[]) {
-  if (points.length === 0) return "";
-  if (points.length === 1) return `M${points[0].x},${points[0].y}`;
-  let d = `M${points[0].x},${points[0].y}`;
-  for (let i = 0; i < points.length - 1; i++) {
-    const p0 = points[i - 1] ?? points[i];
-    const p1 = points[i];
-    const p2 = points[i + 1];
-    const p3 = points[i + 2] ?? p2;
-    const cp1x = p1.x + (p2.x - p0.x) / 6;
-    const cp1y = p1.y + (p2.y - p0.y) / 6;
-    const cp2x = p2.x - (p3.x - p1.x) / 6;
-    const cp2y = p2.y - (p3.y - p1.y) / 6;
-    d += ` C${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
-  }
-  return d;
-}
-
-function straightPath(points: Point[]) {
-  return points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
-}
-
 export default function AreaTrendChart({
   series,
   xLabels,
-  variant = "area",
 }: {
   series: TrendSeries[];
   xLabels: string[];
-  variant?: "area" | "spline";
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -91,8 +63,7 @@ export default function AreaTrendChart({
   const scaleY = (v: number) => PAD_TOP + plotH - (v / (maxY || 1)) * plotH;
 
   const paths = series.map((s) => {
-    const points = s.data.map((v, i) => ({ x: scaleX(i), y: scaleY(v) }));
-    const line = variant === "spline" ? smoothPath(points) : straightPath(points);
+    const line = s.data.map((v, i) => `${i === 0 ? "M" : "L"}${scaleX(i)},${scaleY(v)}`).join(" ");
     const area = `${line} L${scaleX(n - 1)},${PAD_TOP + plotH} L${scaleX(0)},${PAD_TOP + plotH} Z`;
     return { ...s, line, area };
   });
@@ -154,10 +125,9 @@ export default function AreaTrendChart({
             </text>
           ))}
 
-          {variant !== "spline" &&
-            paths.map((p) => (
-              <path key={`${p.key}-area`} d={p.area} fill={p.color} opacity={0.1} stroke="none" />
-            ))}
+          {paths.map((p) => (
+            <path key={`${p.key}-area`} d={p.area} fill={p.color} opacity={0.1} stroke="none" />
+          ))}
           {paths.map((p) => (
             <path key={`${p.key}-line`} d={p.line} fill="none" stroke={p.color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
           ))}
@@ -199,26 +169,7 @@ export default function AreaTrendChart({
           )}
         </svg>
 
-        {variant === "spline" && hoverIndex !== null &&
-          paths.map((p) => {
-            const cx = (scaleX(hoverIndex) / W) * 100;
-            const cy = (scaleY(p.data[hoverIndex]) / H) * 100;
-            return (
-              <div
-                key={`${p.key}-bubble`}
-                className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-[calc(100%+0.5rem)] rounded-full px-2 py-1 text-[0.6875rem] font-semibold text-white shadow-md"
-                style={{ left: `${cx}%`, top: `${cy}%`, backgroundColor: p.color }}
-              >
-                {p.data[hoverIndex]}
-                <span
-                  className="absolute left-1/2 top-full h-0 w-0 -translate-x-1/2 border-x-4 border-t-4 border-x-transparent"
-                  style={{ borderTopColor: p.color }}
-                />
-              </div>
-            );
-          })}
-
-        {variant !== "spline" && hoverIndex !== null && (
+        {hoverIndex !== null && (
           <div
             className="pointer-events-none absolute top-1 z-10 flex min-w-[8rem] flex-col gap-1 rounded-lg border border-[var(--divider)] bg-white p-2 text-xs shadow-lg"
             style={{
