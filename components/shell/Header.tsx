@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { workspaceRows } from "@/lib/mock-data/operations";
+import { usePathname, useRouter } from "next/navigation";
+import { Search, Plus, Bell, ExternalLink } from "lucide-react";
+import { PERSONA_LIST, personaConfigFromPathname } from "@/lib/personas";
+import AppsLauncher from "@/components/shell/AppsLauncher";
 
-const WORKSPACES = [
-  { id: "all", name: "All Workspaces" },
-  ...workspaceRows.map((ws) => ({ id: ws.id, name: ws.name })),
-];
+const IS_DEV = process.env.NODE_ENV !== "production";
 
 const NOTIFICATIONS = [
   {
@@ -31,11 +31,13 @@ const NOTIFICATIONS = [
 
 export default function Header() {
   const [openMenu, setOpenMenu] = useState<
-    "profile" | "notifications" | "workspace" | null
+    "profile" | "notifications" | "apps" | null
   >(null);
-  const [activeWorkspace, setActiveWorkspace] = useState(WORKSPACES[0].id);
+  const pathname = usePathname();
+  const router = useRouter();
+  const persona = personaConfigFromPathname(pathname);
 
-  function toggle(menu: "profile" | "notifications" | "workspace") {
+  function toggle(menu: "profile" | "notifications" | "apps") {
     setOpenMenu((current) => (current === menu ? null : menu));
   }
 
@@ -43,24 +45,19 @@ export default function Header() {
     <header
       className="
         relative z-30 flex shrink-0 items-center
-        h-[58px]
+        h-[var(--header-h)]
         gap-2
         bg-[var(--shell-bg)]
-        px-3
+        pl-3
 
-        screen-sm:h-[68px]
-        screen-sm:gap-2.5
-        screen-sm:px-4
+        screen-lg:pl-4
+        screen-2xl:pl-5
 
-        screen-lg:h-[72px]
-        screen-lg:px-5
-
-        screen-xl:h-[76px]
-
-        screen-2xl:h-[80px]
-        screen-2xl:px-6
+        screen-sm:mr-[2.1rem]
+        screen-2xl:mr-[2.5rem]
       "
     >
+
       {/* Backdrop to close menus */}
       {openMenu && (
         <div
@@ -69,107 +66,13 @@ export default function Header() {
         />
       )}
 
-      {/* Workspace */}
-      <div className="relative z-50 hidden screen-sm:block">
-        <button
-          type="button"
-          onClick={() => toggle("workspace")}
-          className={`
-            tap-pop flex shrink-0 items-center
-            gap-1.5
-            rounded-lg
-            border
-            bg-[var(--surface-muted)]
-            px-3
-            h-8
-            text-xs font-semibold
-            text-[var(--text-secondary)]
-            transition-colors
-            hover:bg-[var(--search-bg)]
-
-            screen-2xl:h-10
-            screen-2xl:px-4
-            screen-2xl:text-sm
-
-            ${openMenu === "workspace" ? "border-[var(--icon-btn-navy)] bg-white hover:bg-white" : "border-transparent"}
-          `}
-        >
-          <span className="max-w-[140px] truncate screen-2xl:max-w-none">
-            {WORKSPACES.find((w) => w.id === activeWorkspace)?.name ?? "Setu Founder"}
-          </span>
-          <span className={`shrink-0 transition-transform ${openMenu === "workspace" ? "rotate-180" : ""}`}>
-            <ChevronDownIcon />
-          </span>
-        </button>
-
-        {/* Workspace dropdown */}
-        {openMenu === "workspace" && (
-          <div
-            className="
-              absolute
-              left-0
-              top-[calc(100%+0.375rem)]
-              z-50
-              w-72
-              max-w-[calc(100vw-1.5rem)]
-              overflow-hidden
-              rounded-xl
-              border
-              border-[var(--icon-btn-navy)]
-              bg-white
-              shadow-xl
-            "
-          >
-            <div className="flex max-h-64 flex-col overflow-y-auto py-1">
-              {WORKSPACES.map((ws) => {
-                const selected = ws.id === activeWorkspace;
-                return (
-                  <button
-                    key={ws.id}
-                    type="button"
-                    onClick={() => {
-                      setActiveWorkspace(ws.id);
-                      setOpenMenu(null);
-                    }}
-                    className={`
-                      tap-pop
-                      flex
-                      w-full
-                      items-center
-                      justify-between
-                      gap-2
-                      px-4
-                      py-2.5
-                      text-left
-                      text-sm
-                      transition-colors
-                      ${
-                        selected
-                          ? "bg-[var(--status-info-bg)] font-semibold text-[var(--text-heading)]"
-                          : "text-[var(--text-secondary)] hover:bg-[var(--search-bg)]"
-                      }
-                    `}
-                  >
-                    <span className="truncate">{ws.name}</span>
-                    {selected && (
-                      <span className="shrink-0 text-[var(--icon-btn-navy)]">
-                        <CheckIcon />
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Search */}
-      <div className="flex min-w-0 flex-1 justify-center px-1 screen-sm:px-2">
+      {/* Search — centered on the true viewport width, independent of sidebar/icon widths */}
+      <div className="pointer-events-none fixed left-1/2 top-0 z-20 flex h-[var(--header-h)] w-[min(30rem,90vw)] -translate-x-1/2 items-center px-1 screen-sm:px-2">
         <div
           className="
-            flex h-9 w-full
-            max-w-[420px]
+            pointer-events-auto
+            flex h-[3.125rem] w-full
+            max-w-[30rem]
             items-center
             gap-2
             rounded-lg
@@ -178,33 +81,12 @@ export default function Header() {
             bg-[var(--search-bg)]
             px-3
 
-            screen-sm:h-10
-            screen-sm:max-w-[480px]
             screen-sm:border-[var(--divider)]
-            screen-sm:px-3.5
-
-            screen-lg:h-11
-            screen-lg:max-w-[500px]
-
-            screen-xl:h-12
-            screen-xl:max-w-[520px]
-
-            screen-1366:h-[48px]!
-            screen-1366:max-w-[300px]!
-
-            screen-1440:h-[60px]!
-            screen-1440:max-w-[375px]!
-
-            screen-2xl:h-[54px]!
-            screen-2xl:max-w-[529px]!
-            screen-2xl:gap-[10px]
-            screen-2xl:rounded-lg
-            screen-2xl:pl-[25px]
-            screen-2xl:pr-[25px]
-            screen-2xl:py-[15px]
           "
         >
-          <SearchIcon />
+          <span className="shrink-0">
+            <Search size={20} className="shrink-0" color="#9CA3AF" />
+          </span>
 
           <input
             type="text"
@@ -241,34 +123,24 @@ export default function Header() {
       </div>
 
       {/* Right side actions */}
-      <div className="flex shrink-0 items-center gap-1.5 screen-sm:gap-2">
-        {/* Resources */}
-        <span className="hidden screen-sm:inline-flex">
-          <IconButton
-            label="Resources"
-            bg="var(--icon-btn-bg)"
-          >
-            <BookIcon color="#4A5565" />
-          </IconButton>
-        </span>
-
+      <div className="relative ml-auto flex shrink-0 items-center gap-1.5 screen-sm:gap-2">
         {/* Create */}
         <IconButton
           label="Create"
-          bg="var(--icon-btn-navy)"
+          bg="transparent"
         >
-          <PlusIcon color="#FFFFFF" />
+          <Plus color="#4A5565" size={20} />
         </IconButton>
 
         {/* Notifications */}
         <div className="relative z-50">
           <IconButton
             label="Notifications"
-            bg="var(--icon-btn-bg)"
+            bg="transparent"
             onClick={() => toggle("notifications")}
           >
             <span className="relative">
-              <BellIcon color="#4A5565" />
+              <Bell color="#4A5565" size={20} />
 
               <span
                 className="
@@ -289,11 +161,11 @@ export default function Header() {
             <div
               className="
                 absolute
-                right-0
+                right-3
                 top-[calc(100%+0.5rem)]
                 z-50
                 flex
-                w-[290px]
+                w-[19rem]
                 max-w-[calc(100vw-1.5rem)]
                 flex-col
                 overflow-hidden
@@ -303,9 +175,7 @@ export default function Header() {
                 bg-white
                 shadow-xl
 
-                screen-sm:w-80
-
-                screen-2xl:w-[420px]
+                screen-2xl:w-[24rem]
               "
             >
               {/* Header */}
@@ -326,7 +196,7 @@ export default function Header() {
                 <button
                   type="button"
                   className="
-                    text-[11px]
+                    text-[0.6875rem]
                     font-medium
                     text-[var(--icon-btn-navy)]
                     hover:underline
@@ -393,7 +263,7 @@ export default function Header() {
 
                       <span
                         className="
-                          text-[11px]
+                          text-[0.6875rem]
                           text-[var(--text-muted)]
                         "
                       >
@@ -407,100 +277,70 @@ export default function Header() {
           )}
         </div>
 
+        {/* Sahayogi Apps launcher */}
+        <IconButton
+          label="Sahayogi Apps"
+          bg="transparent"
+          onClick={() => toggle("apps")}
+        >
+          <AppsGridIcon color="#4A5565" />
+        </IconButton>
+
+        {/* Apps dropdown — anchored to the shared right edge of this row */}
+        {openMenu === "apps" && <AppsLauncher onClose={() => setOpenMenu(null)} />}
+
         {/* Profile */}
-        <div className="relative z-50">
+        <div>
           <button
             type="button"
             onClick={() => toggle("profile")}
+            title={persona.identity.name}
             className="
               tap-pop
               flex
+              h-[3.25rem]
+              w-[3.25rem]
               shrink-0
               items-center
-              gap-2
+              justify-center
               rounded-full
-              border
-              border-[var(--divider)]
-              py-1
-              pl-1
-              pr-2.5
-              transition-colors
-              hover:bg-[var(--surface-muted)]
-
-              screen-sm:pr-3
-
-              screen-1366:h-[65px]!
-              screen-1366:w-[220px]!
-              screen-1366:justify-between
-              screen-1366:px-3!
-              screen-1366:py-2!
-
-              screen-1440:h-[53px]!
-
-              screen-2xl:h-[66px]!
+              transition-all
+              duration-150
+              hover:bg-[var(--search-bg)]
             "
           >
-            {/* Avatar */}
-            <div
+            <span
               className="
                 flex
-                h-8
-                w-8
+                h-[2.6rem]
+                w-[2.6rem]
                 shrink-0
                 items-center
                 justify-center
                 rounded-full
-                bg-[var(--avatar-bg)]
-                text-xs
-                font-semibold
-                text-[var(--avatar-text)]
-
-                screen-2xl:h-10
-                screen-2xl:w-10
-                screen-2xl:text-sm
+                bg-gradient-to-tr
+                from-[#6366F1]
+                via-[#8B5CF6]
+                to-[#3B82F6]
+                p-[0.1875rem]
               "
             >
-              DS
-            </div>
-
-            {/* Name / role */}
             <span
               className="
-                hidden
-                text-left
-                leading-tight
-                screen-sm:inline
+                flex
+                h-full
+                w-full
+                items-center
+                justify-center
+                rounded-full
+                bg-[var(--avatar-bg)]
+                text-sm
+                font-semibold
+                text-[var(--avatar-text)]
               "
             >
-              <span
-                className="
-                  block
-                  text-xs
-                  font-semibold
-                  text-[var(--text-secondary)]
-
-                  screen-2xl:text-sm
-                "
-              >
-                Dhruv Singla
+              {persona.identity.initials}
               </span>
-
-              <span
-                className="
-                  block
-                  text-[10px]
-                  text-[var(--role-text)]
-
-                  screen-2xl:text-xs
-                "
-              >
-                Founder
-              </span>
-            </span>
-
-            {/* Chevron */}
-            <span className="hidden screen-sm:inline">
-              <ChevronDownIcon />
             </span>
           </button>
 
@@ -512,7 +352,8 @@ export default function Header() {
                 right-0
                 top-[calc(100%+0.5rem)]
                 z-50
-                w-56
+                w-[17rem]
+                max-w-[calc(100vw-1.5rem)]
                 overflow-hidden
                 rounded-xl
                 border
@@ -521,64 +362,133 @@ export default function Header() {
                 shadow-xl
               "
             >
-              <p
+              {/* Brand row */}
+              <div className="flex items-center justify-between px-4 py-3">
+                <p className="text-sm font-semibold text-[var(--text-heading)]">
+                  Setu
+                </p>
+
+                <button
+                  type="button"
+                  className="text-xs font-medium text-[var(--icon-btn-navy)] hover:underline"
+                >
+                  Sign out
+                </button>
+              </div>
+
+              {/* Account summary */}
+              <div
                 className="
-                  truncate
+                  flex
+                  flex-col
+                  items-center
+                  gap-2
+                  border-t
+                  border-[var(--divider)]
                   px-4
-                  py-3
-                  text-xs
-                  text-[var(--text-muted)]
+                  py-5
+                  text-center
                 "
               >
-                dhruv.singla@setu.in
-              </p>
-
-              <div className="border-t border-[var(--divider)]">
-                <button
-                  type="button"
+                <div
                   className="
-                    tap-pop
                     flex
-                    w-full
+                    h-14
+                    w-14
+                    shrink-0
                     items-center
-                    gap-2.5
-                    px-4
-                    py-3
-                    text-left
-                    text-sm
-                    text-[var(--text-heading)]
-                    transition-colors
-                    hover:bg-[var(--search-bg)]
+                    justify-center
+                    rounded-full
+                    bg-gradient-to-tr
+                    from-[#6366F1]
+                    via-[#8B5CF6]
+                    to-[#3B82F6]
+                    p-[0.1875rem]
                   "
                 >
-                  <UserIcon />
-                  View Profile
-                </button>
-              </div>
+                  <span
+                    className="
+                      flex
+                      h-full
+                      w-full
+                      items-center
+                      justify-center
+                      rounded-full
+                      bg-[var(--avatar-bg)]
+                      text-lg
+                      font-semibold
+                      text-[var(--avatar-text)]
+                    "
+                  >
+                    {persona.identity.initials}
+                  </span>
+                </div>
 
-              <div className="border-t border-[var(--divider)]">
+                <p className="truncate text-sm font-semibold text-[var(--text-heading)]">
+                  {persona.identity.name}
+                </p>
+
+                <p className="truncate text-xs text-[var(--text-muted)]">
+                  {persona.identity.name.toLowerCase().replace(" ", ".")}@setu.in
+                </p>
+
                 <button
                   type="button"
                   className="
                     tap-pop
+                    mt-1
                     flex
-                    w-full
                     items-center
-                    gap-2.5
-                    px-4
-                    py-3
-                    text-left
-                    text-sm
+                    gap-1
+                    text-xs
                     font-medium
-                    text-[var(--status-critical-fg)]
-                    transition-colors
-                    hover:bg-[var(--status-critical-bg)]
+                    text-[var(--icon-btn-navy)]
+                    hover:underline
                   "
                 >
-                  <SignOutIcon />
-                  Sign Out
+                  View account
+                  <ExternalLink size={12} />
                 </button>
               </div>
+
+              {IS_DEV && (
+                <div className="border-t border-[var(--divider)] py-1">
+                  <p className="px-4 pb-1 pt-2 text-[0.625rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                    Switch persona (dev only)
+                  </p>
+                  {PERSONA_LIST.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => {
+                        setOpenMenu(null);
+                        router.push(`${p.routeBase}/dashboard`);
+                      }}
+                      className={`
+                        tap-pop
+                        flex
+                        w-full
+                        items-center
+                        justify-between
+                        px-4
+                        py-2
+                        text-left
+                        text-sm
+                        transition-colors
+                        hover:bg-[var(--search-bg)]
+                        ${
+                          p.id === persona.id
+                            ? "font-semibold text-[var(--text-heading)]"
+                            : "text-[var(--text-secondary)]"
+                        }
+                      `}
+                    >
+                      {p.label}
+                      {p.id === persona.id && <span aria-hidden="true">&#10003;</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -607,29 +517,21 @@ function IconButton({
       type="button"
       title={label}
       onClick={onClick}
-      style={{ backgroundColor: bg }}
-      className="
+      style={bg === "transparent" ? undefined : { backgroundColor: bg }}
+      className={`
         tap-pop
         flex
-        h-9
-        w-9
+        h-[2.875rem]
+        w-[2.875rem]
         shrink-0
         items-center
         justify-center
         rounded-lg
-        transition-transform
+        transition-all
         duration-150
         hover:scale-105
-
-        screen-sm:h-10
-        screen-sm:w-10
-
-        screen-lg:h-11
-        screen-lg:w-11
-
-        screen-1366:h-[46px]!
-        screen-1366:w-[46px]!
-      "
+        ${bg === "transparent" ? "hover:bg-[var(--search-bg)]" : ""}
+      `}
     >
       {children}
     </button>
@@ -637,203 +539,26 @@ function IconButton({
 }
 
 /* -------------------------------------------------------------------------- */
-/* Icons                                                                       */
+/* Apps Grid Icon (Google-style 3x3 dots)                                     */
 /* -------------------------------------------------------------------------- */
 
-function SearchIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden="true"
-      className="shrink-0"
-    >
-      <circle
-        cx="7"
-        cy="7"
-        r="5"
-        stroke="#9CA3AF"
-        strokeWidth="1.5"
-      />
+function AppsGridIcon({ color }: { color: string }) {
+  const positions = [0, 1, 2];
 
-      <path
-        d="M14 14L11 11"
-        stroke="#9CA3AF"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      {positions.map((row) =>
+        positions.map((col) => (
+          <circle
+            key={`${row}-${col}`}
+            cx={3 + col * 7}
+            cy={3 + row * 7}
+            r="2"
+            fill={color}
+          />
+        ))
+      )}
     </svg>
   );
 }
 
-function BookIcon({ color }: { color: string }) {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 18 18"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M9 4.5C7.5 3.5 5 3 3 3.5V13.5C5 13 7.5 13.5 9 14.5C10.5 13.5 13 13 15 13.5V3.5C13 3 10.5 3.5 9 4.5Z"
-        stroke={color}
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="M9 4.5V14.5"
-        stroke={color}
-        strokeWidth="1.5"
-      />
-    </svg>
-  );
-}
-
-function PlusIcon({ color }: { color: string }) {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 18 18"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M9 3V15M3 9H15"
-        stroke={color}
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function BellIcon({ color }: { color: string }) {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 18 18"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M9 2C6.8 2 5 3.8 5 6V9L3.5 11.5H14.5L13 9V6C13 3.8 11.2 2 9 2Z"
-        stroke={color}
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="M7.5 13.5C7.5 14.3 8.2 15 9 15C9.8 15 10.5 14.3 10.5 13.5"
-        stroke={color}
-        strokeWidth="1.5"
-      />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 14 14"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M3 7.5L5.5 10L11 4"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function ChevronDownIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 12 12"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M3 4.5L6 7.5L9 4.5"
-        stroke="var(--chevron)"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function UserIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden="true"
-    >
-      <circle
-        cx="8"
-        cy="5.5"
-        r="2.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
-
-      <path
-        d="M3 13.5c0-2.5 2.2-4.5 5-4.5s5 2 5 4.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function SignOutIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M6.5 14H3.5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h3"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="M10.5 11L14 7.5L10.5 4"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="M14 7.5H6"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
