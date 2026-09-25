@@ -302,10 +302,11 @@ export default function ControlRoomPage() {
         >
           <AreaTrendChart
             series={[
-              { key: "newCustomers", label: "New customers", color: "var(--chart-1)", data: growthTrend.map((d) => d.newCustomers) },
-              { key: "trialToPaid", label: "Trial → paid", color: "var(--chart-3)", data: growthTrend.map((d) => d.trialToPaid) },
+              { key: "newCustomers", label: "New customers", color: "var(--chart-grad-indigo)", data: growthTrend.map((d) => d.newCustomers) },
+              { key: "trialToPaid", label: "Trial → paid", color: "var(--chart-grad-teal)", data: growthTrend.map((d) => d.trialToPaid) },
             ]}
             xLabels={growthTrend.map((d) => d.label)}
+            variant="spline"
           />
           <dl className="mt-[var(--space-sm)] grid grid-cols-2 gap-[var(--space-sm)] border-t border-[var(--divider)] pt-[var(--space-sm)] screen-sm:grid-cols-4">
             <div>
