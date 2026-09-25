@@ -29,11 +29,11 @@ function TrendChip({ direction, value }: { direction: TrendDirection; value: str
   );
 }
 
-function IconChip({ icon }: { icon: ReactNode }) {
+function IconChip({ icon, bg, fg }: { icon: ReactNode; bg?: string; fg?: string }) {
   return (
     <span
       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg [&>svg]:h-[18px] [&>svg]:w-[18px]"
-      style={{ background: "var(--icon-chip-bg)", color: "var(--icon-chip-fg)" }}
+      style={{ background: bg ?? "var(--icon-chip-bg)", color: fg ?? "var(--icon-chip-fg)" }}
     >
       {icon}
     </span>
@@ -54,12 +54,14 @@ export default function KPITile({
   trendDirection,
   trendValue,
   icon,
+  iconBg,
+  iconFg,
 }: {
   title: string;
   value: ReactNode;
   note?: string;
   status: StatusLevel;
-  secondary?: { label: string; value: ReactNode }[];
+  secondary?: { label: string; value: ReactNode; color?: string }[];
   drillHref?: string;
   drillLabel?: string;
   updatedAt: Date;
@@ -68,6 +70,8 @@ export default function KPITile({
   trendDirection?: TrendDirection;
   trendValue?: string;
   icon?: ReactNode;
+  iconBg?: string;
+  iconFg?: string;
 }) {
   const className = `card-interactive tap-pop group relative flex flex-col gap-2 rounded-[var(--card-radius)] border border-[var(--card-border)] bg-white p-[var(--card-pad)] ${
     drillHref ? "cursor-pointer" : ""
@@ -77,7 +81,11 @@ export default function KPITile({
   const content = (
     <>
       <div className="flex items-center gap-2.5">
-        {icon ? <IconChip icon={icon} /> : <span className={`h-2 w-2 shrink-0 rounded-full ${DOT[status]}`} />}
+        {icon ? (
+          <IconChip icon={icon} bg={iconBg} fg={iconFg} />
+        ) : (
+          <span className={`h-2 w-2 shrink-0 rounded-full ${DOT[status]}`} />
+        )}
         <div className="min-w-0 flex-1">
           <p className="truncate text-[length:var(--font-body)] leading-tight text-[var(--text-muted)]">{title}</p>
         </div>
@@ -95,7 +103,9 @@ export default function KPITile({
           {secondary.map((s) => (
             <div key={s.label} className="flex items-baseline justify-between gap-1">
               <dt className="truncate text-[10px] text-[var(--text-muted)]">{s.label}</dt>
-              <dd className="text-[11px] font-semibold text-[var(--text-heading)]">{s.value}</dd>
+              <dd className="text-[11px] font-semibold" style={{ color: s.color ?? "var(--text-heading)" }}>
+                {s.value}
+              </dd>
             </div>
           ))}
         </dl>

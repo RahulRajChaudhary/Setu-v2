@@ -20,6 +20,7 @@ export default function DataTable<T>({
   emptyTitle = "Nothing here yet",
   emptyDescription,
   onRowClick,
+  textClassName,
 }: {
   columns: Column<T>[];
   rows: T[];
@@ -29,6 +30,7 @@ export default function DataTable<T>({
   emptyTitle?: string;
   emptyDescription?: string;
   onRowClick?: (row: T) => void;
+  textClassName?: string;
 }) {
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
@@ -70,7 +72,7 @@ export default function DataTable<T>({
   return (
     <div className="overflow-hidden rounded-[var(--card-radius)] border border-[var(--card-border)] bg-white">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[560px] text-left text-xs">
+        <table className={`w-full min-w-[560px] text-left text-xs ${textClassName ?? ""}`}>
           <thead>
             <tr className="border-b border-[var(--divider)] bg-[var(--search-bg)]/70">
               {renderExpanded && <th className="w-8 px-2.5 py-1.5" />}

@@ -79,6 +79,10 @@ export const growthLast30Days = [
   { label: "Setup success rate", value: "97%" },
 ];
 
+export function getGrowthStats(_rangeDays: GrowthRangeDays): { label: string; value: string }[] {
+  return growthLast30Days;
+}
+
 // Deterministic pseudo-random daily deltas (seeded — same output on every run,
 // so the mock data and its snapshot tests never drift between renders).
 function mulberry32(seed: number) {

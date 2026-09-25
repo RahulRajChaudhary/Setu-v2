@@ -3,6 +3,8 @@ export const workspaceKpis = {
   active: 187,
   graceOrRestricted: 12,
   failedProvisioning24h: 1,
+  multiProductAdoptionPct: 61,
+  criticalExceptions: 2,
 };
 
 export const workspaceFunnel = [
