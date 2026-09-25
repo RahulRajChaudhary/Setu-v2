@@ -1,6 +1,26 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Server,
+  Users,
+  CreditCard,
+  Activity,
+  Shield,
+  ShieldCheck,
+  Rocket,
+  Wallet,
+  Share2,
+  Circle,
+  HeartPulse,
+  ClipboardCheck,
+  AlertCircle,
+  TrendingUp,
+  Layers,
+  AlertOctagon,
+  ArrowRight,
+} from "lucide-react";
 import Card from "@/components/shared/Card";
 import CalendarCard from "@/components/shared/CalendarCard";
 import GreetingCard from "@/components/shared/GreetingCard";
@@ -17,16 +37,14 @@ import {
   areasAtGlance,
   topRisks,
   controlsEffectiveByFramework,
-  growthLast30Days,
+  getGrowthStats,
   buildGrowthTrend,
   type GrowthRangeDays,
   type KpiSnapshot,
 } from "@/lib/mock-data/control-room";
 import type { Severity } from "@/lib/mock-data/types";
-import { workspaceKpis, subscriptionKpis } from "@/lib/mock-data/operations";
-import { productKpis } from "@/lib/mock-data/products";
+import { workspaceKpis } from "@/lib/mock-data/operations";
 import { complianceKpis } from "@/lib/mock-data/compliance-risk";
-import { costKpis } from "@/lib/mock-data/cost-analytics";
 
 const REFRESH_MS = 60_000;
 const FAILURE_RATE = 0.2;
@@ -66,17 +84,21 @@ const GROWTH_RANGE_OPTIONS: { label: string; value: GrowthRangeDays }[] = [
   { label: "90D", value: 90 },
 ];
 
+const CONTROL_RING_COLORS = ["var(--chart-grad-indigo)", "var(--chart-grad-purple)", "var(--chart-grad-teal)"];
+
 export default function ControlRoomPage() {
+  const router = useRouter();
   const { snapshot, updatedAt, stale } = useKpiSnapshot();
   const [growthRangeDays, setGrowthRangeDays] = useState<GrowthRangeDays>(30);
   const growthTrend = useMemo(() => buildGrowthTrend(growthRangeDays), [growthRangeDays]);
   const newCustomersTotal = growthTrend[growthTrend.length - 1]?.newCustomers ?? 0;
+  const growthStats = useMemo(() => getGrowthStats(growthRangeDays), [growthRangeDays]);
 
   const decisionColumns: Column<(typeof needsYourDecision)[number]>[] = [
     { key: "type", header: "Type", render: (r) => r.type, sortValue: (r) => r.type },
     { key: "title", header: "Title", render: (r) => <span className="font-medium">{r.title}</span> },
     { key: "requester", header: "Requester", render: (r) => r.requester },
-    { key: "impact", header: "Impact", render: (r) => <span className="text-xs text-[var(--role-text)]">{r.impact}</span> },
+    { key: "impact", header: "Impact", render: (r) => <span className="text-sm text-[var(--role-text)]">{r.impact}</span> },
     {
       key: "deadline",
       header: "Deadline",
@@ -92,122 +114,137 @@ export default function ControlRoomPage() {
   return (
     <div className="flex flex-col gap-[var(--space-lg)]">
 
-      <div className="grid grid-cols-1 gap-[var(--space-md)] screen-xl:grid-cols-[1fr_383px]">
-      <div className="grid grid-cols-1 gap-[var(--space-md)] screen-sm:grid-cols-2 screen-xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-[var(--space-md)] screen-xl:grid-cols-[minmax(0,3fr)_minmax(0,1fr)]">
+      <div className="flex min-w-0 flex-wrap gap-[var(--space-md)]">
+        <div className="min-w-0 grow basis-full screen-sm:basis-[calc((100%-var(--space-md))/2)] screen-lg:basis-[calc((100%-(var(--space-md)*2))/3)] screen-xl:basis-[calc((100%-(var(--space-md)*3))/4)]">
         <GreetingCard name="Dhruv Singla" />
+        </div>
+        <div className="min-w-0 grow basis-full screen-sm:basis-[calc((100%-var(--space-md))/2)] screen-lg:basis-[calc((100%-(var(--space-md)*2))/3)] screen-xl:basis-[calc((100%-(var(--space-md)*3))/4)]">
         <KPITile
           title="Product health"
           value={`${snapshot.productsHealthy.healthy}/${snapshot.productsHealthy.active}`}
-          note="active products reporting healthy"
+          note="reporting healthy"
           status={snapshot.productsHealthy.status}
           drillHref="/founder/products"
           updatedAt={updatedAt}
           stale={stale}
-          icon={<HealthIcon />}
+          icon={<HeartPulse size={22} />}
+          iconBg="#FCE7F3"
+          iconFg="#DB2777"
         />
+        </div>
+        <div className="min-w-0 grow basis-full screen-sm:basis-[calc((100%-var(--space-md))/2)] screen-lg:basis-[calc((100%-(var(--space-md)*2))/3)] screen-xl:basis-[calc((100%-(var(--space-md)*3))/4)]">
         <KPITile
           title="Pending approvals"
           value={snapshot.waitingForApproval.count}
-          note="need Founder sign-off"
+          note="awaiting sign-off"
           status={snapshot.waitingForApproval.status}
           drillHref="/founder/approvals"
           updatedAt={updatedAt}
           stale={stale}
-          icon={<ApprovalIcon />}
+          icon={<ClipboardCheck size={22} />}
+          iconBg="#D1FAE5"
+          iconFg="#059669"
         />
+        </div>
+        <div className="min-w-0 grow basis-full screen-sm:basis-[calc((100%-var(--space-md))/2)] screen-lg:basis-[calc((100%-(var(--space-md)*2))/3)] screen-xl:basis-[calc((100%-(var(--space-md)*3))/4)]">
         <KPITile
           title="Open incidents"
           value={snapshot.openIncidents.count}
-          note="not yet resolved or closed"
+          note="unresolved"
           status={snapshot.openIncidents.status}
           drillHref="/founder/operations"
           updatedAt={updatedAt}
           stale={stale}
-          icon={<IncidentIcon />}
+          icon={<AlertCircle size={22} />}
+          iconBg="#FEE2E2"
+          iconFg="#DC2626"
         />
+        </div>
+        <div className="min-w-0 grow basis-full screen-sm:basis-[calc((100%-var(--space-md))/2)] screen-lg:basis-[calc((100%-(var(--space-md)*2))/3)] screen-xl:basis-[calc((100%-(var(--space-md)*3))/4)]">
         <KPITile
           title="Cost trend (MoM)"
           value={`+${snapshot.platformCostTrend.pctChange}%`}
-          note="projected month-end vs last month"
+          note="vs last month"
           status={snapshot.platformCostTrend.status}
           drillHref="/founder/cost-analytics"
           updatedAt={updatedAt}
           stale={stale}
-          icon={<CostIcon />}
+          icon={<TrendingUp size={22} />}
+          iconBg="#CCFBF1"
+          iconFg="#0D9488"
           trendDirection={snapshot.platformCostTrend.status === "critical" ? "up" : snapshot.platformCostTrend.status === "healthy" ? "down" : "up"}
           trendValue={`${snapshot.platformCostTrend.pctChange}%`}
         />
+        </div>
+        <div className="min-w-0 grow basis-full screen-sm:basis-[calc((100%-var(--space-md))/2)] screen-lg:basis-[calc((100%-(var(--space-md)*2))/3)] screen-xl:basis-[calc((100%-(var(--space-md)*3))/4)]">
         <KPITile
-          title="Total workspaces"
-          value={workspaceKpis.total}
-          note={`${workspaceKpis.active} active · ${workspaceKpis.graceOrRestricted} grace/restricted`}
-          status={workspaceKpis.failedProvisioning24h > 0 ? "warning" : "healthy"}
-          drillHref="/founder/operations"
-          updatedAt={updatedAt}
-          stale={stale}
-          icon={<WorkspaceIcon />}
-        />
-        <KPITile
-          title="Active subscriptions"
-          value={subscriptionKpis.active}
-          note={`${subscriptionKpis.grace} in grace · ${subscriptionKpis.restricted} restricted`}
-          status={subscriptionKpis.restricted > 0 ? "warning" : "healthy"}
-          drillHref="/founder/operations"
-          updatedAt={updatedAt}
-          stale={stale}
-          icon={<SubscriptionIcon />}
-        />
-        <KPITile
-          title="Average adoption"
-          value={`${productKpis.averageAdoptionPct}%`}
-          note={`${productKpis.workspacesNearLimit} workspaces near plan limit`}
-          status={productKpis.averageAdoptionPct >= 60 ? "healthy" : "warning"}
+          title="Multi-product adoption"
+          value={`${workspaceKpis.multiProductAdoptionPct}%`}
+          note="workspaces on 2+ products"
+          status={workspaceKpis.multiProductAdoptionPct >= 50 ? "healthy" : "warning"}
           drillHref="/founder/products"
           updatedAt={updatedAt}
           stale={stale}
-          icon={<AdoptionIcon />}
+          icon={<Layers size={22} />}
+          iconBg="#DBEAFE"
+          iconFg="#2563EB"
         />
+        </div>
+        <div className="min-w-0 grow basis-full screen-sm:basis-[calc((100%-var(--space-md))/2)] screen-lg:basis-[calc((100%-(var(--space-md)*2))/3)] screen-xl:basis-[calc((100%-(var(--space-md)*3))/4)]">
         <KPITile
           title="Findings overdue"
           value={complianceKpis.findingsOverdue}
-          note={`${complianceKpis.controlsFailedException} controls failed/exception`}
           status={complianceKpis.findingsOverdue > 0 ? "critical" : "healthy"}
           drillHref="/founder/compliance-risk"
           updatedAt={updatedAt}
           stale={stale}
-          icon={<ComplianceIcon />}
+          icon={<ShieldCheck size={22} />}
+          iconBg="#CFFAFE"
+          iconFg="#0891B2"
+          secondary={[
+            { label: "Failed/Exception", value: complianceKpis.controlsFailedException, color: "var(--status-warning-fg)" },
+            { label: "Evidence due", value: complianceKpis.evidenceDueThisMonth, color: "var(--status-info-fg)" },
+          ]}
         />
+        </div>
+        <div className="min-w-0 grow basis-full screen-sm:basis-[calc((100%-var(--space-md))/2)] screen-lg:basis-[calc((100%-(var(--space-md)*2))/3)] screen-xl:basis-[calc((100%-(var(--space-md)*3))/4)]">
         <KPITile
-          title="Platform cost (MTD)"
-          value={`₹${(costKpis.mtdTotal / 100000).toFixed(1)}L`}
-          note={`+${costKpis.pctChangeVsLastMonth}% vs last month`}
-          status={costKpis.pctChangeVsLastMonth > 15 ? "warning" : "healthy"}
-          drillHref="/founder/cost-analytics"
+          title="Critical exceptions"
+          value={workspaceKpis.criticalExceptions}
+          note="provisioning drift & failures"
+          status={workspaceKpis.criticalExceptions > 0 ? "critical" : "healthy"}
+          drillHref="/founder/operations"
           updatedAt={updatedAt}
           stale={stale}
-          icon={<CostIcon />}
+          icon={<AlertOctagon size={22} />}
+          iconBg="#FEE2E2"
+          iconFg="#DC2626"
         />
+        </div>
       </div>
         <CalendarCard />
       </div>
 
-      <div className="grid grid-cols-1 items-start gap-[var(--space-md)] screen-lg:grid-cols-2">
-        <Card title="Controls effective by framework" description="Effective controls ÷ total controls, per compliance framework">
+      <div className="grid grid-cols-1 items-stretch gap-[var(--space-md)] screen-lg:grid-cols-2">
+        <Card title="Controls effective by framework" description="Effective controls per framework">
           <div className="flex flex-col items-center gap-[var(--space-md)] screen-sm:flex-row screen-sm:items-center">
             <DonutChart
-              data={controlsEffectiveByFramework.map((f) => ({ label: f.label, value: f.effective, color: f.color }))}
+              data={controlsEffectiveByFramework.map((f, i) => ({ label: f.label, value: f.effective, color: CONTROL_RING_COLORS[i] ?? f.color }))}
               size={132}
               centerLabel="controls"
               legend={false}
+              variant="ring"
             />
             <ul className="flex w-full flex-col gap-2.5">
-              {controlsEffectiveByFramework.map((f) => {
+              {controlsEffectiveByFramework.map((f, i) => {
                 const status = f.value >= 90 ? "healthy" : f.value >= 75 ? "warning" : "critical";
                 const bandWord = f.value >= 90 ? "Effective" : f.value >= 75 ? "Needs attention" : "At risk";
+                const ringColor = CONTROL_RING_COLORS[i] ?? f.color;
                 return (
                   <li key={f.label} className="flex items-center justify-between gap-2 text-sm">
                     <span className="flex items-center gap-2 text-[var(--role-text)]">
-                      <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: f.color }} />
+                      <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: ringColor }} />
                       {f.label}
                       <span className="text-xs text-[var(--text-muted)]">({f.effective}/{f.total})</span>
                     </span>
@@ -242,7 +279,7 @@ export default function ControlRoomPage() {
 
         <Card
           title="Growth"
-          description="New customers vs. trial-to-paid conversions, cumulative"
+          description="New customers vs. trial-to-paid, cumulative"
           action={
             <div className="flex items-center gap-0.5 rounded-full bg-[var(--surface-muted)] p-0.5">
               {GROWTH_RANGE_OPTIONS.map((opt) => (
@@ -272,12 +309,12 @@ export default function ControlRoomPage() {
           />
           <dl className="mt-[var(--space-sm)] grid grid-cols-2 gap-[var(--space-sm)] border-t border-[var(--divider)] pt-[var(--space-sm)] screen-sm:grid-cols-4">
             <div>
-              <dt className="text-xs text-[var(--role-text)]">New customers ({growthRangeDays}d)</dt>
+              <dt className="text-xs text-[var(--role-text)]">New customers</dt>
               <dd className="text-lg font-semibold text-[var(--text-secondary)]">{newCustomersTotal}</dd>
             </div>
-            {growthLast30Days.map((g) => (
+            {growthStats.map((g) => (
               <div key={g.label}>
-                <dt className="text-xs text-[var(--role-text)]">{g.label} (30d)</dt>
+                <dt className="text-xs text-[var(--role-text)]">{g.label}</dt>
                 <dd className="text-lg font-semibold text-[var(--text-secondary)]">{g.value}</dd>
               </div>
             ))}
@@ -285,25 +322,27 @@ export default function ControlRoomPage() {
         </Card>
       </div>
 
-      <Card title="Needs Your Decision" action={<DrillLink href="/founder/approvals">Open queue</DrillLink>}>
+      <Card title="Needs Your Decision">
         <DataTable
           columns={decisionColumns}
           rows={needsYourDecision}
           getRowKey={(r) => r.id}
           emptyTitle="Nothing waiting on you"
           emptyDescription="Approvals routed to the Founder will show up here."
+          onRowClick={() => router.push("/founder/approvals")}
+          textClassName="text-sm"
         />
       </Card>
 
-      <Card title="Nine Areas at a Glance" description="One tile per area — colour, cause and a link to the full section">
-        <div className="grid grid-cols-1 gap-[var(--space-sm)] screen-sm:grid-cols-2 screen-lg:grid-cols-3">
+      <Card title="Nine Areas at a Glance" description="Status across every area">
+        <div className="flex flex-wrap gap-[var(--space-sm)]">
           {areasAtGlance.map((area) => {
             const tone = AREA_TONE[area.status];
             return (
               <DrillLink
                 key={area.id}
                 href={area.href}
-                className="card-interactive tap-pop group relative flex items-center gap-2.5 rounded-[var(--card-radius)] border border-[var(--divider)] bg-white p-[var(--card-pad)]"
+                className="card-interactive tap-pop group relative flex min-w-0 grow basis-full items-center gap-2.5 rounded-[var(--card-radius)] border border-[var(--divider)] bg-white p-[var(--card-pad)] screen-sm:basis-[calc((100%-var(--space-sm))/2)] screen-lg:basis-[calc((100%-(var(--space-sm)*2))/3)]"
                 style={{ boxShadow: "var(--card-shadow)" }}
               >
                 <span
@@ -324,9 +363,7 @@ export default function ControlRoomPage() {
                   className="shrink-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
                   style={{ color: tone.fg }}
                 >
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M3 7H11M11 7L7.5 3.5M11 7L7.5 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <ArrowRight size={14} />
                 </span>
               </DrillLink>
             );
@@ -355,104 +392,27 @@ const AREA_STATUS_LABEL: Record<StatusLevel, string> = {
 };
 
 function AreaIcon({ id }: { id: string }) {
-  const props = { width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
+  const props = { size: 18 };
   switch (id) {
     case "platform":
-      return <svg {...props}><rect x="3" y="4" width="18" height="6" rx="1.5" /><rect x="3" y="14" width="18" height="6" rx="1.5" /><circle cx="7" cy="7" r="0.6" fill="currentColor" /><circle cx="7" cy="17" r="0.6" fill="currentColor" /></svg>;
+      return <Server {...props} />;
     case "customers":
-      return <svg {...props}><circle cx="9" cy="8" r="3" /><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" /><circle cx="17" cy="9" r="2.4" /><path d="M15.5 14.2c2.5.4 4.5 2.5 4.5 5.3" /></svg>;
+      return <Users {...props} />;
     case "commercial":
-      return <svg {...props}><rect x="3" y="7" width="18" height="13" rx="1.5" /><path d="M8 7V5.5C8 4.7 8.7 4 9.5 4h5c.8 0 1.5.7 1.5 1.5V7" /></svg>;
+      return <CreditCard {...props} />;
     case "operations":
-      return <svg {...props}><circle cx="12" cy="12" r="3" /><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" /></svg>;
+      return <Activity {...props} />;
     case "security":
-      return <svg {...props}><path d="M12 3l7 3v5.5c0 4.2-3 7.6-7 8.5-4-.9-7-4.3-7-8.5V6l7-3Z" /><path d="M9 12l2 2 4-4" /></svg>;
+      return <Shield {...props} />;
     case "compliance":
-      return <svg {...props}><rect x="5" y="3.5" width="14" height="17" rx="1.5" /><path d="M8 3.5V2.5C8 2 8.4 1.5 9 1.5h6c.6 0 1 .5 1 1v1" /><path d="M8.5 11L11 13.5L15.5 9" /></svg>;
+      return <ShieldCheck {...props} />;
     case "releases":
-      return <svg {...props}><path d="M12 2c3 2 5 6 5 10 0 2-1 4-2 5l-1 3-2-2-2 2-1-3c-1-1-2-3-2-5 0-4 2-8 5-10Z" /><circle cx="12" cy="10" r="1.6" /></svg>;
+      return <Rocket {...props} />;
     case "cost":
-      return <svg {...props}><rect x="3" y="6" width="18" height="13" rx="2" /><path d="M3 10h18" /><circle cx="7" cy="14.5" r="1" fill="currentColor" /></svg>;
+      return <Wallet {...props} />;
     case "dependencies":
-      return <svg {...props}><circle cx="7" cy="7" r="3" /><circle cx="17" cy="17" r="3" /><path d="M9.1 9.1L14.9 14.9" /></svg>;
+      return <Share2 {...props} />;
     default:
-      return <svg {...props}><circle cx="12" cy="12" r="9" /></svg>;
+      return <Circle {...props} />;
   }
-}
-
-function HealthIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M20 8.5C20 13 12 19 12 19S4 13 4 8.5C4 5.9 6.1 4 8.5 4C10 4 11.3 4.7 12 5.8C12.7 4.7 14 4 15.5 4C17.9 4 20 5.9 20 8.5Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function ApprovalIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="5" y="4" width="14" height="17" rx="2" stroke="currentColor" strokeWidth="2" />
-      <path d="M9 12L11 14L15 9.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function IncidentIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
-      <path d="M12 7.5V13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <circle cx="12" cy="16.5" r="1" fill="currentColor" />
-    </svg>
-  );
-}
-
-function CostIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M3 17L9 11L13 15L21 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M15 7H21V13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function WorkspaceIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="4" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="2" />
-      <rect x="13" y="4" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="2" />
-      <rect x="3" y="14" width="8" height="6" rx="1.5" stroke="currentColor" strokeWidth="2" />
-      <rect x="13" y="14" width="8" height="6" rx="1.5" stroke="currentColor" strokeWidth="2" />
-    </svg>
-  );
-}
-
-function SubscriptionIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="2" />
-      <path d="M3 10H21" stroke="currentColor" strokeWidth="2" />
-      <path d="M7 14.5H11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function AdoptionIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M3 20V4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path d="M3 20H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path d="M7 16V12M12 16V8M17 16V14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function ComplianceIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 3l7 3v5.5c0 4.2-3 7.6-7 8.5-4-.9-7-4.3-7-8.5V6l7-3Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-      <path d="M12 8V12.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <circle cx="12" cy="15.5" r="1" fill="currentColor" />
-    </svg>
-  );
 }
