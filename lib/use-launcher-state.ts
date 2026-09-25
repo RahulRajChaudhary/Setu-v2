@@ -49,6 +49,13 @@ export function useLauncherState() {
     });
   }, []);
 
+  /** Reorders/moves favorites in one shot — used by drag-and-drop (reorder within
+   * favorites, drop-to-add from "All products", drop-to-remove onto "All products"). */
+  const setFavoritesOrder = useCallback((next: string[]) => {
+    setFavorites(next);
+    window.localStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
+  }, []);
+
   const recordUsed = useCallback((id: string) => {
     setLastUsed((current) => {
       const next = { ...current, [id]: Date.now() };
@@ -57,5 +64,5 @@ export function useLauncherState() {
     });
   }, []);
 
-  return { favorites, lastUsed, toggleFavorite, recordUsed };
+  return { favorites, lastUsed, toggleFavorite, setFavoritesOrder, recordUsed };
 }
