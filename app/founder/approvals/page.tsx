@@ -54,7 +54,7 @@ export default function ApprovalsPage() {
                   className={`tap-pop flex w-full flex-col gap-1.5 rounded-[var(--card-radius)] border p-3 text-left transition-all ${
                     selectedId === item.id
                       ? "border-[var(--icon-btn-navy)] bg-[var(--search-bg)]"
-                      : "card-interactive border-[var(--card-border)] bg-white hover:bg-[var(--search-bg)]"
+                      : "card-interactive border-[var(--card-border)] bg-[var(--surface)] hover:bg-[var(--search-bg)]"
                   }`}
                   style={{ boxShadow: "var(--card-shadow)" }}
                 >
@@ -70,7 +70,7 @@ export default function ApprovalsPage() {
           </ul>
 
           {selected && (
-            <div className="flex flex-col gap-[var(--space-md)] rounded-[var(--card-radius)] border border-[var(--card-border)] bg-white p-5" style={{ boxShadow: "var(--card-shadow)" }}>
+            <div className="flex flex-col gap-[var(--space-md)] rounded-[var(--card-radius)] border border-[var(--card-border)] bg-[var(--surface)] p-5" style={{ boxShadow: "var(--card-shadow)" }}>
               <div className="flex items-center justify-between gap-2">
                 <StatusBadge status={SEVERITY_STATUS[selected.severity]} label={selected.type} />
                 <span className="text-xs text-[var(--role-text)]">{selected.reference}</span>
@@ -140,7 +140,7 @@ export default function ApprovalsPage() {
       )}
 
       {history.length > 0 && (
-        <div className="rounded-xl border border-[var(--card-border)] bg-white p-4">
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--surface)] p-4">
           <p className="mb-2 text-xs font-semibold text-[var(--role-text)]">Decisions this session</p>
           <ul className="flex flex-col gap-1 text-xs text-[var(--role-text)]">
             {history.map((h, i) => (
