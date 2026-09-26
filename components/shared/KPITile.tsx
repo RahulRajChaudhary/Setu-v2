@@ -131,7 +131,7 @@ export default function KPITile({
       <div className="flex flex-wrap items-end gap-x-2 gap-y-1">
         <span
           className="font-bold leading-none tracking-tight tabular-nums"
-          style={{ color: VALUE_COLOR[status], fontSize: "clamp(1.375rem, 9cqi, 2rem)" }}
+          style={{ color: VALUE_COLOR[status], fontSize: "clamp(1.875rem, 15cqi, 3rem)" }}
         >
           {value}
         </span>
