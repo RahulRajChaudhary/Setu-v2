@@ -38,17 +38,17 @@ export default function GreetingCard({ name }: { name: string }) {
   return (
     <div
       className="
-        flex h-full min-h-[7.5rem] w-full flex-col justify-between gap-2 rounded-[1rem]
-        border border-white/10 bg-[var(--accent-solid)] p-[calc(var(--card-pad)+0.25rem)]
+        flex h-full min-h-[5.5rem] w-full flex-col justify-between gap-1.5 rounded-[1rem]
+        border border-white/10 bg-[var(--accent-solid)] p-[clamp(0.625rem,3.5cqi,0.875rem)]
       "
-      style={{ boxShadow: "var(--card-shadow)" }}
+      style={{ boxShadow: "var(--card-shadow)", containerType: "inline-size" }}
     >
-      <p className="flex items-center gap-1.5 text-[length:var(--font-body)] text-white/70">
+      <p className="flex items-center gap-1.5 text-[clamp(0.8125rem,4cqi,0.9375rem)] text-white/70">
         <GreetingIcon timeOfDay={timeOfDay} />
         {GREETING_TEXT[timeOfDay]}
       </p>
-      <p className="text-2xl font-semibold leading-tight tracking-tight text-white">{name}</p>
-      <p className="text-sm text-white/60">{WORKSPACE_LINE[timeOfDay]}</p>
+      <p className="text-[clamp(1.25rem,7cqi,1.625rem)] font-semibold leading-tight tracking-tight text-white">{name}</p>
+      <p className="text-[clamp(0.75rem,4cqi,0.875rem)] text-white/60">{WORKSPACE_LINE[timeOfDay]}</p>
     </div>
   );
 }

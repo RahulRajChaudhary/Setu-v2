@@ -85,6 +85,13 @@ html {
   --status-neutral-fg: #4B5563;
   --status-neutral-bg: #F3F4F6;
 
+  /* Cleaner, brighter tones for big KPI value numbers on the card surface —
+     kept separate from the darker --status-*-fg badge text (which needs the
+     extra depth to stay legible on its pale badge background). */
+  --kpi-good: #15A34A;
+  --kpi-warn: #D97706;
+  --kpi-bad: #DC2626;
+
   --chart-1: #2563EB;
   --chart-2: #059669;
   --chart-3: #D97706;
@@ -160,6 +167,10 @@ html {
   --status-info-bg: #1E2A55;
   --status-neutral-fg: #A7B0BD;
   --status-neutral-bg: #1C232E;
+
+  --kpi-good: #4ADE80;
+  --kpi-warn: #FBBF24;
+  --kpi-bad: #FB7185;
 
   --chart-1: #60A5FA;
   --chart-2: #34D399;

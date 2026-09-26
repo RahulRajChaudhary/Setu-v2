@@ -36,7 +36,7 @@ export default function CalendarCard() {
 
   return (
     <div
-      className="flex h-full w-full min-w-0 flex-col gap-[clamp(0.5rem,3cqi,0.875rem)] rounded-[1.25rem] border border-[var(--divider)] bg-[var(--surface)] p-[clamp(0.75rem,4cqi,1.25rem)] screen-xl:max-w-[32rem]"
+      className="flex h-full w-full min-w-0 flex-col gap-[clamp(0.5rem,3cqi,0.875rem)] rounded-[1.25rem] border border-[var(--divider)] bg-[var(--surface)] p-[clamp(0.75rem,4cqi,1.25rem)]"
       style={{ boxShadow: "var(--card-shadow)", containerType: "inline-size" }}
     >
       <div className="flex shrink-0 items-center justify-between gap-2">
@@ -77,7 +77,7 @@ export default function CalendarCard() {
 
       <div className="grid shrink-0 grid-cols-7 text-center">
         {WEEKDAYS.map((w) => (
-          <span key={w} className="text-[clamp(0.5625rem,2.6cqi,0.6875rem)] font-semibold uppercase tracking-wide text-[var(--text-muted)]/70">
+          <span key={w} className="text-[clamp(0.625rem,3.2cqi,0.8125rem)] font-semibold uppercase tracking-wide text-[var(--text-muted)]/70">
             {w}
           </span>
         ))}
@@ -90,7 +90,7 @@ export default function CalendarCard() {
           return (
             <div key={i} className="flex items-center justify-center">
               <span
-                className={`tap-pop flex aspect-square items-center justify-center rounded-full text-[clamp(0.6875rem,3.4cqi,0.875rem)] transition-colors w-[clamp(1.5rem,11cqi,2.25rem)] ${
+                className={`tap-pop flex aspect-square items-center justify-center rounded-full font-medium text-[clamp(0.8125rem,5cqi,1.0625rem)] transition-colors w-[clamp(1.625rem,15cqi,2.5rem)] ${
                   isToday
                     ? "bg-[var(--accent-solid)] font-semibold text-white shadow-sm"
                     : cell.inMonth
