@@ -20,21 +20,26 @@ function sortApps(apps: LauncherApp[], mode: SortMode, lastUsed: Record<string, 
   return copy;
 }
 
-function AppIcon({ app, size }: { app: LauncherApp; size: number }) {
+function AppIcon({ app, size, bg = "var(--surface)" }: { app: LauncherApp; size: number; bg?: string }) {
   const [errored, setErrored] = useState(false);
 
   if (app.logoUrl && !errored) {
     return (
-      <img
-        src={app.logoUrl}
-        alt={app.name}
-        width={size}
-        height={size}
-        style={{ width: size, height: size }}
-        className="pointer-events-none shrink-0 rounded-full object-cover"
-        draggable={false}
-        onError={() => setErrored(true)}
-      />
+      <span
+        className="pointer-events-none block shrink-0"
+        style={{ width: size, height: size, backgroundColor: bg }}
+      >
+        <img
+          src={app.logoUrl}
+          alt={app.name}
+          width={size}
+          height={size}
+          style={{ width: size, height: size, mixBlendMode: "multiply" }}
+          className="block object-cover"
+          draggable={false}
+          onError={() => setErrored(true)}
+        />
+      </span>
     );
   }
 
@@ -246,7 +251,7 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
                       } ${dragId === app.id ? "opacity-30" : ""}`}
                     >
                       <span className="relative">
-                        <AppIcon app={app} size={58} />
+                        <AppIcon app={app} size={58} bg="var(--search-bg)" />
                         {editMode && (
                           <span className="pointer-events-none absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--status-critical-fg)] text-[0.5rem] text-white">
                             &minus;
