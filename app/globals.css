@@ -54,6 +54,10 @@ html {
   --kbd-border: #E5E7EB;
   --icon-btn-bg: #F3F4F6;
   --icon-btn-navy: #0B1B3B;
+  /* Solid accent that white text sits on (buttons, active pills, today marker,
+     greeting card). Kept separate from --icon-btn-navy, which is also used as a
+     foreground accent color and goes light in dark mode. */
+  --accent-solid: #0B1B3B;
   --divider: #E5E7EB;
   --surface: #FFFFFF;
   --sidebar-active: #0B1B3B;
@@ -138,6 +142,7 @@ html {
   --kbd-border: #232B36;
   --icon-btn-bg: #1C232E;
   --icon-btn-navy: #8FB4FF;
+  --accent-solid: #2E4E86;
   --divider: #232B36;
 
   --shell-bg: #0B0F14;

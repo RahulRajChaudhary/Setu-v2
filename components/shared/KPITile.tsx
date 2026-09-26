@@ -12,36 +12,35 @@ const DOT: Record<StatusLevel, string> = {
   neutral: "bg-[var(--status-neutral-fg)]",
 };
 
+// One consistent value-color system across every KPI: the number itself carries
+// the meaning — green = good, orange = needs attention / in-between, red = alert.
+// Info and neutral are treated as non-semantic, so they use the plain heading color
+// (no blue/purple competing with the genuinely meaningful colors). Titles and
+// supporting text stay muted and identical across all cards.
 const VALUE_COLOR: Record<StatusLevel, string> = {
   healthy: "var(--status-healthy-fg)",
   warning: "var(--status-warning-fg)",
   critical: "var(--status-critical-fg)",
-  info: "var(--status-info-fg)",
+  info: "var(--text-heading)",
   neutral: "var(--text-heading)",
 };
 
-const TREND_COLOR: Record<TrendDirection, string> = {
-  up: "var(--trend-up-fg)",
-  down: "var(--trend-down-fg)",
-};
-
-// Top accent bar color per status — sweeps in on hover so a card silently
-// signals its severity even before you read the number.
-const ACCENT_COLOR: Record<StatusLevel, string> = {
-  healthy: "var(--status-healthy-fg)",
-  warning: "var(--status-warning-fg)",
-  critical: "var(--status-critical-fg)",
-  info: "var(--status-info-fg)",
-  neutral: "var(--status-neutral-fg)",
-};
+// The hover accent bar uses the same color as the value/status, so the sweep that
+// animates in on hover matches the data inside the card.
+const ACCENT_COLOR = VALUE_COLOR;
 
 export type TrendDirection = "up" | "down";
 
 function IconChip({ icon, bg, fg }: { icon: ReactNode; bg: string; fg: string }) {
   return (
     <span
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg [&>svg]:h-[1.125rem] [&>svg]:w-[1.125rem]"
-      style={{ background: bg, color: fg }}
+      className="flex shrink-0 items-center justify-center rounded-lg [&>svg]:h-[55%] [&>svg]:w-[55%]"
+      style={{
+        background: bg,
+        color: fg,
+        width: "clamp(1.875rem, 12cqi, 2.375rem)",
+        height: "clamp(1.875rem, 12cqi, 2.375rem)",
+      }}
     >
       {icon}
     </span>
@@ -95,11 +94,12 @@ export default function KPITile({
   iconBg?: string;
   iconFg?: string;
 }) {
-  const className = `card-interactive tap-pop group relative flex h-full min-w-0 flex-col justify-between gap-2 overflow-hidden rounded-[var(--card-radius)] border border-[var(--card-border)] bg-[var(--surface)] p-[calc(var(--card-pad)+0.25rem)] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+  const className = `card-interactive tap-pop group relative flex h-full min-w-0 flex-col gap-[clamp(0.5rem,4cqi,0.875rem)] overflow-hidden rounded-[var(--card-radius)] border border-[var(--card-border)] bg-[var(--surface)] p-[clamp(0.625rem,5cqi,1rem)] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
     drillHref ? "cursor-pointer" : ""
   }`;
   const style = {
     boxShadow: "var(--card-shadow)",
+    containerType: "inline-size",
     "--tw-ring-color": ACCENT_COLOR[status],
   } as React.CSSProperties;
 
@@ -111,48 +111,57 @@ export default function KPITile({
         style={{ background: ACCENT_COLOR[status] }}
       />
 
-      <div className="flex items-start justify-between gap-2.5">
-        <div className="min-w-0 flex-1 flex items-center gap-2.5">
-          {icon ? (
-            <IconChip icon={icon} bg={iconBg ?? "var(--icon-chip-bg)"} fg={iconFg ?? "var(--icon-chip-fg)"} />
-          ) : (
-            <span className={`h-2 w-2 shrink-0 rounded-full ${DOT[status]}`} />
-          )}
-          <p className="truncate text-[0.9375rem] font-semibold leading-tight text-[var(--text-muted)]">{title}</p>
-        </div>
-        {stale ? (
-          <StaleIndicator lastGoodAt={updatedAt} />
+      {/* Row 1 — title first (fills the row, wraps to max 2 lines), icon aligned right */}
+      <div className="flex items-start justify-between gap-[clamp(0.5rem,3cqi,0.75rem)]">
+        <p
+          title={title}
+          className="min-w-0 flex-1 font-semibold leading-tight text-[var(--text-muted)] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] overflow-hidden"
+          style={{ fontSize: "clamp(0.8125rem, 4.5cqi, 0.9375rem)" }}
+        >
+          {title}
+        </p>
+        {icon ? (
+          <IconChip icon={icon} bg={iconBg ?? "var(--icon-chip-bg)"} fg={iconFg ?? "var(--icon-chip-fg)"} />
         ) : (
-          <span className="shrink-0 whitespace-nowrap rounded-full bg-[var(--search-bg)] px-2 py-0.5 text-[0.6875rem] font-medium leading-none text-[var(--text-muted)]">
-            {formatRelative(updatedAt)}
-          </span>
+          <span className={`mt-0.5 h-2 w-2 shrink-0 rounded-full ${DOT[status]}`} />
         )}
       </div>
 
+      {/* Row 2 — value (semantic color) + optional trend chip, then supporting note */}
       <div className="flex flex-col gap-1.5">
         <div className="flex items-end justify-between gap-2">
           <span
-            className="text-[length:var(--font-value-lg)] font-bold leading-none tracking-tight tabular-nums"
-            style={{ color: trendDirection ? TREND_COLOR[trendDirection] : VALUE_COLOR[status] }}
+            className="font-bold leading-none tracking-tight tabular-nums"
+            style={{ color: VALUE_COLOR[status], fontSize: "clamp(1.5rem, 11cqi, 2.25rem)" }}
           >
             {value}
           </span>
           {trend ?? (trendDirection && trendValue ? <TrendChip direction={trendDirection} value={trendValue} /> : null)}
         </div>
-        {note && <p className="truncate text-sm text-[var(--text-muted)]">{note}</p>}
+        {note && <p className="truncate text-[clamp(0.75rem,4cqi,0.875rem)] text-[var(--text-muted)]">{note}</p>}
+        {secondary && secondary.length > 0 && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            {secondary.map((s) => (
+              <span key={s.label} className="flex items-center gap-1.5 text-[clamp(0.75rem,4cqi,0.875rem)] text-[var(--text-muted)]">
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: s.color }} />
+                <span className="font-semibold" style={{ color: s.color }}>{s.value}</span>
+                {s.label}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
-      {secondary && secondary.length > 0 && (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          {secondary.map((s) => (
-            <span key={s.label} className="flex items-center gap-1.5 text-sm text-[var(--text-muted)]">
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: s.color }} />
-              <span className="font-semibold" style={{ color: s.color }}>{s.value}</span>
-              {s.label}
-            </span>
-          ))}
-        </div>
-      )}
+      {/* Row 3 — timestamp / stale indicator pinned bottom-right */}
+      <div className="mt-auto flex justify-end pt-0.5">
+        {stale ? (
+          <StaleIndicator lastGoodAt={updatedAt} />
+        ) : (
+          <span className="whitespace-nowrap text-[clamp(0.625rem,3.2cqi,0.6875rem)] font-medium leading-none text-[var(--text-muted)]">
+            {formatRelative(updatedAt)}
+          </span>
+        )}
+      </div>
     </>
   );
 

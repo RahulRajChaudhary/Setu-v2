@@ -212,7 +212,7 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
           onClick={() => setEditMode((v) => !v)}
           className={`tap-pop flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
             editMode
-              ? "bg-[var(--icon-btn-navy)] text-white"
+              ? "bg-[var(--accent-solid)] text-white"
               : "text-[var(--text-muted)] hover:bg-[var(--search-bg)]"
           }`}
         >
@@ -280,7 +280,7 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
                     onClick={() => setSortMode("alpha")}
                     className={`px-2 py-0.5 font-medium transition-colors ${
                       sortMode === "alpha"
-                        ? "bg-[var(--icon-btn-navy)] text-white"
+                        ? "bg-[var(--accent-solid)] text-white"
                         : "text-[var(--text-muted)] hover:bg-[var(--search-bg)]"
                     }`}
                   >
@@ -291,7 +291,7 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
                     onClick={() => setSortMode("recent")}
                     className={`px-2 py-0.5 font-medium transition-colors ${
                       sortMode === "recent"
-                        ? "bg-[var(--icon-btn-navy)] text-white"
+                        ? "bg-[var(--accent-solid)] text-white"
                         : "text-[var(--text-muted)] hover:bg-[var(--search-bg)]"
                     }`}
                   >

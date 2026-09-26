@@ -69,7 +69,7 @@ function ToggleButton({
       onClick={onClick}
       className={`tap-pop flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
         active
-          ? "bg-[var(--icon-btn-navy)] text-white"
+          ? "bg-[var(--accent-solid)] text-white"
           : "bg-[var(--surface-muted)] text-[var(--text-muted)] hover:bg-[var(--search-bg)]"
       }`}
     >

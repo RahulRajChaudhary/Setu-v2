@@ -39,7 +39,7 @@ export default function GreetingCard({ name }: { name: string }) {
     <div
       className="
         flex h-full min-h-[7.5rem] w-full flex-col justify-between gap-2 rounded-[1rem]
-        border border-white/10 bg-[var(--icon-btn-navy)] p-[calc(var(--card-pad)+0.25rem)]
+        border border-white/10 bg-[var(--accent-solid)] p-[calc(var(--card-pad)+0.25rem)]
       "
       style={{ boxShadow: "var(--card-shadow)" }}
     >

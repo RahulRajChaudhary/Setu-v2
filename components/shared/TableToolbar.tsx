@@ -49,7 +49,7 @@ export default function TableToolbar({
                 aria-pressed={isActive}
                 className={`tap-pop rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                   isActive
-                    ? "bg-[var(--icon-btn-navy)] text-white"
+                    ? "bg-[var(--accent-solid)] text-white"
                     : "bg-[var(--surface-muted)] text-[var(--text-muted)] hover:bg-[var(--search-bg)]"
                 }`}
               >
