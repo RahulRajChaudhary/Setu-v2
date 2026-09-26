@@ -122,8 +122,10 @@ export default function KPITile({
         )}
       </div>
 
-      {/* Row 2 — value (semantic color) with the trend chip tucked right beside it */}
-      <div className="flex flex-wrap items-end gap-x-2 gap-y-1">
+      {/* Row 2 — value (semantic color) with the trend chip tucked right beside it.
+          flex-1 + items-center vertically centers the value in the space between
+          the title and the bottom row (top-to-bottom), while staying left-aligned. */}
+      <div className="flex flex-1 flex-wrap items-center gap-x-2 gap-y-1">
         <span
           className="font-bold leading-none tracking-tight tabular-nums"
           style={{ color: VALUE_COLOR[status], fontSize: "clamp(1.625rem, 12cqi, 2.5rem)" }}
