@@ -53,7 +53,7 @@ export default function AIConversationPanel({
               type="button"
               title="Chat history"
               onClick={onToggleMobileHistory}
-              className="tap-pop flex h-8 w-8 items-center justify-center rounded-full text-[var(--text-muted)] transition-colors hover:bg-black/5 screen-sm:hidden"
+              className="tap-pop flex h-8 w-8 items-center justify-center rounded-full text-[var(--text-muted)] transition-colors hover:bg-[var(--search-bg)] screen-sm:hidden"
             >
               <PanelLeft size={16} />
             </button>
@@ -64,17 +64,17 @@ export default function AIConversationPanel({
             type="button"
             title={isWorkspace ? "Collapse" : "Expand"}
             onClick={onPrimaryAction}
-            className="tap-pop flex h-8 w-8 items-center justify-center rounded-full text-[var(--text-muted)] transition-colors hover:bg-black/5"
+            className="tap-pop flex h-8 w-8 items-center justify-center rounded-full text-[var(--text-muted)] transition-colors hover:bg-[var(--search-bg)]"
           >
             {isWorkspace ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
           </button>
-          <span className="h-4 w-px bg-black/10" />
+          <span className="h-4 w-px bg-[var(--divider)]" />
           <button
             type="button"
             title="Close"
             onClick={onClose}
             aria-label="Close assistant"
-            className="tap-pop flex h-8 w-8 items-center justify-center rounded-full text-[var(--text-muted)] transition-colors hover:bg-black/5"
+            className="tap-pop flex h-8 w-8 items-center justify-center rounded-full text-[var(--text-muted)] transition-colors hover:bg-[var(--search-bg)]"
           >
             <X size={16} />
           </button>
@@ -103,7 +103,7 @@ export default function AIConversationPanel({
                     key={s}
                     type="button"
                     onClick={() => handleSend(s)}
-                    className="tap-pop card-interactive flex w-full items-center justify-between gap-2 rounded-2xl bg-white px-5 py-4 text-left text-sm text-[var(--text-heading)] shadow-[0_1px_0.25rem_rgba(15,23,42,0.08)]"
+                    className="tap-pop card-interactive flex w-full items-center justify-between gap-2 rounded-2xl bg-[var(--surface)] px-5 py-4 text-left text-sm text-[var(--text-heading)] shadow-[0_1px_0.25rem_rgba(15,23,42,0.08)]"
                   >
                     <span className="truncate">{s}</span>
                     <ChevronRight size={14} className="shrink-0 text-[var(--text-muted)]" />
@@ -119,7 +119,7 @@ export default function AIConversationPanel({
                     className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-[0_1px_0.25rem_rgba(15,23,42,0.06)] ${
                       m.role === "user"
                         ? "bg-gradient-to-br from-[#7C3AED] to-[#2563EB] text-white"
-                        : "bg-white text-[var(--text-heading)]"
+                        : "bg-[var(--surface)] text-[var(--text-heading)]"
                     }`}
                   >
                     {m.content}
@@ -134,7 +134,7 @@ export default function AIConversationPanel({
       {/* Input bar */}
       <div className="flex justify-center p-4">
         <div
-          className={`flex items-center gap-2 rounded-full border border-[#C7CAFF] bg-white/90 py-2 pl-4 pr-2 shadow-[0_2px_0.625rem_rgba(99,102,241,0.15)] ${widthClass}`}
+          className={`flex items-center gap-2 rounded-full border border-[var(--assistant-border)] bg-[var(--surface)]/90 py-2 pl-4 pr-2 shadow-[0_2px_0.625rem_rgba(99,102,241,0.15)] ${widthClass}`}
         >
           <button type="button" title="Voice input" className="tap-pop flex h-6 w-6 shrink-0 items-center justify-center text-[var(--text-muted)] transition-transform hover:scale-110">
             <Mic size={16} />

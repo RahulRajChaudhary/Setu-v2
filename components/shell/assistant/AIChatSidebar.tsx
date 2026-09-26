@@ -36,7 +36,7 @@ export default function AIChatSidebar({
             type="button"
             onClick={onNewChat}
             title="New chat"
-            className="tap-pop flex h-8 min-w-0 items-center gap-1.5 rounded-full border border-[#C7CAFF] bg-white px-3.5 text-sm font-medium text-[var(--text-heading)] shadow-[0_1px_0.25rem_rgba(15,23,42,0.06)] transition-colors hover:bg-[#F1F3FF]"
+            className="tap-pop flex h-8 min-w-0 items-center gap-1.5 rounded-full border border-[var(--assistant-border)] bg-[var(--surface)] px-3.5 text-sm font-medium text-[var(--text-heading)] shadow-[0_1px_0.25rem_rgba(15,23,42,0.06)] transition-colors hover:bg-[var(--assistant-hover)]"
           >
             <Plus size={16} className="shrink-0" />
             <span className="truncate">New chat</span>
@@ -46,7 +46,7 @@ export default function AIChatSidebar({
           type="button"
           title={collapsed ? "Expand chat history" : "Collapse chat history"}
           onClick={onToggleCollapse}
-          className="tap-pop flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--text-muted)] transition-colors hover:bg-black/5"
+          className="tap-pop flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--text-muted)] transition-colors hover:bg-[var(--search-bg)]"
         >
           {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
         </button>
@@ -70,8 +70,8 @@ export default function AIChatSidebar({
                       onClick={() => onSelect(c.id)}
                       className={`tap-pop flex items-center gap-2 rounded-lg px-2 py-2 text-left text-sm transition-colors ${
                         isActive
-                          ? "bg-white font-medium text-[var(--text-heading)] shadow-[0_1px_0.25rem_rgba(15,23,42,0.06)]"
-                          : "text-[var(--text-secondary)] hover:bg-white/70"
+                          ? "bg-[var(--surface)] font-medium text-[var(--text-heading)] shadow-[0_1px_0.25rem_rgba(15,23,42,0.06)]"
+                          : "text-[var(--text-secondary)] hover:bg-[var(--search-bg)]"
                       }`}
                     >
                       <MessageSquare size={15} className="shrink-0" />
