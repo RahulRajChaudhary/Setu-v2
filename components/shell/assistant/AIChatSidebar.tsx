@@ -26,7 +26,7 @@ export default function AIChatSidebar({
   return (
     <aside
       aria-label="Chat history"
-      className={`flex h-full shrink-0 flex-col overflow-hidden border-r border-black/5 bg-[#F7F8FC] transition-[width] duration-300 ease-out ${
+      className={`flex h-full shrink-0 flex-col overflow-hidden border-r border-[var(--divider)] bg-[var(--assistant-sidebar-bg)] transition-[width] duration-300 ease-out ${
         collapsed ? "w-[4rem]" : "w-[16rem]"
       }`}
     >

@@ -48,7 +48,7 @@ export default function AssistantRegion({
     <div
       aria-hidden={mode === "closed"}
       className={`flex h-full min-w-0 overflow-hidden transition-[flex-grow,flex-basis] duration-300 ease-out ${
-        !isExpanded ? "border-l border-black/5 shadow-[-0.5rem_0_1.5rem_rgba(15,23,42,0.06)]" : ""
+        !isExpanded ? "border-l border-[var(--divider)] shadow-[-0.5rem_0_1.5rem_rgba(15,23,42,0.06)]" : ""
       }`}
       style={{
         flexGrow: isExpanded ? 1 : 0,

@@ -11,7 +11,7 @@ export default function AssistantButton({ onClick }: { onClick: () => void }) {
       className="
         tap-pop fixed bottom-24 right-0 z-30 flex h-14 w-14 items-center justify-center
         overflow-hidden rounded-tl-[0.65rem] rounded-bl-[0.65rem]
-        bg-gradient-to-b from-[#F5F9FF] to-[#CCE1FF]
+        bg-gradient-to-b from-[var(--assistant-button-from)] to-[var(--assistant-button-to)]
         shadow-[-0.25rem_0.125rem_0.9rem_rgba(15,23,42,0.18)]
         transition-transform hover:-translate-x-0.5
         screen-sm:bottom-0

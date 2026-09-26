@@ -44,9 +44,9 @@ export default function AIConversationPanel({
   }
 
   return (
-    <div className="flex min-w-0 flex-1 flex-col overflow-hidden bg-gradient-to-b from-[#EEF1FF] via-[#F1F6FF] to-white">
+    <div className="flex min-w-0 flex-1 flex-col overflow-hidden bg-gradient-to-b from-[var(--assistant-panel-from)] via-[var(--assistant-panel-via)] to-[var(--assistant-panel-to)]">
       {/* Header */}
-      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-black/5 px-4 py-3">
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-[var(--divider)] px-4 py-3">
         <div className="flex items-center gap-2">
           {isWorkspace && onToggleMobileHistory && (
             <button

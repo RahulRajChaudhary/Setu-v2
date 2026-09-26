@@ -59,6 +59,12 @@ html {
   --sidebar-active: #0B1B3B;
   --assistant-border: #C7CAFF;
   --assistant-hover: #F1F3FF;
+  --assistant-sidebar-bg: #F7F8FC;
+  --assistant-panel-from: #EEF1FF;
+  --assistant-panel-via: #F1F6FF;
+  --assistant-panel-to: #FFFFFF;
+  --assistant-button-from: #F5F9FF;
+  --assistant-button-to: #CCE1FF;
 
   --shell-bg: #FFFFFF;
   --page-bg: #FFFFFF;
@@ -175,6 +181,12 @@ html {
   --sidebar-active: #8FB4FF;
   --assistant-border: #3A3F6B;
   --assistant-hover: #1D2233;
+  --assistant-sidebar-bg: #10151D;
+  --assistant-panel-from: #171426;
+  --assistant-panel-via: #12131C;
+  --assistant-panel-to: #0B0F14;
+  --assistant-button-from: #1C2A44;
+  --assistant-button-to: #2A4270;
 }
 
 @media (prefers-reduced-motion: no-preference) {
