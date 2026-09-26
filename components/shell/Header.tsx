@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Search, Plus, Bell, ExternalLink, History, Settings } from "lucide-react";
 import { personaConfigFromPathname } from "@/lib/personas";
 import AppsLauncher from "@/components/shell/AppsLauncher";
+import ThemeToggle from "@/components/shell/ThemeToggle";
 
 const NOTIFICATIONS = [
   {
@@ -106,7 +107,7 @@ export default function Header() {
             className="
               hidden shrink-0
               rounded-md
-              bg-white
+              bg-[var(--surface)]
               px-1.5
               py-0.5
               text-xs
@@ -172,7 +173,7 @@ export default function Header() {
                 rounded-xl
                 border
                 border-[var(--divider)]
-                bg-white
+                bg-[var(--surface)]
                 shadow-xl
 
                 screen-2xl:w-[26rem]
@@ -358,7 +359,7 @@ export default function Header() {
                 rounded-xl
                 border
                 border-[var(--divider)]
-                bg-white
+                bg-[var(--surface)]
                 shadow-xl
               "
             >
@@ -437,6 +438,12 @@ export default function Header() {
                     <ExternalLink size={14} />
                   </button>
                 </div>
+              </div>
+
+              {/* Theme */}
+              <div className="flex items-center justify-between border-t border-[var(--divider)] px-4 py-3">
+                <span className="text-base text-[var(--text-secondary)]">Theme</span>
+                <ThemeToggle />
               </div>
 
               {/* Menu items */}
