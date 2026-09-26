@@ -108,7 +108,7 @@ const NAV_ITEMS_BY_PERSONA: Record<Persona, NavItem[]> = {
   "compliance-officer": COMPLIANCE_OFFICER_NAV_ITEMS,
 };
 
-const INDICATOR_COLOR = "#0B1B3B";
+const INDICATOR_COLOR = "var(--sidebar-active)";
 const INACTIVE_ICON_COLOR = "#475569";
 
 export default function Sidebar() {
@@ -265,7 +265,7 @@ export default function Sidebar() {
 
                   screen-sm:block
 
-                  ${isActive ? "font-semibold text-[#0B1B3B]" : "text-slate-600"}
+                  ${isActive ? "font-semibold text-[var(--sidebar-active)]" : "text-[var(--text-muted)]"}
                 `}
               >
                 {item.label}
