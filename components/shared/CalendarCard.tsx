@@ -3,14 +3,20 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const WEEKDAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
 ];
 
+// JS Date#getDay() is 0=Sunday..6=Saturday; convert to a Monday-first index
+// (0=Monday..6=Sunday) so the grid lines up with the Monday-first WEEKDAYS row.
+function mondayFirstDay(date: Date) {
+  return (date.getDay() + 6) % 7;
+}
+
 function buildGrid(year: number, month: number) {
-  const firstDay = new Date(year, month, 1).getDay();
+  const firstDay = mondayFirstDay(new Date(year, month, 1));
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const daysInPrevMonth = new Date(year, month, 0).getDate();
 
@@ -86,7 +92,7 @@ export default function CalendarCard() {
       <div className="grid min-h-0 flex-1 grid-cols-7 grid-rows-6 text-center">
         {cells.map((cell, i) => {
           const isToday = isCurrentMonth && cell.inMonth && cell.day === today.getDate();
-          const isWeekend = i % 7 === 0 || i % 7 === 6;
+          const isWeekend = i % 7 === 5 || i % 7 === 6;
           return (
             <div key={i} className="flex items-center justify-center">
               <span
