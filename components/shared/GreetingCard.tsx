@@ -47,7 +47,7 @@ export default function GreetingCard({ name }: { name: string }) {
         <GreetingIcon timeOfDay={timeOfDay} />
         {GREETING_TEXT[timeOfDay]}
       </p>
-      <p className="text-[clamp(1.25rem,7cqi,1.625rem)] font-semibold leading-tight tracking-tight text-white">{name}</p>
+      <p className="text-[clamp(1.5rem,9cqi,2.125rem)] font-semibold leading-tight tracking-tight text-white">{name}</p>
       <p className="text-[clamp(0.75rem,4cqi,0.875rem)] text-white/60">{WORKSPACE_LINE[timeOfDay]}</p>
     </div>
   );

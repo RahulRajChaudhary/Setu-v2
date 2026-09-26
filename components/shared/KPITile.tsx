@@ -12,11 +12,6 @@ const DOT: Record<StatusLevel, string> = {
   neutral: "bg-[var(--status-neutral-fg)]",
 };
 
-// One consistent value-color system across every KPI: the number itself carries
-// the meaning — green = good, orange = needs attention / in-between, red = alert.
-// Info and neutral are treated as non-semantic, so they use the plain heading color
-// (no blue/purple competing with the genuinely meaningful colors). Titles and
-// supporting text stay muted and identical across all cards.
 const VALUE_COLOR: Record<StatusLevel, string> = {
   healthy: "var(--kpi-good)",
   warning: "var(--kpi-warn)",
@@ -94,7 +89,7 @@ export default function KPITile({
   iconBg?: string;
   iconFg?: string;
 }) {
-  const className = `card-interactive tap-pop group relative flex h-full min-w-0 flex-col gap-[clamp(0.25rem,2cqi,0.5rem)] overflow-hidden rounded-[var(--card-radius)] border border-[var(--card-border)] bg-[var(--surface)] p-[clamp(0.625rem,3.5cqi,0.875rem)] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+  const className = `card-interactive tap-pop group relative flex h-full min-w-0 flex-col gap-[clamp(0.375rem,2.2cqi,0.625rem)] overflow-hidden rounded-[var(--card-radius)] border border-[var(--card-border)] bg-[var(--surface)] p-[clamp(0.75rem,4cqi,1.125rem)] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
     drillHref ? "cursor-pointer" : ""
   }`;
   const style = {
@@ -131,7 +126,7 @@ export default function KPITile({
       <div className="flex flex-wrap items-end gap-x-2 gap-y-1">
         <span
           className="font-bold leading-none tracking-tight tabular-nums"
-          style={{ color: VALUE_COLOR[status], fontSize: "clamp(1.875rem, 15cqi, 3rem)" }}
+          style={{ color: VALUE_COLOR[status], fontSize: "clamp(1.625rem, 12cqi, 2.5rem)" }}
         >
           {value}
         </span>
