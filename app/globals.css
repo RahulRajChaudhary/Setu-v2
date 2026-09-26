@@ -51,6 +51,10 @@ html {
   --icon-btn-bg: #F3F4F6;
   --icon-btn-navy: #0B1B3B;
   --divider: #E5E7EB;
+  --surface: #FFFFFF;
+  --sidebar-active: #0B1B3B;
+  --assistant-border: #C7CAFF;
+  --assistant-hover: #F1F3FF;
 
   --shell-bg: #FFFFFF;
   --page-bg: #FFFFFF;
@@ -110,6 +114,75 @@ html {
   --font-caption: 0.8125rem;
   --font-value-lg: 2.25rem;
   --font-value-md: 1.125rem;
+}
+
+.dark {
+  --chevron: #C7CCD3;
+  --avatar-bg: #1E2A44;
+  --avatar-text: #8FB4FF;
+  --text-secondary: #C7CCD3;
+  --role-text: #8B93A1;
+  --workspace-pill-border: #232B36;
+  --search-bg: #1C232E;
+  --search-placeholder: #6B7480;
+  --kbd-border: #232B36;
+  --icon-btn-bg: #1C232E;
+  --icon-btn-navy: #8FB4FF;
+  --divider: #232B36;
+
+  --shell-bg: #0B0F14;
+  --page-bg: #0B0F14;
+  --surface: #141A22;
+  --surface-muted: #1C232E;
+
+  --status-healthy-fg: #4ADE80;
+  --status-healthy-bg: #14301F;
+  --status-warning-fg: #FBBF24;
+  --status-warning-bg: #3A2A0A;
+  --status-critical-fg: #F87171;
+  --status-critical-bg: #3A1414;
+  --status-info-fg: #93A9FF;
+  --status-info-bg: #1E2A55;
+  --status-neutral-fg: #A7B0BD;
+  --status-neutral-bg: #1C232E;
+
+  --chart-1: #60A5FA;
+  --chart-2: #34D399;
+  --chart-3: #FBBF24;
+  --chart-4: #F87171;
+  --chart-5: #A78BFA;
+  --chart-6: #22D3EE;
+  --card-border: #232B36;
+
+  --card-shadow: 0 0 0.3rem rgba(0, 0, 0, 0.4);
+  --card-shadow-hover: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.55);
+
+  --text-heading: #F1F3F5;
+  --text-muted: #8B93A1;
+
+  --icon-chip-bg: linear-gradient(135deg, rgba(96, 165, 250, 0.16) 0%, rgba(96, 165, 250, 0.06) 100%);
+  --icon-chip-fg: #8FB4FF;
+
+  --trend-up-bg: #14301F;
+  --trend-up-fg: #4ADE80;
+  --trend-down-bg: #3A1414;
+  --trend-down-fg: #F87171;
+
+  --sidebar-active: #8FB4FF;
+  --assistant-border: #3A3F6B;
+  --assistant-hover: #1D2233;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body,
+  header,
+  aside,
+  section,
+  table,
+  input,
+  button {
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+  }
 }
 
 html,
