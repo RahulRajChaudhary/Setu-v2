@@ -42,17 +42,17 @@ function AppIcon({ app, size }: { app: LauncherApp; size: number }) {
     const Icon = app.icon;
     return (
       <span
-        className="pointer-events-none flex shrink-0 items-center justify-center rounded-full"
-        style={{ width: size, height: size, backgroundColor: app.bg ?? "#E2E8F0" }}
+        className="pointer-events-none flex shrink-0 items-center justify-center"
+        style={{ width: size, height: size }}
       >
-        <Icon size={Math.round(size * 0.5)} color={app.fg ?? "#0B1B3B"} />
+        <Icon size={Math.round(size * 0.62)} color={app.fg ?? "var(--icon-btn-navy)"} />
       </span>
     );
   }
 
   return (
     <span
-      className="pointer-events-none flex shrink-0 items-center justify-center rounded-full bg-[var(--search-bg)] text-sm font-semibold text-[var(--text-secondary)]"
+      className="pointer-events-none flex shrink-0 items-center justify-center text-sm font-semibold text-[var(--text-secondary)]"
       style={{ width: size, height: size }}
     >
       {app.name.charAt(0).toUpperCase()}
