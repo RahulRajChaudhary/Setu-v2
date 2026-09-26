@@ -65,14 +65,13 @@ export default function Header() {
         />
       )}
 
-      {/* Search — centered on the viewport, but width is clamped by vw rather than a
-          near-full-width 90vw so it can't grow wide enough to reach under the sidebar
-          or the header's right-side icon cluster at medium desktop widths. */}
-      <div className="pointer-events-none fixed left-1/2 top-0 z-20 flex h-[var(--header-h)] w-[clamp(14rem,50vw,30rem)] -translate-x-1/2 items-center px-1 screen-sm:px-2">
+      {/* Search — a normal flex item (not position:fixed), so it can never paint over
+          the icon cluster on the right. min-w-0 lets it shrink on narrow/foldable
+          screens instead of overlapping anything; max-w caps it on wide screens. */}
+      <div className="flex min-w-0 flex-1 items-center justify-center px-1 screen-sm:px-2">
         <div
           className="
-            pointer-events-auto
-            flex h-[3.125rem] w-full
+            flex h-[3.125rem] w-full min-w-0
             max-w-[30rem]
             items-center
             gap-2
@@ -115,7 +114,7 @@ export default function Header() {
           label="Create"
           bg="transparent"
         >
-          <Plus color="#4A5565" size={20} />
+          <Plus color="var(--text-secondary)" size={20} />
         </IconButton>
 
         {/* Notifications */}
@@ -126,7 +125,7 @@ export default function Header() {
             onClick={() => toggle("notifications")}
           >
             <span className="relative">
-              <Bell color="#4A5565" size={20} />
+              <Bell color="var(--text-secondary)" size={20} />
 
               <span
                 className="
@@ -269,7 +268,7 @@ export default function Header() {
           bg="transparent"
           onClick={() => toggle("apps")}
         >
-          <AppsGridIcon color="#4A5565" />
+          <AppsGridIcon color="var(--text-secondary)" />
         </IconButton>
 
         {/* Apps dropdown — anchored to the shared right edge of this row */}
