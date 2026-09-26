@@ -1,195 +1,129 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 export type TrendSeries = { key: string; label: string; color: string; data: number[] };
 
-const PAD_LEFT = 28;
-const PAD_BOTTOM = 22;
-const PAD_TOP = 10;
-const PAD_RIGHT = 10;
-
-// Picks a whole-number tick step (never a fraction — these are integer counts)
-// so evenly spaced ticks never round to the same displayed value.
-function niceIntegerStep(roughStep: number) {
-  const s = Math.max(1, roughStep);
-  const magnitude = Math.pow(10, Math.floor(Math.log10(s)));
-  const candidates = [1, 2, 5, 10].map((m) => m * magnitude);
-  const step = candidates.find((c) => c >= s) ?? candidates[candidates.length - 1] * 10;
-  return Math.max(1, Math.round(step));
+function TrendTooltip({
+  active,
+  payload,
+  label,
+  series,
+}: {
+  active?: boolean;
+  payload?: { dataKey: string; value: number }[];
+  label?: string;
+  series: TrendSeries[];
+}) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="min-w-[8rem] rounded-lg border border-[var(--divider)] bg-white p-2 text-xs shadow-lg">
+      <p className="mb-1 font-semibold text-[var(--text-heading)]">{label}</p>
+      {series.map((s) => {
+        const entry = payload.find((p) => p.dataKey === s.key);
+        if (!entry) return null;
+        return (
+          <p key={s.key} className="flex items-center justify-between gap-3 text-[var(--role-text)]">
+            <span className="flex items-center gap-1.5">
+              <span className="h-[2px] w-3 rounded-full" style={{ backgroundColor: s.color }} />
+              {s.label}
+            </span>
+            <span className="font-semibold text-[var(--text-secondary)]">{entry.value}</span>
+          </p>
+        );
+      })}
+    </div>
+  );
 }
 
 export default function AreaTrendChart({
   series,
   xLabels,
+  heightClassName = "h-[clamp(9rem,24vh,15rem)]",
+  className = "",
 }: {
   series: TrendSeries[];
   xLabels: string[];
+  /** Override the plot area's responsive height (defaults to the standard clamp). */
+  heightClassName?: string;
+  /** Extra classes on the outer wrapper (e.g. "flex-1 min-h-0" to grow inside a flex card). */
+  className?: string;
 }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
-  // Real rendered size of the plot area, so the SVG is drawn 1:1 (no stretched text/strokes)
-  // and the chart height is driven by CSS (rem/vh), not by the card width.
-  const [size, setSize] = useState({ w: 480, h: 180 });
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(([entry]) => {
-      const { width, height } = entry.contentRect;
-      if (width > 0 && height > 0) setSize({ w: width, h: height });
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-  const W = size.w;
-  const H = size.h;
-
-  const n = xLabels.length;
-  const tickCount = 4;
-  const yStep = useMemo(
-    () => niceIntegerStep(Math.max(...series.flatMap((s) => s.data), 1) / tickCount),
-    [series],
+  const chartData = useMemo(
+    () =>
+      xLabels.map((label, i) => {
+        const row: Record<string, string | number> = { label };
+        series.forEach((s) => {
+          row[s.key] = s.data[i] ?? 0;
+        });
+        return row;
+      }),
+    [xLabels, series],
   );
-  const maxY = yStep * tickCount;
-  const yTicks = useMemo(
-    () => Array.from({ length: tickCount + 1 }, (_, i) => yStep * i),
-    [yStep],
-  );
-
-  const plotW = W - PAD_LEFT - PAD_RIGHT;
-  const plotH = H - PAD_TOP - PAD_BOTTOM;
-
-  const scaleX = (i: number) => PAD_LEFT + (n <= 1 ? 0 : (i / (n - 1)) * plotW);
-  const scaleY = (v: number) => PAD_TOP + plotH - (v / (maxY || 1)) * plotH;
-
-  const paths = series.map((s) => {
-    const line = s.data.map((v, i) => `${i === 0 ? "M" : "L"}${scaleX(i)},${scaleY(v)}`).join(" ");
-    const area = `${line} L${scaleX(n - 1)},${PAD_TOP + plotH} L${scaleX(0)},${PAD_TOP + plotH} Z`;
-    return { ...s, line, area };
-  });
 
   // Show roughly 6 x-axis labels: first, last, and evenly spaced in between.
+  const n = xLabels.length;
   const xTickIndexes = useMemo(() => {
     const count = Math.min(6, n);
     if (count <= 1) return [0];
     return Array.from({ length: count }, (_, i) => Math.round((i / (count - 1)) * (n - 1)));
   }, [n]);
 
-  function handleMove(e: React.MouseEvent<HTMLDivElement>) {
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const fraction = (e.clientX - rect.left) / rect.width;
-    const clamped = Math.min(1, Math.max(0, fraction));
-    const idx = Math.round(clamped * (n - 1));
-    setHoverIndex(idx);
-  }
-
-  const hoverLeftPct = hoverIndex !== null ? (scaleX(hoverIndex) / W) * 100 : null;
-  const tooltipAlignRight = hoverLeftPct !== null && hoverLeftPct > 50;
-
   return (
-    <div className="flex flex-col gap-[var(--space-sm)]">
-      <div
-        ref={containerRef}
-        className="relative h-[clamp(9rem,24vh,15rem)] w-full"
-        onMouseMove={handleMove}
-        onMouseLeave={() => setHoverIndex(null)}
-      >
-        <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Trend chart" className="block">
-          {yTicks.map((t, i) => (
-            <g key={i}>
-              <line
-                x1={PAD_LEFT}
-                x2={W - PAD_RIGHT}
-                y1={scaleY(t)}
-                y2={scaleY(t)}
-                stroke="var(--divider)"
-                strokeWidth={1}
-              />
-              <text x={PAD_LEFT - 6} y={scaleY(t) + 3} textAnchor="end" style={{ fontSize: "0.625rem" }} fill="var(--text-muted)">
-                {t}
-              </text>
-            </g>
-          ))}
-
-          {xTickIndexes.map((i) => (
-            <text
-              key={i}
-              x={scaleX(i)}
-              y={H - 3}
-              textAnchor={i === 0 ? "start" : i === n - 1 ? "end" : "middle"}
-              style={{ fontSize: "0.625rem" }}
-              fill="var(--text-muted)"
-            >
-              {xLabels[i]}
-            </text>
-          ))}
-
-          {paths.map((p) => (
-            <path key={`${p.key}-area`} d={p.area} fill={p.color} opacity={0.1} stroke="none" />
-          ))}
-          {paths.map((p) => (
-            <path key={`${p.key}-line`} d={p.line} fill="none" stroke={p.color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-          ))}
-          {paths.map((p) => {
-            const lastVal = p.data[p.data.length - 1];
-            return (
-              <g key={`${p.key}-end`}>
-                <circle cx={scaleX(n - 1)} cy={scaleY(lastVal)} r={4} fill={p.color} stroke="white" strokeWidth={2} />
-                <text x={scaleX(n - 1) - 8} y={scaleY(lastVal) - 8} textAnchor="end" style={{ fontSize: "0.7rem", fontWeight: 600 }} fill="var(--text-secondary)">
-                  {lastVal}
-                </text>
-              </g>
-            );
-          })}
-
-          {hoverIndex !== null && (
-            <>
-              <line
-                x1={scaleX(hoverIndex)}
-                x2={scaleX(hoverIndex)}
-                y1={PAD_TOP}
-                y2={PAD_TOP + plotH}
-                stroke="var(--text-muted)"
-                strokeWidth={1}
-                strokeOpacity={0.4}
-              />
-              {paths.map((p) => (
-                <circle
-                  key={`${p.key}-hover`}
-                  cx={scaleX(hoverIndex)}
-                  cy={scaleY(p.data[hoverIndex])}
-                  r={4}
-                  fill={p.color}
-                  stroke="white"
-                  strokeWidth={2}
-                />
+    <div className={`flex flex-col gap-[var(--space-sm)] ${className}`}>
+      <div className={`w-full ${heightClassName}`}>
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            <defs>
+              {series.map((s) => (
+                <linearGradient key={s.key} id={`areaTrendGradient-${s.key}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={s.color} stopOpacity={0.28} />
+                  <stop offset="100%" stopColor={s.color} stopOpacity={0} />
+                </linearGradient>
               ))}
-            </>
-          )}
-        </svg>
-
-        {hoverIndex !== null && (
-          <div
-            className="pointer-events-none absolute top-1 z-10 flex min-w-[8rem] flex-col gap-1 rounded-lg border border-[var(--divider)] bg-white p-2 text-xs shadow-lg"
-            style={{
-              left: tooltipAlignRight ? undefined : `${hoverLeftPct}%`,
-              right: tooltipAlignRight ? `${100 - (hoverLeftPct ?? 0)}%` : undefined,
-              transform: tooltipAlignRight ? "translateX(-8px)" : "translateX(8px)",
-            }}
-          >
-            <span className="font-semibold text-[var(--text-heading)]">{xLabels[hoverIndex]}</span>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--divider)" vertical={false} />
+            <XAxis
+              dataKey="label"
+              ticks={xTickIndexes.map((i) => xLabels[i])}
+              tick={{ fontSize: 10, fill: "var(--text-muted)" }}
+              axisLine={{ stroke: "var(--divider)" }}
+              tickLine={false}
+              interval="preserveStartEnd"
+            />
+            <YAxis
+              tick={{ fontSize: 10, fill: "var(--text-muted)" }}
+              axisLine={false}
+              tickLine={false}
+              width={28}
+              allowDecimals={false}
+            />
+            <Tooltip content={<TrendTooltip series={series} />} cursor={{ stroke: "var(--divider)" }} />
             {series.map((s) => (
-              <span key={s.key} className="flex items-center justify-between gap-3 text-[var(--role-text)]">
-                <span className="flex items-center gap-1.5">
-                  <span className="h-[2px] w-3 rounded-full" style={{ backgroundColor: s.color }} />
-                  {s.label}
-                </span>
-                <span className="font-semibold text-[var(--text-secondary)]">{s.data[hoverIndex]}</span>
-              </span>
+              <Area
+                key={s.key}
+                type="monotone"
+                dataKey={s.key}
+                name={s.label}
+                stroke={s.color}
+                strokeWidth={2}
+                fill={`url(#areaTrendGradient-${s.key})`}
+                dot={false}
+                activeDot={{ r: 4, stroke: "white", strokeWidth: 2 }}
+                isAnimationActive={false}
+              />
             ))}
-          </div>
-        )}
+          </AreaChart>
+        </ResponsiveContainer>
       </div>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1">

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { ArrowUp } from "lucide-react";
 import StaleIndicator from "./StaleIndicator";
 import type { StatusLevel } from "./StatusBadge";
 
@@ -11,31 +12,52 @@ const DOT: Record<StatusLevel, string> = {
   neutral: "bg-[var(--status-neutral-fg)]",
 };
 
+const VALUE_COLOR: Record<StatusLevel, string> = {
+  healthy: "var(--status-healthy-fg)",
+  warning: "var(--status-warning-fg)",
+  critical: "var(--status-critical-fg)",
+  info: "var(--status-info-fg)",
+  neutral: "var(--text-heading)",
+};
+
+const TREND_COLOR: Record<TrendDirection, string> = {
+  up: "var(--trend-up-fg)",
+  down: "var(--trend-down-fg)",
+};
+
+// Top accent bar color per status — sweeps in on hover so a card silently
+// signals its severity even before you read the number.
+const ACCENT_COLOR: Record<StatusLevel, string> = {
+  healthy: "var(--status-healthy-fg)",
+  warning: "var(--status-warning-fg)",
+  critical: "var(--status-critical-fg)",
+  info: "var(--status-info-fg)",
+  neutral: "var(--status-neutral-fg)",
+};
+
 export type TrendDirection = "up" | "down";
+
+function IconChip({ icon, bg, fg }: { icon: ReactNode; bg: string; fg: string }) {
+  return (
+    <span
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg [&>svg]:h-[1.125rem] [&>svg]:w-[1.125rem]"
+      style={{ background: bg, color: fg }}
+    >
+      {icon}
+    </span>
+  );
+}
 
 function TrendChip({ direction, value }: { direction: TrendDirection; value: string }) {
   const isUp = direction === "up";
   return (
     <span
-      className={`inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-semibold ${
+      className={`inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-semibold ${
         isUp ? "bg-[var(--trend-up-bg)] text-[var(--trend-up-fg)]" : "bg-[var(--trend-down-bg)] text-[var(--trend-down-fg)]"
       }`}
     >
-      <svg width="10" height="10" viewBox="0 0 14 14" fill="none" aria-hidden="true" className={isUp ? "" : "rotate-180"}>
-        <path d="M7 11V3M7 3L3.5 6.5M7 3L10.5 6.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
+      <ArrowUp size={11} className={isUp ? "" : "rotate-180"} />
       {value}
-    </span>
-  );
-}
-
-function IconChip({ icon, bg, fg }: { icon: ReactNode; bg?: string; fg?: string }) {
-  return (
-    <span
-      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg [&>svg]:h-[18px] [&>svg]:w-[18px]"
-      style={{ background: bg ?? "var(--icon-chip-bg)", color: fg ?? "var(--icon-chip-fg)" }}
-    >
-      {icon}
     </span>
   );
 }
@@ -61,7 +83,7 @@ export default function KPITile({
   value: ReactNode;
   note?: string;
   status: StatusLevel;
-  secondary?: { label: string; value: ReactNode; color?: string }[];
+  secondary?: { label: string; value: ReactNode; color: string }[];
   drillHref?: string;
   drillLabel?: string;
   updatedAt: Date;
@@ -73,57 +95,64 @@ export default function KPITile({
   iconBg?: string;
   iconFg?: string;
 }) {
-  const className = `card-interactive tap-pop group relative flex flex-col gap-2 rounded-[var(--card-radius)] border border-[var(--card-border)] bg-white p-[var(--card-pad)] ${
+  const className = `card-interactive tap-pop group relative flex h-full min-w-0 flex-col justify-between gap-2 overflow-hidden rounded-[var(--card-radius)] border border-[var(--card-border)] bg-white p-[calc(var(--card-pad)+0.25rem)] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
     drillHref ? "cursor-pointer" : ""
   }`;
-  const style = { boxShadow: "var(--card-shadow)" } as const;
+  const style = {
+    boxShadow: "var(--card-shadow)",
+    "--tw-ring-color": ACCENT_COLOR[status],
+  } as React.CSSProperties;
 
   const content = (
     <>
-      <div className="flex items-center gap-2.5">
-        {icon ? (
-          <IconChip icon={icon} bg={iconBg} fg={iconFg} />
-        ) : (
-          <span className={`h-2 w-2 shrink-0 rounded-full ${DOT[status]}`} />
-        )}
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-[length:var(--font-body)] leading-tight text-[var(--text-muted)]">{title}</p>
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-1 origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100"
+        style={{ background: ACCENT_COLOR[status] }}
+      />
+
+      <div className="flex items-start justify-between gap-2.5">
+        <div className="min-w-0 flex-1 flex items-center gap-2.5">
+          {icon ? (
+            <IconChip icon={icon} bg={iconBg ?? "var(--icon-chip-bg)"} fg={iconFg ?? "var(--icon-chip-fg)"} />
+          ) : (
+            <span className={`h-2 w-2 shrink-0 rounded-full ${DOT[status]}`} />
+          )}
+          <p className="truncate text-[0.9375rem] font-semibold leading-tight text-[var(--text-muted)]">{title}</p>
         </div>
-        {stale && <StaleIndicator lastGoodAt={updatedAt} />}
-      </div>
-
-      <div className="flex items-end justify-between gap-2">
-        <span className="text-[length:var(--font-value-lg)] font-bold leading-none tracking-tight text-[var(--text-heading)]">{value}</span>
-        {trend ?? (trendDirection && trendValue ? <TrendChip direction={trendDirection} value={trendValue} /> : null)}
-      </div>
-      {note && <p className="truncate text-[11px] text-[var(--text-muted)]">{note}</p>}
-
-      {secondary && secondary.length > 0 && (
-        <dl className="grid grid-cols-2 gap-x-3 gap-y-1 border-t border-[var(--divider)] pt-1.5">
-          {secondary.map((s) => (
-            <div key={s.label} className="flex items-baseline justify-between gap-1">
-              <dt className="truncate text-[10px] text-[var(--text-muted)]">{s.label}</dt>
-              <dd className="text-[11px] font-semibold" style={{ color: s.color ?? "var(--text-heading)" }}>
-                {s.value}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      )}
-
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-[10px] text-[var(--text-muted)]">Updated {formatRelative(updatedAt)}</span>
-        {drillHref && (
-          <span
-            aria-hidden="true"
-            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[var(--text-muted)] opacity-0 transition-all duration-150 group-hover:translate-x-0.5 group-hover:opacity-100"
-          >
-            <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-              <path d="M3 7H11M11 7L7.5 3.5M11 7L7.5 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+        {stale ? (
+          <StaleIndicator lastGoodAt={updatedAt} />
+        ) : (
+          <span className="shrink-0 whitespace-nowrap rounded-full bg-[var(--search-bg)] px-2 py-0.5 text-[0.6875rem] font-medium leading-none text-[var(--text-muted)]">
+            {formatRelative(updatedAt)}
           </span>
         )}
       </div>
+
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-end justify-between gap-2">
+          <span
+            className="text-[length:var(--font-value-lg)] font-bold leading-none tracking-tight tabular-nums"
+            style={{ color: trendDirection ? TREND_COLOR[trendDirection] : VALUE_COLOR[status] }}
+          >
+            {value}
+          </span>
+          {trend ?? (trendDirection && trendValue ? <TrendChip direction={trendDirection} value={trendValue} /> : null)}
+        </div>
+        {note && <p className="truncate text-sm text-[var(--text-muted)]">{note}</p>}
+      </div>
+
+      {secondary && secondary.length > 0 && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          {secondary.map((s) => (
+            <span key={s.label} className="flex items-center gap-1.5 text-sm text-[var(--text-muted)]">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: s.color }} />
+              <span className="font-semibold" style={{ color: s.color }}>{s.value}</span>
+              {s.label}
+            </span>
+          ))}
+        </div>
+      )}
     </>
   );
 

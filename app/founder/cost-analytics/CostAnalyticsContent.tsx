@@ -1,5 +1,6 @@
 "use client";
 
+import { TrendingUp } from "lucide-react";
 import Card from "@/components/shared/Card";
 import TabBar, { useActiveTab } from "@/components/shared/TabBar";
 import ToggleChart from "@/components/shared/charts/ToggleChart";
@@ -26,15 +27,6 @@ export default function CostAnalyticsContent() {
   );
 }
 
-function CostBigIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M3 17L9 11L13 15L21 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M15 7H21V13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 function CostTab() {
   return (
     <div className="flex flex-col gap-[var(--space-md)]">
@@ -45,13 +37,13 @@ function CostTab() {
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg"
               style={{ background: "var(--icon-chip-bg)", color: "var(--icon-chip-fg)" }}
             >
-              <CostBigIcon />
+              <TrendingUp size={22} />
             </span>
             <div className="min-w-0">
               <p className="text-2xl font-bold leading-none text-[var(--text-heading)]">
                 ₹{costKpis.mtdTotal.toLocaleString("en-IN")}
               </p>
-              <span className="mt-1.5 inline-flex items-center gap-1 rounded-md bg-[var(--trend-up-bg)] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--trend-up-fg)]">
+              <span className="mt-1.5 inline-flex items-center gap-1 rounded-md bg-[var(--trend-up-bg)] px-1.5 py-0.5 text-[0.6875rem] font-semibold text-[var(--trend-up-fg)]">
                 ▲ {costKpis.pctChangeVsLastMonth}% vs last month
               </span>
             </div>
@@ -95,7 +87,7 @@ function AdoptionTab() {
       </Card>
 
       <Card title="Usage trend, last 30 days" description="Daily usage index with change vs the start of the period">
-        <div className="grid grid-cols-1 gap-[var(--space-md)] screen-sm:grid-cols-2 screen-xl:grid-cols-4">
+        <div className="flex flex-wrap gap-[var(--space-md)]">
           {products.map((p) => {
             const series = p.usageTrend30d.map((y, x) => ({ x, y }));
             const first = p.usageTrend30d[0];
@@ -106,7 +98,7 @@ function AdoptionTab() {
             return (
               <div
                 key={p.id}
-                className="card-interactive flex flex-col gap-2 rounded-xl border border-[var(--divider)] bg-white p-3"
+                className="card-interactive flex min-w-0 grow basis-full flex-col gap-2 rounded-xl border border-[var(--divider)] bg-white p-3 screen-sm:basis-[calc((100%-var(--space-md))/2)] screen-xl:basis-[calc((100%-(var(--space-md)*3))/4)]"
                 style={{ boxShadow: "var(--card-shadow)" }}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -114,7 +106,7 @@ function AdoptionTab() {
                     {p.name}
                   </p>
                   <span
-                    className="flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
+                    className="flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[0.625rem] font-semibold"
                     style={{ background: up ? "var(--status-healthy-bg)" : "var(--status-critical-bg)", color }}
                   >
                     {up ? "▲" : "▼"} {Math.abs(deltaPct)}%

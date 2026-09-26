@@ -112,128 +112,132 @@ export default function ControlRoomPage() {
   return (
     <div className="flex flex-col gap-[var(--space-lg)]">
 
-      <div className="grid grid-cols-1 gap-[var(--space-md)] screen-xl:grid-cols-[minmax(0,3fr)_minmax(0,1fr)]">
-      <div className="flex min-w-0 flex-wrap gap-[var(--space-md)]">
-        <div className="min-w-0 grow basis-full screen-sm:basis-[calc((100%-var(--space-md))/2)] screen-lg:basis-[calc((100%-(var(--space-md)*2))/3)] screen-xl:basis-[calc((100%-(var(--space-md)*3))/4)]">
-        <GreetingCard name="Dhruv Singla" />
+      <div className="grid grid-cols-1 items-stretch gap-[var(--space-md)] screen-xl:grid-cols-[minmax(0,3fr)_minmax(0,1fr)]">
+        <div className="grid min-w-0 grid-cols-2 gap-[var(--space-md)] screen-sm:grid-cols-4">
+          <div className="min-w-0">
+            <GreetingCard name="Dhruv Singla" />
+          </div>
+          <div className="min-w-0">
+            <KPITile
+              title="Product health"
+              value={`${snapshot.productsHealthy.healthy}/${snapshot.productsHealthy.active}`}
+              note="reporting healthy"
+              status={snapshot.productsHealthy.status}
+              drillHref="/founder/products"
+              updatedAt={updatedAt}
+              stale={stale}
+              icon={<HeartPulse size={22} />}
+              iconBg="#FCE7F3"
+              iconFg="#DB2777"
+            />
+          </div>
+          <div className="min-w-0">
+            <KPITile
+              title="Pending approvals"
+              value={snapshot.waitingForApproval.count}
+              note="awaiting sign-off"
+              status={snapshot.waitingForApproval.status}
+              drillHref="/founder/approvals"
+              updatedAt={updatedAt}
+              stale={stale}
+              icon={<ClipboardCheck size={22} />}
+              iconBg="#D1FAE5"
+              iconFg="#059669"
+            />
+          </div>
+          <div className="min-w-0">
+            <KPITile
+              title="Open incidents"
+              value={snapshot.openIncidents.count}
+              note="unresolved"
+              status={snapshot.openIncidents.status}
+              drillHref="/founder/operations"
+              updatedAt={updatedAt}
+              stale={stale}
+              icon={<AlertCircle size={22} />}
+              iconBg="#FEE2E2"
+              iconFg="#DC2626"
+            />
+          </div>
+          <div className="min-w-0">
+            <KPITile
+              title="Cost trend (MoM)"
+              value={`+${snapshot.platformCostTrend.pctChange}%`}
+              note="vs last month"
+              status={snapshot.platformCostTrend.status}
+              drillHref="/founder/cost-analytics"
+              updatedAt={updatedAt}
+              stale={stale}
+              icon={<TrendingUp size={22} />}
+              iconBg="#CCFBF1"
+              iconFg="#0D9488"
+              trendDirection={snapshot.platformCostTrend.status === "critical" ? "up" : snapshot.platformCostTrend.status === "healthy" ? "down" : "up"}
+              trendValue={`${snapshot.platformCostTrend.pctChange}%`}
+            />
+          </div>
+          <div className="min-w-0">
+            <KPITile
+              title="Multi-product adoption"
+              value={`${workspaceKpis.multiProductAdoptionPct}%`}
+              note="workspaces on 2+ products"
+              status={workspaceKpis.multiProductAdoptionPct >= 50 ? "healthy" : "warning"}
+              drillHref="/founder/products"
+              updatedAt={updatedAt}
+              stale={stale}
+              icon={<Layers size={22} />}
+              iconBg="#DBEAFE"
+              iconFg="#2563EB"
+            />
+          </div>
+          <div className="min-w-0">
+            <KPITile
+              title="Findings overdue"
+              value={complianceKpis.findingsOverdue}
+              status={complianceKpis.findingsOverdue > 0 ? "critical" : "healthy"}
+              drillHref="/founder/compliance-risk"
+              updatedAt={updatedAt}
+              stale={stale}
+              icon={<ShieldCheck size={22} />}
+              iconBg="#CFFAFE"
+              iconFg="#0891B2"
+              secondary={[
+                { label: "Failed/Exception", value: complianceKpis.controlsFailedException, color: "var(--status-warning-fg)" },
+                { label: "Evidence due", value: complianceKpis.evidenceDueThisMonth, color: "var(--status-info-fg)" },
+              ]}
+            />
+          </div>
+          <div className="min-w-0">
+            <KPITile
+              title="Critical exceptions"
+              value={workspaceKpis.criticalExceptions}
+              note="provisioning drift & failures"
+              status={workspaceKpis.criticalExceptions > 0 ? "critical" : "healthy"}
+              drillHref="/founder/operations"
+              updatedAt={updatedAt}
+              stale={stale}
+              icon={<AlertOctagon size={22} />}
+              iconBg="#FEE2E2"
+              iconFg="#DC2626"
+            />
+          </div>
         </div>
-        <div className="min-w-0 grow basis-full screen-sm:basis-[calc((100%-var(--space-md))/2)] screen-lg:basis-[calc((100%-(var(--space-md)*2))/3)] screen-xl:basis-[calc((100%-(var(--space-md)*3))/4)]">
-        <KPITile
-          title="Product health"
-          value={`${snapshot.productsHealthy.healthy}/${snapshot.productsHealthy.active}`}
-          note="reporting healthy"
-          status={snapshot.productsHealthy.status}
-          drillHref="/founder/products"
-          updatedAt={updatedAt}
-          stale={stale}
-          icon={<HeartPulse size={22} />}
-          iconBg="#FCE7F3"
-          iconFg="#DB2777"
-        />
+        <div className="hidden screen-xl:block">
+          <CalendarCard />
         </div>
-        <div className="min-w-0 grow basis-full screen-sm:basis-[calc((100%-var(--space-md))/2)] screen-lg:basis-[calc((100%-(var(--space-md)*2))/3)] screen-xl:basis-[calc((100%-(var(--space-md)*3))/4)]">
-        <KPITile
-          title="Pending approvals"
-          value={snapshot.waitingForApproval.count}
-          note="awaiting sign-off"
-          status={snapshot.waitingForApproval.status}
-          drillHref="/founder/approvals"
-          updatedAt={updatedAt}
-          stale={stale}
-          icon={<ClipboardCheck size={22} />}
-          iconBg="#D1FAE5"
-          iconFg="#059669"
-        />
-        </div>
-        <div className="min-w-0 grow basis-full screen-sm:basis-[calc((100%-var(--space-md))/2)] screen-lg:basis-[calc((100%-(var(--space-md)*2))/3)] screen-xl:basis-[calc((100%-(var(--space-md)*3))/4)]">
-        <KPITile
-          title="Open incidents"
-          value={snapshot.openIncidents.count}
-          note="unresolved"
-          status={snapshot.openIncidents.status}
-          drillHref="/founder/operations"
-          updatedAt={updatedAt}
-          stale={stale}
-          icon={<AlertCircle size={22} />}
-          iconBg="#FEE2E2"
-          iconFg="#DC2626"
-        />
-        </div>
-        <div className="min-w-0 grow basis-full screen-sm:basis-[calc((100%-var(--space-md))/2)] screen-lg:basis-[calc((100%-(var(--space-md)*2))/3)] screen-xl:basis-[calc((100%-(var(--space-md)*3))/4)]">
-        <KPITile
-          title="Cost trend (MoM)"
-          value={`+${snapshot.platformCostTrend.pctChange}%`}
-          note="vs last month"
-          status={snapshot.platformCostTrend.status}
-          drillHref="/founder/cost-analytics"
-          updatedAt={updatedAt}
-          stale={stale}
-          icon={<TrendingUp size={22} />}
-          iconBg="#CCFBF1"
-          iconFg="#0D9488"
-          trendDirection={snapshot.platformCostTrend.status === "critical" ? "up" : snapshot.platformCostTrend.status === "healthy" ? "down" : "up"}
-          trendValue={`${snapshot.platformCostTrend.pctChange}%`}
-        />
-        </div>
-        <div className="min-w-0 grow basis-full screen-sm:basis-[calc((100%-var(--space-md))/2)] screen-lg:basis-[calc((100%-(var(--space-md)*2))/3)] screen-xl:basis-[calc((100%-(var(--space-md)*3))/4)]">
-        <KPITile
-          title="Multi-product adoption"
-          value={`${workspaceKpis.multiProductAdoptionPct}%`}
-          note="workspaces on 2+ products"
-          status={workspaceKpis.multiProductAdoptionPct >= 50 ? "healthy" : "warning"}
-          drillHref="/founder/products"
-          updatedAt={updatedAt}
-          stale={stale}
-          icon={<Layers size={22} />}
-          iconBg="#DBEAFE"
-          iconFg="#2563EB"
-        />
-        </div>
-        <div className="min-w-0 grow basis-full screen-sm:basis-[calc((100%-var(--space-md))/2)] screen-lg:basis-[calc((100%-(var(--space-md)*2))/3)] screen-xl:basis-[calc((100%-(var(--space-md)*3))/4)]">
-        <KPITile
-          title="Findings overdue"
-          value={complianceKpis.findingsOverdue}
-          status={complianceKpis.findingsOverdue > 0 ? "critical" : "healthy"}
-          drillHref="/founder/compliance-risk"
-          updatedAt={updatedAt}
-          stale={stale}
-          icon={<ShieldCheck size={22} />}
-          iconBg="#CFFAFE"
-          iconFg="#0891B2"
-          secondary={[
-            { label: "Failed/Exception", value: complianceKpis.controlsFailedException, color: "var(--status-warning-fg)" },
-            { label: "Evidence due", value: complianceKpis.evidenceDueThisMonth, color: "var(--status-info-fg)" },
-          ]}
-        />
-        </div>
-        <div className="min-w-0 grow basis-full screen-sm:basis-[calc((100%-var(--space-md))/2)] screen-lg:basis-[calc((100%-(var(--space-md)*2))/3)] screen-xl:basis-[calc((100%-(var(--space-md)*3))/4)]">
-        <KPITile
-          title="Critical exceptions"
-          value={workspaceKpis.criticalExceptions}
-          note="provisioning drift & failures"
-          status={workspaceKpis.criticalExceptions > 0 ? "critical" : "healthy"}
-          drillHref="/founder/operations"
-          updatedAt={updatedAt}
-          stale={stale}
-          icon={<AlertOctagon size={22} />}
-          iconBg="#FEE2E2"
-          iconFg="#DC2626"
-        />
-        </div>
-      </div>
-        <CalendarCard />
       </div>
 
-      <div className="grid grid-cols-1 items-stretch gap-[var(--space-md)] screen-lg:grid-cols-2">
-        <Card title="Controls effective by framework" description="Effective controls per framework">
+      <div className="grid grid-cols-1 items-stretch gap-[var(--space-md)] screen-sm:grid-cols-2">
+        <Card title="Controls effective by framework" description="Effective controls per framework" className="min-h-[clamp(11rem,28vh,22rem)]">
           <div className="flex flex-col items-center gap-[var(--space-md)] screen-sm:flex-row screen-sm:items-center">
-            <DonutChart
-              data={controlsEffectiveByFramework.map((f) => ({ label: f.label, value: f.effective, color: f.color }))}
-              size={132}
-              centerLabel="controls"
-              legend={false}
-            />
-            <ul className="flex w-full flex-col gap-2.5">
+            <div className="flex w-full justify-center screen-sm:w-auto screen-sm:flex-1">
+              <DonutChart
+                data={controlsEffectiveByFramework.map((f) => ({ label: f.label, value: f.effective, color: f.color }))}
+                size={112}
+                centerLabel="controls"
+                legend={false}
+              />
+            </div>
+            <ul className="flex w-full flex-col gap-2.5 screen-sm:flex-1">
               {controlsEffectiveByFramework.map((f) => {
                 const status = f.value >= 90 ? "healthy" : f.value >= 75 ? "warning" : "critical";
                 const bandWord = f.value >= 90 ? "Effective" : f.value >= 75 ? "Needs attention" : "At risk";
@@ -276,6 +280,7 @@ export default function ControlRoomPage() {
         <Card
           title="Growth"
           description="New customers vs. trial-to-paid, cumulative"
+          className="min-h-[clamp(11rem,28vh,22rem)]"
           action={
             <div className="flex items-center gap-0.5 rounded-full bg-[var(--surface-muted)] p-0.5">
               {GROWTH_RANGE_OPTIONS.map((opt) => (
@@ -297,6 +302,8 @@ export default function ControlRoomPage() {
           }
         >
           <AreaTrendChart
+            className="min-h-0 flex-1"
+            heightClassName="h-full min-h-[14rem]"
             series={[
               { key: "newCustomers", label: "New customers", color: "var(--chart-1)", data: growthTrend.map((d) => d.newCustomers) },
               { key: "trialToPaid", label: "Trial → paid", color: "var(--chart-3)", data: growthTrend.map((d) => d.trialToPaid) },
@@ -317,18 +324,6 @@ export default function ControlRoomPage() {
           </dl>
         </Card>
       </div>
-
-      <Card title="Needs Your Decision">
-        <DataTable
-          columns={decisionColumns}
-          rows={needsYourDecision}
-          getRowKey={(r) => r.id}
-          emptyTitle="Nothing waiting on you"
-          emptyDescription="Approvals routed to the Founder will show up here."
-          onRowClick={() => router.push("/founder/approvals")}
-          textClassName="text-sm"
-        />
-      </Card>
 
       <Card title="Nine Areas at a Glance" description="Status across every area">
         <div className="flex flex-wrap gap-[var(--space-sm)]">
@@ -365,6 +360,18 @@ export default function ControlRoomPage() {
             );
           })}
         </div>
+      </Card>
+
+      <Card title="Needs Your Decision">
+        <DataTable
+          columns={decisionColumns}
+          rows={needsYourDecision}
+          getRowKey={(r) => r.id}
+          emptyTitle="Nothing waiting on you"
+          emptyDescription="Approvals routed to the Founder will show up here."
+          onRowClick={() => router.push("/founder/approvals")}
+          textClassName="text-sm"
+        />
       </Card>
 
     </div>

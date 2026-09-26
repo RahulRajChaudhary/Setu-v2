@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
-import { Pencil, Search, Star, X } from "lucide-react";
+import { Pencil, Star } from "lucide-react";
 import { LAUNCHER_APPS, type LauncherApp } from "@/lib/mock-data/apps-launcher";
 import { useLauncherState } from "@/lib/use-launcher-state";
 
@@ -64,7 +64,6 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
   const { favorites, lastUsed, toggleFavorite, setFavoritesOrder, recordUsed } = useLauncherState();
   const [sortMode, setSortMode] = useState<SortMode>("alpha");
   const [editMode, setEditMode] = useState(false);
-  const [query, setQuery] = useState("");
 
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<DropTarget | null>(null);
@@ -83,14 +82,7 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [onClose]);
 
-  const normalizedQuery = query.trim().toLowerCase();
-  const isSearching = normalizedQuery.length > 0;
-  const dragEnabled = editMode && !isSearching;
-
-  const searchResults = useMemo(
-    () => (isSearching ? LAUNCHER_APPS.filter((app) => app.name.toLowerCase().includes(normalizedQuery)) : []),
-    [isSearching, normalizedQuery]
-  );
+  const dragEnabled = editMode;
 
   const favoriteApps = useMemo(
     () =>
@@ -201,8 +193,8 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
   return (
     <div
       className="
-        absolute right-0 top-[calc(100%+0.5rem)] z-50
-        flex max-h-[32rem] w-[21rem] max-w-[calc(100vw-1.5rem)]
+        absolute right-0 top-[calc(100%+var(--page-pad-y))] z-50
+        flex max-h-[42rem] w-[28rem] max-w-[calc(100vw-1.5rem)]
         flex-col overflow-hidden rounded-xl border border-[var(--divider)]
         bg-white shadow-xl
       "
@@ -223,68 +215,22 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
         </button>
       </div>
 
-      <div className="shrink-0 px-4 pb-1 pt-3">
-        <div className="flex items-center gap-2 rounded-full bg-[var(--search-bg)] px-3 py-1.5">
-          <Search size={14} className="text-[var(--text-muted)]" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search Sahayogi apps"
-            aria-label="Search Sahayogi apps"
-            className="w-full bg-transparent text-xs text-[var(--text-secondary)] placeholder:text-[var(--text-muted)] focus:outline-none"
-          />
-          {query && (
-            <button
-              type="button"
-              onClick={() => setQuery("")}
-              aria-label="Clear search"
-              className="text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
-            >
-              <X size={13} />
-            </button>
-          )}
-        </div>
-      </div>
-
       <div
-        className="min-h-0 flex-1 overflow-y-auto px-3 pb-3 pt-2"
+        className="min-h-0 flex-1 overflow-y-auto px-3 pb-3 pt-3"
         onPointerMove={dragId ? handlePointerMove : undefined}
         onPointerUp={dragId ? handlePointerUp : undefined}
         onPointerCancel={dragId ? handlePointerUp : undefined}
       >
-        {isSearching ? (
-          searchResults.length > 0 ? (
-            <div className="grid grid-cols-3 gap-1 pb-2 pt-1">
-              {searchResults.map((app) => (
-                <button
-                  key={app.id}
-                  type="button"
-                  onClick={() => handleTileClick(app)}
-                  className="flex flex-col items-center gap-2 rounded-lg px-2 py-3 text-center transition-colors hover:bg-[var(--search-bg)]"
-                >
-                  <AppIcon app={app} size={40} />
-                  <span className="text-[0.6875rem] font-medium leading-tight text-[var(--text-secondary)]">
-                    {app.name}
-                  </span>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className="px-1 py-6 text-center text-xs text-[var(--text-muted)]">No apps match &ldquo;{query}&rdquo;.</p>
-          )
-        ) : (
-          <>
-            {favoriteApps.length > 0 && (
-              <>
-                <p className="px-1 pb-1 pt-1 text-[0.6875rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+        {favoriteApps.length > 0 && (
+              <div className="mb-2 rounded-2xl bg-[var(--search-bg)] p-3">
+                <p className="px-1 pb-2 pt-1 text-[0.6875rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                   Your favorites
                 </p>
                 <div
                   ref={favoritesGridRef}
                   data-zone="favorites"
-                  className={`grid grid-cols-3 gap-1 rounded-lg pb-2 transition-colors ${
-                    dragOver?.zone === "favorites" ? "bg-[var(--search-bg)] ring-2 ring-[var(--icon-btn-navy)]/30" : ""
+                  className={`grid grid-cols-3 gap-1 rounded-lg pb-1 transition-colors ${
+                    dragOver?.zone === "favorites" ? "bg-white ring-2 ring-[var(--icon-btn-navy)]/30" : ""
                   }`}
                 >
                   {favoriteApps.map((app, index) => (
@@ -295,12 +241,12 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
                       onClick={() => handleTileClick(app)}
                       onPointerDown={(e) => handlePointerDown(e, app)}
                       style={{ touchAction: dragEnabled ? "none" : undefined, ...jiggleStyle(index) }}
-                      className={`tap-pop flex flex-col items-center gap-2 rounded-lg px-2 py-3 text-center transition-colors hover:bg-[var(--search-bg)] ${
+                      className={`tap-pop flex flex-col items-center gap-2 rounded-lg px-2 py-3 text-center transition-colors hover:bg-white ${
                         dragEnabled && dragId !== app.id ? "launcher-jiggle" : ""
                       } ${dragId === app.id ? "opacity-30" : ""}`}
                     >
                       <span className="relative">
-                        <AppIcon app={app} size={44} />
+                        <AppIcon app={app} size={58} />
                         {editMode && (
                           <span className="pointer-events-none absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--status-critical-fg)] text-[0.5rem] text-white">
                             &minus;
@@ -313,8 +259,7 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
                     </button>
                   ))}
                 </div>
-                <div className="my-1 border-t border-[var(--divider)]" />
-              </>
+              </div>
             )}
 
             <div className="flex items-center justify-between px-1 pb-1 pt-2">
@@ -389,15 +334,13 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
                       className={favorites.includes(app.id) ? "text-[var(--icon-btn-navy)] opacity-100" : ""}
                     />
                   </button>
-                  <AppIcon app={app} size={40} />
+                  <AppIcon app={app} size={46} />
                   <span className="text-[0.6875rem] font-medium leading-tight text-[var(--text-secondary)]">
                     {app.name}
                   </span>
                 </div>
               ))}
             </div>
-          </>
-        )}
       </div>
 
       {draggedApp && pointer && (

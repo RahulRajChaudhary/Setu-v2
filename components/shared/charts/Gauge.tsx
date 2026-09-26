@@ -22,7 +22,7 @@ export default function Gauge({
       <div className="h-2.5 w-full overflow-hidden rounded-full bg-[var(--search-bg)]">
         <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: color }} />
       </div>
-      <span className="text-[11px] font-semibold text-[var(--text-secondary)]">
+      <span className="text-[0.6875rem] font-semibold text-[var(--text-secondary)]">
         {value}
         {max === 100 ? "%" : ` / ${max}`}
       </span>

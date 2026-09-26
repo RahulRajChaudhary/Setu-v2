@@ -10,19 +10,13 @@ export default function AssistantButton({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       className="
         tap-pop fixed bottom-24 right-0 z-30 flex h-14 w-14 items-center justify-center
-        overflow-hidden rounded-tl-[10px] rounded-bl-[10px]
+        overflow-hidden rounded-tl-[0.65rem] rounded-bl-[0.65rem]
         bg-gradient-to-b from-[#F5F9FF] to-[#CCE1FF]
-        shadow-[-4px_2px_14px_rgba(15,23,42,0.18)]
+        shadow-[-0.25rem_0.125rem_0.9rem_rgba(15,23,42,0.18)]
         transition-transform hover:-translate-x-0.5
-        screen-sm:bottom-[3px]
-        screen-sm:h-[34px] screen-sm:w-[32px]
-
-        screen-lg:bottom-[4px]
-        screen-xl:bottom-[5px]
-        screen-1366:bottom-[5px]
-        screen-1440:bottom-[5px]
-        screen-2xl:bottom-[7px]
-        screen-2xl:h-[42px] screen-2xl:w-[40px]
+        screen-sm:bottom-0
+        screen-sm:h-[2.2rem] screen-sm:w-[2.1rem]
+        screen-2xl:h-[2.6rem] screen-2xl:w-[2.5rem]
       "
     >
       <Image

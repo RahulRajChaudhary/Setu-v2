@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { Search, Plus, Bell, ExternalLink } from "lucide-react";
-import { PERSONA_LIST, personaConfigFromPathname } from "@/lib/personas";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Search, Plus, Bell, ExternalLink, History, Settings } from "lucide-react";
+import { personaConfigFromPathname } from "@/lib/personas";
 import AppsLauncher from "@/components/shell/AppsLauncher";
-
-const IS_DEV = process.env.NODE_ENV !== "production";
 
 const NOTIFICATIONS = [
   {
@@ -34,7 +33,6 @@ export default function Header() {
     "profile" | "notifications" | "apps" | null
   >(null);
   const pathname = usePathname();
-  const router = useRouter();
   const persona = personaConfigFromPathname(pathname);
 
   function toggle(menu: "profile" | "notifications" | "apps") {
@@ -122,8 +120,10 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Right side actions */}
-      <div className="relative ml-auto flex shrink-0 items-center gap-1.5 screen-sm:gap-2">
+      {/* Right side actions — h-full so this row's bottom edge matches the header's bottom edge,
+          which dropdown tops (top-[calc(100%+var(--page-pad-y))]) key off to align with where
+          the dashboard content (e.g. KPI tiles) starts below the header. */}
+      <div className="relative ml-auto flex h-full shrink-0 items-center gap-1.5 screen-sm:gap-2">
         {/* Create */}
         <IconButton
           label="Create"
@@ -133,7 +133,7 @@ export default function Header() {
         </IconButton>
 
         {/* Notifications */}
-        <div className="relative z-50">
+        <div className="flex h-full items-center">
           <IconButton
             label="Notifications"
             bg="transparent"
@@ -161,11 +161,11 @@ export default function Header() {
             <div
               className="
                 absolute
-                right-3
-                top-[calc(100%+0.5rem)]
+                right-0
+                top-[calc(100%+var(--page-pad-y))]
                 z-50
                 flex
-                w-[19rem]
+                w-[21rem]
                 max-w-[calc(100vw-1.5rem)]
                 flex-col
                 overflow-hidden
@@ -175,7 +175,7 @@ export default function Header() {
                 bg-white
                 shadow-xl
 
-                screen-2xl:w-[24rem]
+                screen-2xl:w-[26rem]
               "
             >
               {/* Header */}
@@ -186,17 +186,17 @@ export default function Header() {
                   items-center
                   justify-between
                   px-4
-                  py-3
+                  py-3.5
                 "
               >
-                <p className="text-sm font-semibold text-[var(--text-heading)]">
+                <p className="text-base font-semibold text-[var(--text-heading)]">
                   Notifications
                 </p>
 
                 <button
                   type="button"
                   className="
-                    text-[0.6875rem]
+                    text-xs
                     font-medium
                     text-[var(--icon-btn-navy)]
                     hover:underline
@@ -227,7 +227,7 @@ export default function Header() {
                       items-start
                       gap-2
                       px-4
-                      py-3
+                      py-3.5
                       text-left
                       transition-colors
                       hover:bg-[var(--search-bg)]
@@ -253,7 +253,7 @@ export default function Header() {
                         className="
                           block
                           truncate
-                          text-xs
+                          text-sm
                           font-medium
                           text-[var(--text-heading)]
                         "
@@ -263,7 +263,7 @@ export default function Header() {
 
                       <span
                         className="
-                          text-[0.6875rem]
+                          text-xs
                           text-[var(--text-muted)]
                         "
                       >
@@ -350,9 +350,9 @@ export default function Header() {
               className="
                 absolute
                 right-0
-                top-[calc(100%+0.5rem)]
+                top-[calc(100%+var(--page-pad-y))]
                 z-50
-                w-[17rem]
+                w-[22rem]
                 max-w-[calc(100vw-1.5rem)]
                 overflow-hidden
                 rounded-xl
@@ -363,14 +363,14 @@ export default function Header() {
               "
             >
               {/* Brand row */}
-              <div className="flex items-center justify-between px-4 py-3">
-                <p className="text-sm font-semibold text-[var(--text-heading)]">
-                  Setu
+              <div className="flex items-center justify-between px-4 py-3.5">
+                <p className="text-base font-semibold text-[var(--text-heading)]">
+                  Sahayogi One
                 </p>
 
                 <button
                   type="button"
-                  className="text-xs font-medium text-[var(--icon-btn-navy)] hover:underline"
+                  className="text-sm font-medium text-[var(--status-critical-fg)] hover:underline"
                 >
                   Sign out
                 </button>
@@ -380,17 +380,15 @@ export default function Header() {
               <div
                 className="
                   flex
-                  flex-col
-                  items-center
-                  gap-2
+                  items-start
+                  gap-3
                   border-t
                   border-[var(--divider)]
                   px-4
                   py-5
-                  text-center
                 "
               >
-                <div
+                <span
                   className="
                     flex
                     h-14
@@ -399,96 +397,98 @@ export default function Header() {
                     items-center
                     justify-center
                     rounded-full
-                    bg-gradient-to-tr
-                    from-[#6366F1]
-                    via-[#8B5CF6]
-                    to-[#3B82F6]
-                    p-[0.1875rem]
+                    bg-[var(--avatar-bg)]
+                    text-lg
+                    font-semibold
+                    text-[var(--avatar-text)]
                   "
                 >
-                  <span
+                  {persona.identity.initials}
+                </span>
+
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-base font-semibold text-[var(--text-heading)]">
+                    {persona.identity.name}
+                  </p>
+
+                  <p className="truncate text-sm text-[var(--text-muted)]">
+                    {persona.identity.name.toLowerCase().replace(" ", ".")}@setu.in
+                  </p>
+
+                  <p className="truncate text-sm text-[var(--role-text)]">
+                    {persona.identity.role}
+                  </p>
+
+                  <button
+                    type="button"
                     className="
+                      tap-pop
+                      mt-2
                       flex
-                      h-full
-                      w-full
                       items-center
-                      justify-center
-                      rounded-full
-                      bg-[var(--avatar-bg)]
-                      text-lg
-                      font-semibold
-                      text-[var(--avatar-text)]
+                      gap-1
+                      text-sm
+                      font-medium
+                      text-[var(--icon-btn-navy)]
+                      hover:underline
                     "
                   >
-                    {persona.identity.initials}
-                  </span>
+                    View account
+                    <ExternalLink size={14} />
+                  </button>
                 </div>
+              </div>
 
-                <p className="truncate text-sm font-semibold text-[var(--text-heading)]">
-                  {persona.identity.name}
-                </p>
-
-                <p className="truncate text-xs text-[var(--text-muted)]">
-                  {persona.identity.name.toLowerCase().replace(" ", ".")}@setu.in
-                </p>
+              {/* Menu items */}
+              <div className="border-t border-[var(--divider)] py-1">
+                <Link
+                  href={`${persona.routeBase}/audit-explorer`}
+                  onClick={() => setOpenMenu(null)}
+                  className="
+                    tap-pop
+                    flex
+                    w-full
+                    items-center
+                    justify-between
+                    gap-2
+                    px-4
+                    py-3
+                    text-left
+                    text-base
+                    text-[var(--text-secondary)]
+                    transition-colors
+                    hover:bg-[var(--search-bg)]
+                  "
+                >
+                  <span className="flex items-center gap-2.5">
+                    <History size={18} className="text-[var(--text-muted)]" />
+                    My activity
+                  </span>
+                  <span className="text-sm text-[var(--text-muted)]">Audit trail</span>
+                </Link>
 
                 <button
                   type="button"
                   className="
                     tap-pop
-                    mt-1
                     flex
+                    w-full
                     items-center
-                    gap-1
-                    text-xs
-                    font-medium
-                    text-[var(--icon-btn-navy)]
-                    hover:underline
+                    gap-2.5
+                    px-4
+                    py-3
+                    text-left
+                    text-base
+                    text-[var(--text-secondary)]
+                    transition-colors
+                    hover:bg-[var(--search-bg)]
                   "
                 >
-                  View account
-                  <ExternalLink size={12} />
+                  <Settings size={18} className="text-[var(--text-muted)]" />
+                  Settings
                 </button>
               </div>
 
-              {IS_DEV && (
-                <div className="border-t border-[var(--divider)] py-1">
-                  <p className="px-4 pb-1 pt-2 text-[0.625rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                    Switch persona (dev only)
-                  </p>
-                  {PERSONA_LIST.map((p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => {
-                        setOpenMenu(null);
-                        router.push(`${p.routeBase}/dashboard`);
-                      }}
-                      className={`
-                        tap-pop
-                        flex
-                        w-full
-                        items-center
-                        justify-between
-                        px-4
-                        py-2
-                        text-left
-                        text-sm
-                        transition-colors
-                        hover:bg-[var(--search-bg)]
-                        ${
-                          p.id === persona.id
-                            ? "font-semibold text-[var(--text-heading)]"
-                            : "text-[var(--text-secondary)]"
-                        }
-                      `}
-                    >
-                      {p.label}
-                      {p.id === persona.id && <span aria-hidden="true">&#10003;</span>}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
           )}
         </div>

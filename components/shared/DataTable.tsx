@@ -20,7 +20,7 @@ export default function DataTable<T>({
   emptyTitle = "Nothing here yet",
   emptyDescription,
   onRowClick,
-  textClassName,
+  textClassName = "text-xs",
 }: {
   columns: Column<T>[];
   rows: T[];
@@ -72,14 +72,14 @@ export default function DataTable<T>({
   return (
     <div className="overflow-hidden rounded-[var(--card-radius)] border border-[var(--card-border)] bg-white">
       <div className="overflow-x-auto">
-        <table className={`w-full min-w-[560px] text-left text-xs ${textClassName ?? ""}`}>
+        <table className={`w-full min-w-[35rem] text-left ${textClassName}`}>
           <thead>
             <tr className="border-b border-[var(--divider)] bg-[var(--search-bg)]/70">
               {renderExpanded && <th className="w-8 px-2.5 py-1.5" />}
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className={`px-2.5 py-1.5 text-xs font-semibold text-[var(--role-text)] ${column.className ?? ""}`}
+                  className={`px-2.5 py-1.5 font-semibold text-[var(--role-text)] ${column.className ?? ""}`}
                 >
                   <button
                     type="button"

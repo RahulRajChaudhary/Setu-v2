@@ -73,14 +73,26 @@ export const controlsEffectiveByFramework = [
   { label: "GDPR", value: 91, effective: 41, total: 45, color: "var(--chart-5)" },
 ];
 
-export const growthLast30Days = [
-  { label: "Trial → paid rate", value: "34%" },
-  { label: "On 2+ products", value: "61%" },
-  { label: "Setup success rate", value: "97%" },
-];
+const GROWTH_STATS_BY_RANGE: Record<7 | 30 | 90, { label: string; value: string }[]> = {
+  7: [
+    { label: "Trial → paid rate", value: "29%" },
+    { label: "On 2+ products", value: "54%" },
+    { label: "Setup success rate", value: "95%" },
+  ],
+  30: [
+    { label: "Trial → paid rate", value: "34%" },
+    { label: "On 2+ products", value: "61%" },
+    { label: "Setup success rate", value: "97%" },
+  ],
+  90: [
+    { label: "Trial → paid rate", value: "41%" },
+    { label: "On 2+ products", value: "68%" },
+    { label: "Setup success rate", value: "98%" },
+  ],
+};
 
-export function getGrowthStats(_rangeDays: GrowthRangeDays): { label: string; value: string }[] {
-  return growthLast30Days;
+export function getGrowthStats(rangeDays: 7 | 30 | 90) {
+  return GROWTH_STATS_BY_RANGE[rangeDays];
 }
 
 // Deterministic pseudo-random daily deltas (seeded — same output on every run,

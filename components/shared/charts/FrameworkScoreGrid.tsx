@@ -1,3 +1,5 @@
+import { ShieldCheck } from "lucide-react";
+
 export type FrameworkScore = { label: string; value: number; color?: string };
 
 const BAND = [
@@ -8,15 +10,6 @@ const BAND = [
 
 function bandFor(value: number) {
   return BAND.find((b) => value >= b.min)!;
-}
-
-function FrameworkIcon({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 3l7 3v5.5c0 4.2-3 7.6-7 8.5-4-.9-7-4.3-7-8.5V6l7-3Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-      <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
 }
 
 export default function FrameworkScoreGrid({
@@ -45,12 +38,12 @@ export default function FrameworkScoreGrid({
                   className={`flex shrink-0 items-center justify-center rounded-lg ${big ? "h-10 w-10" : "h-7 w-7"}`}
                   style={{ background: band.bg, color: band.fg }}
                 >
-                  <FrameworkIcon size={big ? 20 : 16} />
+                  <ShieldCheck size={big ? 20 : 16} />
                 </span>
                 <span className={`font-semibold text-[var(--text-heading)] ${big ? "text-base" : "text-sm"}`}>{d.label}</span>
               </div>
               <span
-                className={`rounded-full font-semibold ${big ? "px-2.5 py-1 text-xs" : "px-2 py-0.5 text-[10px]"}`}
+                className={`rounded-full font-semibold ${big ? "px-2.5 py-1 text-xs" : "px-2 py-0.5 text-[0.625rem]"}`}
                 style={{ background: band.bg, color: band.fg }}
               >
                 {band.word}

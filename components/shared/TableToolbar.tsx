@@ -1,5 +1,7 @@
 "use client";
 
+import { Search } from "lucide-react";
+
 export type FilterOption = { value: string; label: string };
 
 export default function TableToolbar({
@@ -22,9 +24,9 @@ export default function TableToolbar({
   return (
     <div className="mb-3 flex flex-wrap items-center gap-2">
       {onSearchChange && (
-        <div className="relative min-w-[180px] max-w-xs flex-1">
+        <div className="relative min-w-[11.25rem] max-w-xs flex-1">
           <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--search-placeholder)]">
-            <SearchIcon />
+            <Search size={14} />
           </span>
           <input
             type="text"
@@ -58,14 +60,5 @@ export default function TableToolbar({
         </div>
       )}
     </div>
-  );
-}
-
-function SearchIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M14 14L11 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
   );
 }

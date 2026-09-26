@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { LayoutGrid, CheckCircle2, Clock, Rocket, AlertCircle, RefreshCw } from "lucide-react";
 import Card from "@/components/shared/Card";
 import DataTable, { type Column } from "@/components/shared/DataTable";
 import StatusBadge from "@/components/shared/StatusBadge";
@@ -82,14 +83,14 @@ export default function OperationsPage() {
     <div className="flex flex-col gap-[var(--space-lg)]">
       <Card title="Workspaces" description="Provisioning health and lifecycle across every workspace">
         <div className="mb-4 grid grid-cols-2 gap-[var(--space-sm)] screen-sm:grid-cols-4">
-          <StatTile label="Total" value={workspaceKpis.total} tone="info" icon={<GridDotsIcon />} />
-          <StatTile label="Active" value={workspaceKpis.active} tone="healthy" icon={<CheckIcon />} />
-          <StatTile label="Grace / restricted" value={workspaceKpis.graceOrRestricted} tone="warning" icon={<ClockIcon />} />
+          <StatTile label="Total" value={workspaceKpis.total} tone="info" icon={<LayoutGrid size={16} />} />
+          <StatTile label="Active" value={workspaceKpis.active} tone="healthy" icon={<CheckCircle2 size={16} />} />
+          <StatTile label="Grace / restricted" value={workspaceKpis.graceOrRestricted} tone="warning" icon={<Clock size={16} />} />
           <StatTile
             label="Failed provisioning (24h)"
             value={workspaceKpis.failedProvisioning24h}
             tone={workspaceKpis.failedProvisioning24h > 0 ? "critical" : "healthy"}
-            icon={<AlertIcon />}
+            icon={<AlertCircle size={16} />}
           />
         </div>
         <div className="grid grid-cols-1 gap-[var(--space-md)] screen-lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
@@ -118,10 +119,10 @@ export default function OperationsPage() {
       </Card>
 
       <Card title="Subscriptions" description="Status distribution across active plan commitments">
-        <div className="mb-4 grid grid-cols-3 gap-[var(--space-sm)]">
-          <StatTile label="Active" value={subscriptionKpis.active} tone="healthy" icon={<CheckIcon />} />
-          <StatTile label="Grace" value={subscriptionKpis.grace} tone="warning" icon={<ClockIcon />} />
-          <StatTile label="Restricted" value={subscriptionKpis.restricted} tone="critical" icon={<AlertIcon />} />
+        <div className="mb-4 grid grid-cols-1 gap-[var(--space-sm)] screen-420:grid-cols-3">
+          <StatTile label="Active" value={subscriptionKpis.active} tone="healthy" icon={<CheckCircle2 size={16} />} />
+          <StatTile label="Grace" value={subscriptionKpis.grace} tone="warning" icon={<Clock size={16} />} />
+          <StatTile label="Restricted" value={subscriptionKpis.restricted} tone="critical" icon={<AlertCircle size={16} />} />
         </div>
         <div className="rounded-xl border border-[var(--divider)] bg-white p-4" style={{ boxShadow: "var(--card-shadow)" }}>
           <ToggleChart data={subscriptionStatusDonut} defaultType="pie" />
@@ -143,7 +144,7 @@ export default function OperationsPage() {
                     className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
                     style={{ background: tone.bg, color: tone.fg }}
                   >
-                    <DoraMetricIcon label={k.label} />
+                    <DoraMetricIcon label={k.label} size={16} />
                   </span>
                   <StatusBadge status={DORA_BAND_STATUS[k.band]} label={k.band} />
                 </div>
@@ -187,14 +188,14 @@ export default function OperationsPage() {
       </Card>
 
       <Card title="Health" description="Golden-signal status per product, last 30 days">
-        <div className="grid grid-cols-2 gap-[var(--space-sm)] screen-sm:grid-cols-4">
+        <div className="flex flex-wrap gap-[var(--space-sm)]">
           {productHealthGrid.map((p) => {
             const tone = AREA_TONE[p.status];
-            const StatusIcon = p.status === "healthy" ? CheckIcon : p.status === "warning" ? ClockIcon : AlertIcon;
+            const StatusIcon = p.status === "healthy" ? CheckCircle2 : p.status === "warning" ? Clock : AlertCircle;
             return (
               <div
                 key={p.id}
-                className="card-interactive flex flex-col gap-2 rounded-xl border border-[var(--divider)] bg-white p-3"
+                className="card-interactive flex min-w-0 grow basis-[calc((100%-var(--space-sm))/2)] flex-col gap-2 rounded-xl border border-[var(--divider)] bg-white p-3 screen-sm:basis-[calc((100%-(var(--space-sm)*3))/4)]"
                 style={{ boxShadow: "var(--card-shadow)" }}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -202,7 +203,7 @@ export default function OperationsPage() {
                     className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
                     style={{ background: tone.bg, color: tone.fg }}
                   >
-                    <StatusIcon />
+                    <StatusIcon size={16} />
                   </span>
                   <StatusBadge status={p.status} label={p.status} />
                 </div>
@@ -250,64 +251,9 @@ const DORA_TONE: Record<"Elite" | "High" | "Medium" | "Low", { bg: string; fg: s
   Low: { bg: "var(--status-critical-bg)", fg: "var(--status-critical-fg)" },
 };
 
-function GridDotsIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.75" />
-      <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.75" />
-      <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.75" />
-      <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.75" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.75" />
-      <path d="M8 12.5L10.5 15L16 9" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function ClockIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.75" />
-      <path d="M12 7V12L15.5 14" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function DoraMetricIcon({ label }: { label: string }) {
-  if (label.toLowerCase().includes("deployment")) {
-    return (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M12 2c3 2 5 6 5 10 0 2-1 4-2 5l-1 3-2-2-2 2-1-3c-1-1-2-3-2-5 0-4 2-8 5-10Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-        <circle cx="12" cy="10" r="1.6" stroke="currentColor" strokeWidth="2" />
-      </svg>
-    );
-  }
-  if (label.toLowerCase().includes("lead time")) {
-    return <ClockIcon />;
-  }
-  if (label.toLowerCase().includes("failure")) {
-    return <AlertIcon />;
-  }
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M3 12a9 9 0 0 1 15.4-6.4M21 12a9 9 0 0 1-15.4 6.4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path d="M18 3v4h-4M6 21v-4h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function AlertIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.75" />
-      <path d="M12 8V13" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-      <circle cx="12" cy="16" r="1" fill="currentColor" />
-    </svg>
-  );
+function DoraMetricIcon({ label, size = 16 }: { label: string; size?: number }) {
+  if (label.toLowerCase().includes("deployment")) return <Rocket size={size} />;
+  if (label.toLowerCase().includes("lead time")) return <Clock size={size} />;
+  if (label.toLowerCase().includes("failure")) return <AlertCircle size={size} />;
+  return <RefreshCw size={size} />;
 }

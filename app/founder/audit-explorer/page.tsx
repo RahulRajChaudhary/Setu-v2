@@ -83,7 +83,7 @@ export default function AuditExplorerPage() {
           emptyTitle="No events match"
           emptyDescription="Try a different search term or result filter."
           renderExpanded={(r) => (
-            <dl className="grid grid-cols-2 gap-[var(--space-sm)] text-xs screen-sm:grid-cols-4">
+            <dl className="grid grid-cols-1 gap-[var(--space-sm)] text-xs screen-420:grid-cols-3">
               <div>
                 <dt className="text-[var(--role-text)]">Before</dt>
                 <dd className="font-medium text-[var(--text-secondary)]">{r.before}</dd>

@@ -22,19 +22,19 @@ export default function AdoptionBarList({ data, average }: { data: AdoptionDatum
   return (
     <div className="flex flex-col gap-[var(--space-md)]">
       {average !== undefined && (
-        <p className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)]">
+        <p className="flex items-center gap-1.5 text-[0.6875rem] text-[var(--text-muted)]">
           <span className="inline-block h-2 w-2 rounded-full border border-dashed border-[var(--text-muted)]" />
           Fleet average is {average}% — deltas below are vs. this line
         </p>
       )}
-      <div className="grid grid-cols-1 gap-[var(--space-sm)] screen-sm:grid-cols-2 screen-xl:grid-cols-3">
+      <div className="flex flex-wrap gap-[var(--space-sm)]">
         {sorted.map((d) => {
           const tier = tierFor(d.value);
           const delta = average !== undefined ? Math.round(d.value - average) : undefined;
           return (
             <div
               key={d.label}
-              className="card-interactive flex flex-col gap-2 rounded-[var(--card-radius)] border border-[var(--divider)] bg-white p-3"
+              className="card-interactive flex min-w-0 grow basis-full flex-col gap-2 rounded-[var(--card-radius)] border border-[var(--divider)] bg-white p-3 screen-sm:basis-[calc((100%-var(--space-sm))/2)] screen-xl:basis-[calc((100%-(var(--space-sm)*2))/3)]"
               style={{ boxShadow: "var(--card-shadow)" }}
             >
               <div className="flex items-center justify-between gap-2">
@@ -44,7 +44,7 @@ export default function AdoptionBarList({ data, average }: { data: AdoptionDatum
                 </span>
                 {delta !== undefined && (
                   <span
-                    className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
+                    className="shrink-0 rounded-full px-1.5 py-0.5 text-[0.625rem] font-semibold"
                     style={{
                       background: delta >= 0 ? "var(--trend-up-bg)" : "var(--trend-down-bg)",
                       color: delta >= 0 ? "var(--trend-up-fg)" : "var(--trend-down-fg)",

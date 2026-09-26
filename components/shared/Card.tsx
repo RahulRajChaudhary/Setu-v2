@@ -17,7 +17,7 @@ export default function Card({
 }) {
   return (
     <section
-      className={`rounded-[var(--card-radius)] border border-[var(--card-border)] bg-white p-[var(--card-pad)] ${
+      className={`flex h-full min-w-0 flex-col rounded-[var(--card-radius)] border border-[var(--card-border)] bg-white p-[var(--card-pad)] ${
         interactive ? "card-interactive" : ""
       } ${className ?? ""}`}
       style={{ boxShadow: "var(--card-shadow)" }}
@@ -31,7 +31,7 @@ export default function Card({
           {action}
         </div>
       )}
-      {children}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
     </section>
   );
 }

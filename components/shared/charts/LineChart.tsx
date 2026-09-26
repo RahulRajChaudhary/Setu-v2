@@ -35,7 +35,8 @@ export default function LineChart({
   const last = series[series.length - 1];
 
   return (
-    <svg width="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" role="img" aria-label="Trend line chart">
+    <div className="relative">
+    <svg width="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" role="img" aria-label="Trend line chart" className="block" style={{ height: `${height / 16}rem` }}>
       {thresholdY !== undefined && (
         <>
           <line
@@ -46,6 +47,7 @@ export default function LineChart({
             stroke="var(--status-critical-fg)"
             strokeWidth={1}
             strokeDasharray="4 3"
+            vectorEffect="non-scaling-stroke"
           />
           {thresholdLabel && (
             <text x={width - 4} y={scaleY(thresholdY) - 4} textAnchor="end" fontSize="8" fill="var(--status-critical-fg)">
@@ -55,8 +57,16 @@ export default function LineChart({
         </>
       )}
       {fill && <path d={areaPath} fill={color} opacity={0.12} stroke="none" />}
-      <path d={path} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-      {showEndDot && <circle cx={scaleX(last.x)} cy={scaleY(last.y)} r={3} fill={color} stroke="white" strokeWidth={1.5} />}
+      <path d={path} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+      
     </svg>
+    {showEndDot && (
+      <span
+        aria-hidden="true"
+        className="absolute h-[0.5rem] w-[0.5rem] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white"
+        style={{ left: `${(scaleX(last.x) / width) * 100}%`, top: `${(scaleY(last.y) / height) * 100}%`, backgroundColor: color }}
+      />
+    )}
+    </div>
   );
 }

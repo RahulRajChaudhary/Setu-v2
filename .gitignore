@@ -39,3 +39,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# docs
+/docs
+
+# claude code / agent tooling (not app source)
+.claude/
+.agents/
+
+# scratch / temp files created during dev sessions
+.scratch_*
+.scratch_*/
+*.zip
+

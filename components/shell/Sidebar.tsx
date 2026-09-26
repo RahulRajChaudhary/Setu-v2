@@ -3,86 +3,149 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { ClipboardCheck, Settings, TrendingUp, ShieldCheck, FileSearch, Box, ShieldAlert, FileLock2, UserCheck } from "lucide-react";
+import { personaConfigFromPathname, type Persona } from "@/lib/personas";
 
 type NavItem = {
   label: string;
-  href: string;
+  slug: string;
   bg: string;
   fg: string;
   icon: (color: string) => ReactNode;
 };
 
-const NAV_ITEMS: NavItem[] = [
-  {
-    label: "Dashboard",
-    href: "/founder/dashboard",
-    bg: "#FCE7F3",
-    fg: "#DB2777",
-    icon: (color) => <GridIcon color={color} />,
-  },
+// Shared by Founder and Engineering Lead — same generic 6 sections for both today.
+const OPERATOR_NAV_ITEMS: NavItem[] = [
   {
     label: "Approvals",
-    href: "/founder/approvals",
+    slug: "approvals",
     bg: "#D1FAE5",
     fg: "#059669",
-    icon: (color) => <CheckClipboardIcon color={color} />,
+    icon: (color) => <ClipboardCheck color={color} size={20} />,
   },
   {
     label: "Operations",
-    href: "/founder/operations",
+    slug: "operations",
     bg: "#DBEAFE",
     fg: "#2563EB",
-    icon: (color) => <GearIcon color={color} />,
+    icon: (color) => <Settings color={color} size={20} />,
   },
   {
-    label: "Cost & Analytics",
-    href: "/founder/cost-analytics",
+    label: "Analytics",
+    slug: "cost-analytics",
     bg: "#CCFBF1",
     fg: "#0D9488",
-    icon: (color) => <TrendingUpIcon color={color} />,
+    icon: (color) => <TrendingUp color={color} size={20} />,
   },
   {
-    label: "Compliance & Risk",
-    href: "/founder/compliance-risk",
+    label: "Compliance",
+    slug: "compliance-risk",
     bg: "#CFFAFE",
     fg: "#0891B2",
-    icon: (color) => <ShieldCheckIcon color={color} />,
+    icon: (color) => <ShieldCheck color={color} size={20} />,
   },
   {
-    label: "Audit Explorer",
-    href: "/founder/audit-explorer",
+    label: "Audit",
+    slug: "audit-explorer",
     bg: "#FFEDD5",
     fg: "#EA580C",
-    icon: (color) => <SearchDocIcon color={color} />,
+    icon: (color) => <FileSearch color={color} size={20} />,
   },
   {
-    label: "Product 360",
-    href: "/founder/products",
+    label: "Products",
+    slug: "products",
     bg: "#EDE9FE",
     fg: "#7C3AED",
-    icon: (color) => <CubeIcon color={color} />,
+    icon: (color) => <Box color={color} size={20} />,
   },
 ];
 
-const ACTIVE_BG = "#0B1B3B";
+// Compliance Officer's own 5 sections — matches the canonical sidebar taxonomy
+// (Security & Compliance group: compliance, risks-vendors, privacy-requests,
+// access-reviews, audit-explorer), not the generic operator list above.
+const COMPLIANCE_OFFICER_NAV_ITEMS: NavItem[] = [
+  {
+    label: "Compliance",
+    slug: "compliance",
+    bg: "#CFFAFE",
+    fg: "#0891B2",
+    icon: (color) => <ShieldCheck color={color} size={20} />,
+  },
+  {
+    label: "Risk & Vendors",
+    slug: "risk-vendors",
+    bg: "#FEE2E2",
+    fg: "#DC2626",
+    icon: (color) => <ShieldAlert color={color} size={20} />,
+  },
+  {
+    label: "Privacy Requests",
+    slug: "privacy-requests",
+    bg: "#EDE9FE",
+    fg: "#7C3AED",
+    icon: (color) => <FileLock2 color={color} size={20} />,
+  },
+  {
+    label: "Access Reviews",
+    slug: "access-reviews",
+    bg: "#DBEAFE",
+    fg: "#2563EB",
+    icon: (color) => <UserCheck color={color} size={20} />,
+  },
+  {
+    label: "Audit",
+    slug: "audit-explorer",
+    bg: "#FFEDD5",
+    fg: "#EA580C",
+    icon: (color) => <FileSearch color={color} size={20} />,
+  },
+];
+
+const NAV_ITEMS_BY_PERSONA: Record<Persona, NavItem[]> = {
+  founder: OPERATOR_NAV_ITEMS,
+  "engineering-lead": OPERATOR_NAV_ITEMS,
+  "compliance-officer": COMPLIANCE_OFFICER_NAV_ITEMS,
+};
+
+const INDICATOR_COLOR = "#0B1B3B";
+const INACTIVE_ICON_COLOR = "#475569";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const persona = personaConfigFromPathname(pathname);
+  const navItems = NAV_ITEMS_BY_PERSONA[persona.id];
+  const iconRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const [indicator, setIndicator] = useState<{ top: number; height: number } | null>(null);
+
+  const activeIndex = navItems.findIndex((item) => {
+    const href = `${persona.routeBase}/${item.slug}`;
+    return pathname === href || pathname.startsWith(`${href}/`);
+  });
+
+  useEffect(() => {
+    function measure() {
+      const el = iconRefs.current[activeIndex];
+      setIndicator(el ? { top: el.offsetTop, height: el.offsetHeight } : null);
+    }
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [activeIndex]);
 
   return (
     <aside
       className="
         fixed inset-x-0 bottom-0 z-40
-        flex h-16 w-full
+        flex h-[4rem] w-full
         flex-row items-center justify-around
         gap-1 overflow-x-auto
         bg-[var(--shell-bg)]
         px-1 py-1
 
-        screen-sm:static
+        screen-sm:relative
         screen-sm:h-full
-        screen-sm:w-[76px]
+        screen-sm:w-[var(--sidebar-w)]
         screen-sm:flex-col
         screen-sm:items-center
         screen-sm:justify-start
@@ -90,16 +153,20 @@ export default function Sidebar() {
         screen-sm:overflow-visible
         screen-sm:px-0
         screen-sm:py-0
-
-        screen-1366:w-[81px]
-        screen-1440:w-[86px]
-        screen-2xl:w-[114px]
       "
       aria-label="Primary navigation"
     >
+      {/* Active indicator */}
+      {indicator && (
+        <span
+          aria-hidden="true"
+          className="hidden screen-sm:block absolute left-0 w-1 rounded-full transition-all duration-300 ease-out"
+          style={{ top: indicator.top, height: indicator.height, backgroundColor: INDICATOR_COLOR }}
+        />
+      )}
       {/* Logo */}
       <Link
-        href="/founder/dashboard"
+        href={`${persona.routeBase}/dashboard`}
         aria-label="Go to dashboard"
         className="
           hidden
@@ -109,13 +176,7 @@ export default function Sidebar() {
           justify-center
 
           screen-sm:flex
-          screen-sm:h-[68px]
-
-          screen-lg:h-[72px]
-
-          screen-xl:h-[76px]
-
-          screen-2xl:h-[80px]
+          screen-sm:h-[var(--header-h)]
         "
       >
         <Image
@@ -123,15 +184,7 @@ export default function Sidebar() {
           alt="Setu"
           width={63}
           height={77}
-          className="
-            h-6 w-[20px]
-
-            screen-sm:h-7 screen-sm:w-[23px]
-
-            screen-lg:h-7 screen-lg:w-[23px]
-
-            screen-2xl:h-8 screen-2xl:w-[26px]
-          "
+          className="h-[2.5rem] w-[2rem]"
           priority
         />
       </Link>
@@ -148,26 +201,24 @@ export default function Sidebar() {
 
           screen-sm:flex-1
           screen-sm:flex-col
-          screen-sm:items-center
           screen-sm:justify-start
           screen-sm:gap-1.5
           screen-sm:overflow-y-auto
           screen-sm:overflow-x-hidden
-          screen-sm:px-1.5
+          screen-sm:px-1
           screen-sm:pt-1
         "
       >
-        {NAV_ITEMS.map((item) => {
-          const isActive =
-            pathname === item.href ||
-            pathname.startsWith(`${item.href}/`);
+        {navItems.map((item, index) => {
+          const href = `${persona.routeBase}/${item.slug}`;
+          const isActive = pathname === href || pathname.startsWith(`${href}/`);
 
-          const iconColor = isActive ? "#FFFFFF" : item.fg;
+          const iconColor = isActive ? item.fg : INACTIVE_ICON_COLOR;
 
           return (
             <Link
-              key={item.href}
-              href={item.href}
+              key={item.slug}
+              href={href}
               title={item.label}
               aria-current={isActive ? "page" : undefined}
               className="
@@ -182,25 +233,20 @@ export default function Sidebar() {
             >
               {/* Icon */}
               <span
+                ref={(el) => {
+                  iconRefs.current[index] = el;
+                }}
                 className="
                   flex
-                  h-8 w-8
+                  h-[2.75rem] w-[2.75rem]
                   items-center
                   justify-center
                   rounded-lg
                   transition-all
                   duration-200
                   group-hover:scale-105
-
-                  screen-sm:h-9 screen-sm:w-9
-
-                  screen-lg:h-9 screen-lg:w-9
-
-                  screen-2xl:h-11 screen-2xl:w-11
+                  group-hover:bg-[var(--search-bg)]
                 "
-                style={{
-                  backgroundColor: isActive ? ACTIVE_BG : item.bg,
-                }}
               >
                 {item.icon(iconColor)}
               </span>
@@ -209,18 +255,15 @@ export default function Sidebar() {
               <span
                 className={`
                   hidden
-                  min-h-[22px]
-                  max-w-[68px]
+                  min-h-[1.5rem]
+                  max-w-full
                   text-center
-                  text-[9px]
+                  text-[0.75rem]
                   font-medium
-                  leading-[11px]
+                  leading-[0.875rem]
                   tracking-tight
 
-                  screen-420:block
-
                   screen-sm:block
-                  screen-sm:max-w-[86px]
 
                   ${isActive ? "font-semibold text-[#0B1B3B]" : "text-slate-600"}
                 `}
@@ -232,256 +275,5 @@ export default function Sidebar() {
         })}
       </nav>
     </aside>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
-/* Icons                                                                      */
-/* -------------------------------------------------------------------------- */
-
-type IconProps = {
-  color: string;
-};
-
-function GridIcon({ color }: IconProps) {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      aria-hidden="true"
-    >
-      <rect
-        x="3"
-        y="3"
-        width="6"
-        height="6"
-        rx="1.5"
-        stroke={color}
-        strokeWidth="1.6"
-      />
-      <rect
-        x="11"
-        y="3"
-        width="6"
-        height="6"
-        rx="1.5"
-        stroke={color}
-        strokeWidth="1.6"
-      />
-      <rect
-        x="3"
-        y="11"
-        width="6"
-        height="6"
-        rx="1.5"
-        stroke={color}
-        strokeWidth="1.6"
-      />
-      <rect
-        x="11"
-        y="11"
-        width="6"
-        height="6"
-        rx="1.5"
-        stroke={color}
-        strokeWidth="1.6"
-      />
-    </svg>
-  );
-}
-
-function CheckClipboardIcon({ color }: IconProps) {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      aria-hidden="true"
-    >
-      <rect
-        x="4.5"
-        y="3.5"
-        width="11"
-        height="14"
-        rx="1.5"
-        stroke={color}
-        strokeWidth="1.6"
-      />
-
-      <path
-        d="M7.5 3.5V2.5C7.5 2 7.9 1.5 8.5 1.5H11.5C12.1 1.5 12.5 2 12.5 2.5V3.5"
-        stroke={color}
-        strokeWidth="1.6"
-      />
-
-      <path
-        d="M7 10.5L9 12.5L13 8.5"
-        stroke={color}
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function GearIcon({ color }: IconProps) {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      aria-hidden="true"
-    >
-      <circle
-        cx="10"
-        cy="10"
-        r="3"
-        stroke={color}
-        strokeWidth="1.6"
-      />
-
-      <path
-        d="
-          M10 2.5V4.5
-          M10 15.5V17.5
-          M17.5 10H15.5
-          M4.5 10H2.5
-          M15.36 4.64L13.95 6.05
-          M6.05 13.95L4.64 15.36
-          M15.36 15.36L13.95 13.95
-          M6.05 6.05L4.64 4.64
-        "
-        stroke={color}
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function TrendingUpIcon({ color }: IconProps) {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M3 14L8 9L11.5 12.5L17 6.5"
-        stroke={color}
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="M12.5 6.5H17V11"
-        stroke={color}
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function ShieldCheckIcon({ color }: IconProps) {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M10 2.5L16 4.8V9.5C16 13.2 13.4 16.4 10 17.5C6.6 16.4 4 13.2 4 9.5V4.8L10 2.5Z"
-        stroke={color}
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="M7.3 9.8L9.2 11.7L12.7 8"
-        stroke={color}
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function SearchDocIcon({ color }: IconProps) {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M5 2.5H12L15.5 6V17.5H5V2.5Z"
-        stroke={color}
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="M7 8H12M7 11H10"
-        stroke={color}
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-
-      <circle
-        cx="8.5"
-        cy="14"
-        r="2"
-        stroke={color}
-        strokeWidth="1.6"
-      />
-
-      <path
-        d="M10.2 15.7L11.8 17.3"
-        stroke={color}
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function CubeIcon({ color }: IconProps) {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M10 2.5L17 6.25V13.75L10 17.5L3 13.75V6.25L10 2.5Z"
-        stroke={color}
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="M3 6.25L10 10L17 6.25M10 10V17.5"
-        stroke={color}
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }

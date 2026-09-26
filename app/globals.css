@@ -108,7 +108,7 @@ html {
   --font-card-title: 1rem;
   --font-body: 0.9375rem;
   --font-caption: 0.8125rem;
-  --font-value-lg: 1.75rem;
+  --font-value-lg: 2.25rem;
   --font-value-md: 1.125rem;
 }
 
@@ -181,7 +181,7 @@ button:disabled,
 }
 
 .launcher-jiggle {
-  animation: launcher-jiggle 0.22s ease-in-out infinite;
+  animation: launcher-jiggle 0.5s ease-in-out infinite;
   animation-delay: var(--jiggle-delay, 0s);
 }
 
@@ -196,4 +196,22 @@ button:disabled,
 
 .card-interactive:active {
   transform: translateY(0) scale(0.99);
+}
+
+@keyframes app-wiggle {
+  0% { transform: rotate(-1.5deg); }
+  50% { transform: rotate(1.5deg); }
+  100% { transform: rotate(-1.5deg); }
+}
+
+.app-wiggle {
+  animation: app-wiggle 0.2s ease-in-out infinite;
+}
+
+.app-wiggle:nth-child(2n) {
+  animation-delay: 0.05s;
+}
+
+.app-wiggle:nth-child(3n) {
+  animation-delay: 0.1s;
 }

@@ -13,7 +13,7 @@ function bandFor(value: number) {
 export default function UsageAllowanceBar({ data, warnAt = 80 }: { data: UsageDatum[]; warnAt?: number }) {
   return (
     <div className="flex flex-col gap-[var(--space-md)]">
-      <div className="flex items-center gap-[var(--space-md)] text-[11px] text-[var(--text-muted)]">
+      <div className="flex items-center gap-[var(--space-md)] text-[0.6875rem] text-[var(--text-muted)]">
         <Legend color="var(--status-healthy-fg)" label="Healthy (<70%)" />
         <Legend color="var(--status-warning-fg)" label="Near limit (70–89%)" />
         <Legend color="var(--status-critical-fg)" label="At limit (90%+)" />
@@ -39,7 +39,7 @@ export default function UsageAllowanceBar({ data, warnAt = 80 }: { data: UsageDa
               </div>
               <span className="w-10 shrink-0 text-right text-xs font-semibold text-[var(--text-heading)]">{d.value}%</span>
               <span
-                className="w-20 shrink-0 rounded-full px-2 py-0.5 text-center text-[10px] font-semibold"
+                className="w-20 shrink-0 rounded-full px-2 py-0.5 text-center text-[0.625rem] font-semibold"
                 style={{ background: band.bg, color: band.fg }}
               >
                 {band.word}

@@ -12,31 +12,45 @@ export default function DonutChart({
   legend?: boolean;
 }) {
   const total = data.reduce((sum, d) => sum + d.value, 0) || 1;
-  const stops = data.reduce<{ cumulative: number; parts: string[] }>(
-    (acc, d) => {
-      const start = (acc.cumulative / total) * 360;
-      const cumulative = acc.cumulative + d.value;
-      const end = (cumulative / total) * 360;
-      return { cumulative, parts: [...acc.parts, `${d.color} ${start}deg ${end}deg`] };
-    },
-    { cumulative: 0, parts: [] },
-  ).parts;
   const twoCol = data.length > 4;
 
+  // Pure SVG ring, drawn on a fixed 0-100 viewBox so it scales losslessly at
+  // any size/zoom via CSS width/height — no JS measurement, no ResizeObserver.
+  const strokeWidth = 20;
+  const radius = 50 - strokeWidth / 2;
+  const circumference = 2 * Math.PI * radius;
+  const gapAngle = data.length > 1 ? 2.5 : 0; // deg of breathing room between slices
+
+  let cumulativeDeg = 0;
+  const segments = data.map((d) => {
+    const fraction = (d.value / total) * 360;
+    const startDeg = cumulativeDeg;
+    cumulativeDeg += fraction;
+    const sweep = Math.max(fraction - gapAngle, 0);
+    const dash = (sweep / 360) * circumference;
+    return { ...d, dash, gap: circumference - dash, rotate: startDeg };
+  });
+
   return (
-    <div className="flex w-full flex-wrap items-center justify-center gap-[var(--space-lg)] py-1">
-      <div
-        className="relative aspect-square shrink-0 rounded-full"
-        style={{
-          width: `${size / 16}rem`,
-          height: `${size / 16}rem`,
-          background: `conic-gradient(${stops.join(", ")})`,
-        }}
-      >
-        <div
-          className="absolute flex flex-col items-center justify-center rounded-full bg-white text-center"
-          style={{ inset: "19%" }}
-        >
+    <div className={`flex items-center justify-center gap-[var(--space-lg)] py-1 ${legend ? "w-full flex-wrap" : "shrink-0"}`}>
+      <div className="relative shrink-0" style={{ width: `${size / 16}rem`, height: `${size / 16}rem` }}>
+        <svg viewBox="0 0 100 100" className="h-full w-full" role="img" aria-label="Donut chart">
+          {segments.map((s) => (
+            <circle
+              key={s.label}
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="none"
+              stroke={s.color}
+              strokeWidth={strokeWidth}
+              strokeLinecap="round"
+              strokeDasharray={`${s.dash} ${s.gap}`}
+              transform={`rotate(${s.rotate - 90} 50 50)`}
+            />
+          ))}
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
           <span className="text-lg font-bold leading-none text-[var(--text-heading)]">{total}</span>
           <span className="mt-0.5 text-[0.625rem] text-[var(--text-muted)]">{centerLabel}</span>
         </div>

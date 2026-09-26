@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const MONTH_NAMES = [
@@ -35,54 +36,65 @@ export default function CalendarCard() {
 
   return (
     <div
-      className="flex h-full w-full max-w-[383px] flex-col gap-2 rounded-[20px] border border-[var(--divider)] bg-white p-4"
+      className="flex h-full w-full min-w-0 flex-col gap-3 rounded-[1.25rem] border border-[var(--divider)] bg-white p-4 screen-xl:max-w-[28rem]"
       style={{ boxShadow: "var(--card-shadow)" }}
     >
       <div className="flex shrink-0 items-center justify-between">
-        <p className="text-base font-bold text-[var(--icon-chip-fg)]">
-          {MONTH_NAMES[cursor.getMonth()]} <span className="font-normal text-[var(--text-muted)]">{cursor.getFullYear()}</span>
-        </p>
-        <div className="flex shrink-0 items-center gap-1.5">
+        <div>
+          <p className="text-base font-bold leading-tight text-[var(--icon-chip-fg)]">
+            {MONTH_NAMES[cursor.getMonth()]}
+          </p>
+          <p className="text-xs font-medium text-[var(--text-muted)]">{cursor.getFullYear()}</p>
+        </div>
+        <div className="flex shrink-0 items-center gap-1">
+          {!isCurrentMonth && (
+            <button
+              type="button"
+              onClick={() => setCursor(new Date(today.getFullYear(), today.getMonth(), 1))}
+              className="tap-pop mr-1 rounded-full bg-[var(--icon-chip-bg)] px-2.5 py-1 text-[0.6875rem] font-semibold text-[var(--icon-chip-fg)] transition-colors hover:brightness-95"
+            >
+              Today
+            </button>
+          )}
           <button
             type="button"
             aria-label="Previous month"
             onClick={() => setCursor((c) => new Date(c.getFullYear(), c.getMonth() - 1, 1))}
-            className="tap-pop flex h-7 w-7 items-center justify-center rounded-[10px] bg-[#F9F7FC] text-[var(--icon-chip-fg)] transition-transform hover:scale-105"
+            className="tap-pop flex h-7 w-7 items-center justify-center rounded-[0.625rem] text-[var(--text-muted)] transition-colors hover:bg-[var(--search-bg)] hover:text-[var(--icon-chip-fg)]"
           >
-            <ChevronIcon direction="left" />
+            <ChevronLeft size={14} />
           </button>
           <button
             type="button"
             aria-label="Next month"
             onClick={() => setCursor((c) => new Date(c.getFullYear(), c.getMonth() + 1, 1))}
-            className="tap-pop flex h-7 w-7 items-center justify-center rounded-[10px] bg-[#F9F7FC] text-[var(--icon-chip-fg)] transition-transform hover:scale-105"
+            className="tap-pop flex h-7 w-7 items-center justify-center rounded-[0.625rem] text-[var(--text-muted)] transition-colors hover:bg-[var(--search-bg)] hover:text-[var(--icon-chip-fg)]"
           >
-            <ChevronIcon direction="right" />
+            <ChevronRight size={14} />
           </button>
         </div>
       </div>
 
-      <div className="h-px shrink-0 bg-[var(--divider)]" />
-
-      <div className="grid grid-cols-7 gap-y-1 text-center">
+      <div className="grid shrink-0 grid-cols-7 gap-y-1 text-center">
         {WEEKDAYS.map((w) => (
-          <span key={w} className="text-[11px] font-medium text-[var(--text-muted)]">
+          <span key={w} className="text-[0.6875rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]/70">
             {w}
           </span>
         ))}
       </div>
 
-      <div className="grid flex-1 grid-cols-7 gap-y-1 text-center">
+      <div className="grid flex-1 grid-cols-7 gap-y-1.5 text-center">
         {cells.map((cell, i) => {
           const isToday = isCurrentMonth && cell.inMonth && cell.day === today.getDate();
+          const isWeekend = i % 7 === 0 || i % 7 === 6;
           return (
             <div key={i} className="flex items-center justify-center">
               <span
-                className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${
+                className={`tap-pop flex h-7 w-7 items-center justify-center rounded-full text-xs transition-colors ${
                   isToday
-                    ? "bg-[var(--icon-btn-navy)] font-semibold text-white"
+                    ? "bg-[var(--icon-btn-navy)] font-semibold text-white shadow-sm"
                     : cell.inMonth
-                      ? "text-[var(--text-secondary)]"
+                      ? `cursor-pointer hover:bg-[var(--search-bg)] ${isWeekend ? "text-[var(--text-muted)]" : "text-[var(--text-secondary)]"}`
                       : "text-[var(--divider)]"
                 }`}
               >
@@ -93,13 +105,5 @@ export default function CalendarCard() {
         })}
       </div>
     </div>
-  );
-}
-
-function ChevronIcon({ direction }: { direction: "left" | "right" }) {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" className={direction === "left" ? "" : "rotate-180"}>
-      <path d="M8.5 3.5L5 7L8.5 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
   );
 }
