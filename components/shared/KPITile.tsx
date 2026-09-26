@@ -33,8 +33,8 @@ function IconChip({ icon, bg, fg }: { icon: ReactNode; bg: string; fg: string })
       style={{
         background: bg,
         color: fg,
-        width: "clamp(1.75rem, 10cqi, 2.125rem)",
-        height: "clamp(1.75rem, 10cqi, 2.125rem)",
+        width: "clamp(2rem, 11cqi, 2.5rem)",
+        height: "clamp(2rem, 11cqi, 2.5rem)",
       }}
     >
       {icon}
@@ -111,7 +111,7 @@ export default function KPITile({
         <p
           title={title}
           className="min-w-0 flex-1 font-semibold leading-tight text-[var(--text-muted)] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] overflow-hidden"
-          style={{ fontSize: "clamp(0.8125rem, 4.5cqi, 0.9375rem)" }}
+          style={{ fontSize: "clamp(0.875rem, 5cqi, 1.0625rem)" }}
         >
           {title}
         </p>
