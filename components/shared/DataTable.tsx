@@ -70,7 +70,7 @@ export default function DataTable<T>({
   }
 
   return (
-    <div className="overflow-hidden rounded-[var(--card-radius)] border border-[var(--card-border)] bg-white">
+    <div className="overflow-hidden rounded-[var(--card-radius)] border border-[var(--card-border)] bg-[var(--surface)]">
       <div className="overflow-x-auto">
         <table className={`w-full min-w-[35rem] text-left ${textClassName}`}>
           <thead>

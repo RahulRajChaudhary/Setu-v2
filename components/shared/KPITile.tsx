@@ -95,7 +95,7 @@ export default function KPITile({
   iconBg?: string;
   iconFg?: string;
 }) {
-  const className = `card-interactive tap-pop group relative flex h-full min-w-0 flex-col justify-between gap-2 overflow-hidden rounded-[var(--card-radius)] border border-[var(--card-border)] bg-white p-[calc(var(--card-pad)+0.25rem)] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+  const className = `card-interactive tap-pop group relative flex h-full min-w-0 flex-col justify-between gap-2 overflow-hidden rounded-[var(--card-radius)] border border-[var(--card-border)] bg-[var(--surface)] p-[calc(var(--card-pad)+0.25rem)] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
     drillHref ? "cursor-pointer" : ""
   }`;
   const style = {

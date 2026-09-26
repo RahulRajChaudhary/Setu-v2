@@ -36,7 +36,7 @@ export default function CalendarCard() {
 
   return (
     <div
-      className="flex h-full w-full min-w-0 flex-col gap-3 rounded-[1.25rem] border border-[var(--divider)] bg-white p-4 screen-xl:max-w-[28rem]"
+      className="flex h-full w-full min-w-0 flex-col gap-3 rounded-[1.25rem] border border-[var(--divider)] bg-[var(--surface)] p-4 screen-xl:max-w-[28rem]"
       style={{ boxShadow: "var(--card-shadow)" }}
     >
       <div className="flex shrink-0 items-center justify-between">

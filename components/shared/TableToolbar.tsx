@@ -33,7 +33,7 @@ export default function TableToolbar({
             value={search ?? ""}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
-            className="w-full rounded-lg border border-[var(--divider)] bg-white py-2 pl-8 pr-3 text-sm text-[var(--text-heading)] outline-none transition-colors focus:border-[var(--icon-btn-navy)] placeholder:text-[var(--search-placeholder)]"
+            className="w-full rounded-lg border border-[var(--divider)] bg-[var(--surface)] py-2 pl-8 pr-3 text-sm text-[var(--text-heading)] outline-none transition-colors focus:border-[var(--icon-btn-navy)] placeholder:text-[var(--search-placeholder)]"
           />
         </div>
       )}

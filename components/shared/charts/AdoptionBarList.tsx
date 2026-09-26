@@ -34,7 +34,7 @@ export default function AdoptionBarList({ data, average }: { data: AdoptionDatum
           return (
             <div
               key={d.label}
-              className="card-interactive flex min-w-0 grow basis-full flex-col gap-2 rounded-[var(--card-radius)] border border-[var(--divider)] bg-white p-3 screen-sm:basis-[calc((100%-var(--space-sm))/2)] screen-xl:basis-[calc((100%-(var(--space-sm)*2))/3)]"
+              className="card-interactive flex min-w-0 grow basis-full flex-col gap-2 rounded-[var(--card-radius)] border border-[var(--divider)] bg-[var(--surface)] p-3 screen-sm:basis-[calc((100%-var(--space-sm))/2)] screen-xl:basis-[calc((100%-(var(--space-sm)*2))/3)]"
               style={{ boxShadow: "var(--card-shadow)" }}
             >
               <div className="flex items-center justify-between gap-2">

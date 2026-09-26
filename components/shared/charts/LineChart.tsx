@@ -63,7 +63,7 @@ export default function LineChart({
     {showEndDot && (
       <span
         aria-hidden="true"
-        className="absolute h-[0.5rem] w-[0.5rem] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white"
+        className="absolute h-[0.5rem] w-[0.5rem] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[var(--surface)]"
         style={{ left: `${(scaleX(last.x) / width) * 100}%`, top: `${(scaleY(last.y) / height) * 100}%`, backgroundColor: color }}
       />
     )}
