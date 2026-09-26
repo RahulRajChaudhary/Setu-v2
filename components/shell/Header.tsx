@@ -65,8 +65,10 @@ export default function Header() {
         />
       )}
 
-      {/* Search — centered on the true viewport width, independent of sidebar/icon widths */}
-      <div className="pointer-events-none fixed left-1/2 top-0 z-20 flex h-[var(--header-h)] w-[min(30rem,90vw)] -translate-x-1/2 items-center px-1 screen-sm:px-2">
+      {/* Search — centered on the viewport, but width is clamped by vw rather than a
+          near-full-width 90vw so it can't grow wide enough to reach under the sidebar
+          or the header's right-side icon cluster at medium desktop widths. */}
+      <div className="pointer-events-none fixed left-1/2 top-0 z-20 flex h-[var(--header-h)] w-[clamp(14rem,50vw,30rem)] -translate-x-1/2 items-center px-1 screen-sm:px-2">
         <div
           className="
             pointer-events-auto
@@ -84,7 +86,7 @@ export default function Header() {
           "
         >
           <span className="shrink-0">
-            <Search size={20} className="shrink-0" color="#9CA3AF" />
+            <Search size={20} className="shrink-0" color="var(--search-placeholder)" />
           </span>
 
           <input
@@ -101,23 +103,6 @@ export default function Header() {
               screen-sm:text-sm
             "
           />
-
-          {/* Keyboard shortcut */}
-          <span
-            className="
-              hidden shrink-0
-              rounded-md
-              bg-[var(--surface)]
-              px-1.5
-              py-0.5
-              text-xs
-              text-[var(--search-placeholder)]
-
-              screen-sm:inline-block
-            "
-          >
-            &#8984;K
-          </span>
         </div>
       </div>
 

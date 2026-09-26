@@ -11,15 +11,15 @@ export const metadata: Metadata = {
   description: "Founder dashboard",
 };
 
+// No stored preference to read (see lib/theme/ThemeProvider.tsx) — mode always
+// defaults to "system", so the only thing worth resolving before paint is the OS
+// preference, to avoid a light->dark (or dark->light) flash for that default.
 const THEME_INIT_SCRIPT = `
 (function () {
   try {
-    var stored = localStorage.getItem("setu-theme");
-    var mode = stored === "light" || stored === "dark" || stored === "system" ? stored : "light";
-    var resolved = mode === "system"
-      ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
-      : mode;
-    if (resolved === "dark") document.documentElement.classList.add("dark");
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      document.documentElement.classList.add("dark");
+    }
   } catch (e) {}
 })();
 `;
