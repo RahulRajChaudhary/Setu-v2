@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Class-based dark mode — without this, Tailwind's `dark:` variant defaults to the
+   `prefers-color-scheme` media query instead of following the app's theme toggle. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Responsive breakpoints — real viewport media queries in rem, so the layout
    reflows on window resize AND browser zoom (zoom shrinks the CSS viewport).
    Names are kept from the earlier screen-tier variants so page markup is unchanged. */
