@@ -184,7 +184,15 @@ export default function Sidebar() {
           alt="Setu"
           width={63}
           height={77}
-          className="h-[2.5rem] w-[2rem]"
+          className="h-[2.5rem] w-[2rem] dark:hidden"
+          priority
+        />
+        <Image
+          src="/logo-dark.svg"
+          alt="Setu"
+          width={63}
+          height={77}
+          className="hidden h-[2.5rem] w-[2rem] dark:block"
           priority
         />
       </Link>
