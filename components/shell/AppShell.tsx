@@ -71,7 +71,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <div
             aria-hidden="true"
             className="
-              hidden shrink-0 w-full bg-white z-20
+              hidden shrink-0 w-full bg-[var(--shell-bg)] z-20
               screen-sm:block
               screen-sm:h-[2.2rem]
               screen-2xl:h-[2.6rem]

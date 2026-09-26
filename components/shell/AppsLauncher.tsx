@@ -196,7 +196,7 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
         absolute right-0 top-[calc(100%+var(--page-pad-y))] z-50
         flex max-h-[42rem] w-[28rem] max-w-[calc(100vw-1.5rem)]
         flex-col overflow-hidden rounded-xl border border-[var(--divider)]
-        bg-white shadow-xl
+        bg-[var(--surface)] shadow-xl
       "
     >
       <div className="flex shrink-0 items-center justify-between px-4 pt-4">
@@ -230,7 +230,7 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
                   ref={favoritesGridRef}
                   data-zone="favorites"
                   className={`grid grid-cols-3 gap-1 rounded-lg pb-1 transition-colors ${
-                    dragOver?.zone === "favorites" ? "bg-white ring-2 ring-[var(--icon-btn-navy)]/30" : ""
+                    dragOver?.zone === "favorites" ? "bg-[var(--search-bg)] ring-2 ring-[var(--icon-btn-navy)]/30" : ""
                   }`}
                 >
                   {favoriteApps.map((app, index) => (
@@ -241,7 +241,7 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
                       onClick={() => handleTileClick(app)}
                       onPointerDown={(e) => handlePointerDown(e, app)}
                       style={{ touchAction: dragEnabled ? "none" : undefined, ...jiggleStyle(index) }}
-                      className={`tap-pop flex flex-col items-center gap-2 rounded-lg px-2 py-3 text-center transition-colors hover:bg-white ${
+                      className={`tap-pop flex flex-col items-center gap-2 rounded-lg px-2 py-3 text-center transition-colors hover:bg-[var(--search-bg)] ${
                         dragEnabled && dragId !== app.id ? "launcher-jiggle" : ""
                       } ${dragId === app.id ? "opacity-30" : ""}`}
                     >
