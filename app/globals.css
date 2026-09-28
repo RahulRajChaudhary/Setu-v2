@@ -54,9 +54,6 @@ html {
   --kbd-border: #E5E7EB;
   --icon-btn-bg: #F3F4F6;
   --icon-btn-navy: #0B1B3B;
-<<<<<<< HEAD
-  --notification-dot: #60A5FA;
-=======
   /* Solid accent that white text sits on (buttons, active pills, today marker,
      greeting card). Kept separate from --icon-btn-navy, which is also used as a
      foreground accent color and goes light in dark mode. */
@@ -64,7 +61,6 @@ html {
   /* Unread-notification dot — same light blue in both themes (unlike
      --icon-btn-navy, which intentionally goes navy-in-light/light-in-dark). */
   --notification-dot: #8FB4FF;
->>>>>>> 1b3a71e841bd8bbb2aedc976944fd673e4718b00
   --divider: #E5E7EB;
   --surface: #FFFFFF;
   --sidebar-active: #0B1B3B;
