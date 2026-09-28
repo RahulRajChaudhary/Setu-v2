@@ -207,7 +207,7 @@ export default function AIConversationPanel({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") handleSend(message);
+              if (e.key === "Enter" && status !== "pending") handleSend(message);
             }}
             placeholder="Ask anything..."
             aria-label="Message"

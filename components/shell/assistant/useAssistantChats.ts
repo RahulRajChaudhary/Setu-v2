@@ -55,6 +55,8 @@ export function useAssistantChats() {
   }
 
   function handleSend(text: string) {
+    if (activeId && statusById[activeId] === "pending") return;
+
     const userMessage: ChatMessage = { id: makeId("m"), role: "user", content: text };
     const targetId = activeId ?? makeId("conv");
 
