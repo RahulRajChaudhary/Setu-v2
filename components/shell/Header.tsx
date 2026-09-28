@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, Plus, Bell, ExternalLink, History, Settings } from "lucide-react";
 import { personaConfigFromPathname } from "@/lib/personas";
 import AppsLauncher from "@/components/shell/AppsLauncher";
+import ThemeToggle from "@/components/shell/ThemeToggle";
 
 const NOTIFICATIONS = [
   {
@@ -64,12 +66,32 @@ export default function Header() {
         />
       )}
 
-      {/* Search — centered on the true viewport width, independent of sidebar/icon widths */}
-      <div className="pointer-events-none fixed left-1/2 top-0 z-20 flex h-[var(--header-h)] w-[min(30rem,90vw)] -translate-x-1/2 items-center px-1 screen-sm:px-2">
+      {/* Logo — Sidebar's own logo only renders at screen-sm+ (it becomes a bottom tab
+          bar below that, with no room for branding), so the header picks it up here
+          for phones/small tablets. Hidden again once Sidebar's logo takes over. */}
+      <Link
+        href={`${persona.routeBase}/dashboard`}
+        aria-label="Go to dashboard"
+        className="flex shrink-0 items-center screen-sm:hidden"
+      >
+        <Image src="/logo.svg" alt="Setu" width={63} height={77} className="h-[1.75rem] w-[1.4rem] dark:hidden" priority />
+        <Image
+          src="/logo-dark.svg"
+          alt="Setu"
+          width={63}
+          height={77}
+          className="hidden h-[1.75rem] w-[1.4rem] dark:block"
+          priority
+        />
+      </Link>
+
+      {/* Search — a normal flex item (not position:fixed), so it can never paint over
+          the icon cluster on the right. min-w-0 lets it shrink on narrow/foldable
+          screens instead of overlapping anything; max-w caps it on wide screens. */}
+      <div className="flex min-w-0 flex-1 items-center justify-center px-1 screen-sm:px-2">
         <div
           className="
-            pointer-events-auto
-            flex h-[3.125rem] w-full
+            flex h-11 w-full min-w-0
             max-w-[30rem]
             items-center
             gap-2
@@ -79,11 +101,12 @@ export default function Header() {
             bg-[var(--search-bg)]
             px-3
 
+            screen-sm:h-[3.125rem]
             screen-sm:border-[var(--divider)]
           "
         >
           <span className="shrink-0">
-            <Search size={20} className="shrink-0" color="#9CA3AF" />
+            <Search size={20} className="shrink-0" color="var(--search-placeholder)" />
           </span>
 
           <input
@@ -100,23 +123,6 @@ export default function Header() {
               screen-sm:text-sm
             "
           />
-
-          {/* Keyboard shortcut */}
-          <span
-            className="
-              hidden shrink-0
-              rounded-md
-              bg-white
-              px-1.5
-              py-0.5
-              text-xs
-              text-[var(--search-placeholder)]
-
-              screen-sm:inline-block
-            "
-          >
-            &#8984;K
-          </span>
         </div>
       </div>
 
@@ -129,7 +135,7 @@ export default function Header() {
           label="Create"
           bg="transparent"
         >
-          <Plus color="#4A5565" size={20} />
+          <Plus color="var(--text-secondary)" size={20} />
         </IconButton>
 
         {/* Notifications */}
@@ -140,7 +146,7 @@ export default function Header() {
             onClick={() => toggle("notifications")}
           >
             <span className="relative">
-              <Bell color="#4A5565" size={20} />
+              <Bell color="var(--text-secondary)" size={20} />
 
               <span
                 className="
@@ -172,7 +178,7 @@ export default function Header() {
                 rounded-xl
                 border
                 border-[var(--divider)]
-                bg-white
+                bg-[var(--surface)]
                 shadow-xl
 
                 screen-2xl:w-[26rem]
@@ -283,7 +289,7 @@ export default function Header() {
           bg="transparent"
           onClick={() => toggle("apps")}
         >
-          <AppsGridIcon color="#4A5565" />
+          <AppsGridIcon color="var(--text-secondary)" />
         </IconButton>
 
         {/* Apps dropdown — anchored to the shared right edge of this row */}
@@ -358,14 +364,14 @@ export default function Header() {
                 rounded-xl
                 border
                 border-[var(--divider)]
-                bg-white
+                bg-[var(--surface)]
                 shadow-xl
               "
             >
               {/* Brand row */}
               <div className="flex items-center justify-between px-4 py-3.5">
                 <p className="text-base font-semibold text-[var(--text-heading)]">
-                  Sahayogi One
+                  Setu
                 </p>
 
                 <button
@@ -437,6 +443,12 @@ export default function Header() {
                     <ExternalLink size={14} />
                   </button>
                 </div>
+              </div>
+
+              {/* Theme */}
+              <div className="flex items-center justify-between border-t border-[var(--divider)] px-4 py-3">
+                <span className="text-base text-[var(--text-secondary)]">Theme</span>
+                <ThemeToggle />
               </div>
 
               {/* Menu items */}

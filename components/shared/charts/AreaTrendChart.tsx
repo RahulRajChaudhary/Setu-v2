@@ -26,7 +26,7 @@ function TrendTooltip({
 }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="min-w-[8rem] rounded-lg border border-[var(--divider)] bg-white p-2 text-xs shadow-lg">
+    <div className="min-w-[8rem] rounded-lg border border-[var(--divider)] bg-[var(--surface)] p-2 text-xs shadow-lg">
       <p className="mb-1 font-semibold text-[var(--text-heading)]">{label}</p>
       {series.map((s) => {
         const entry = payload.find((p) => p.dataKey === s.key);
@@ -118,7 +118,7 @@ export default function AreaTrendChart({
                 strokeWidth={2}
                 fill={`url(#areaTrendGradient-${s.key})`}
                 dot={false}
-                activeDot={{ r: 4, stroke: "white", strokeWidth: 2 }}
+                activeDot={{ r: 4, stroke: "var(--surface)", strokeWidth: 2 }}
                 isAnimationActive={false}
               />
             ))}

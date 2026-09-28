@@ -94,7 +94,7 @@ export default function OperationsPage() {
           />
         </div>
         <div className="grid grid-cols-1 gap-[var(--space-md)] screen-lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-          <div className="rounded-xl border border-[var(--divider)] bg-white p-4" style={{ boxShadow: "var(--card-shadow)" }}>
+          <div className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-4" style={{ boxShadow: "var(--card-shadow)" }}>
             <Funnel stages={workspaceFunnel} />
           </div>
           <div>
@@ -124,7 +124,7 @@ export default function OperationsPage() {
           <StatTile label="Grace" value={subscriptionKpis.grace} tone="warning" icon={<Clock size={16} />} />
           <StatTile label="Restricted" value={subscriptionKpis.restricted} tone="critical" icon={<AlertCircle size={16} />} />
         </div>
-        <div className="rounded-xl border border-[var(--divider)] bg-white p-4" style={{ boxShadow: "var(--card-shadow)" }}>
+        <div className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-4" style={{ boxShadow: "var(--card-shadow)" }}>
           <ToggleChart data={subscriptionStatusDonut} defaultType="pie" />
         </div>
       </Card>
@@ -136,7 +136,7 @@ export default function OperationsPage() {
             return (
               <div
                 key={k.label}
-                className="card-interactive flex flex-col gap-2 rounded-xl border border-[var(--divider)] bg-white p-3"
+                className="card-interactive flex flex-col gap-2 rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-3"
                 style={{ boxShadow: "var(--card-shadow)" }}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -195,7 +195,7 @@ export default function OperationsPage() {
             return (
               <div
                 key={p.id}
-                className="card-interactive flex min-w-0 grow basis-[calc((100%-var(--space-sm))/2)] flex-col gap-2 rounded-xl border border-[var(--divider)] bg-white p-3 screen-sm:basis-[calc((100%-(var(--space-sm)*3))/4)]"
+                className="card-interactive flex min-w-0 grow basis-[calc((100%-var(--space-sm))/2)] flex-col gap-2 rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-3 screen-sm:basis-[calc((100%-(var(--space-sm)*3))/4)]"
                 style={{ boxShadow: "var(--card-shadow)" }}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -217,7 +217,7 @@ export default function OperationsPage() {
       </Card>
 
       <Card title="Incidents" description="Open incident volume by severity, live queue below">
-        <div className="mb-4 rounded-xl border border-[var(--divider)] bg-white p-4" style={{ boxShadow: "var(--card-shadow)" }}>
+        <div className="mb-4 rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-4" style={{ boxShadow: "var(--card-shadow)" }}>
           <ToggleChart data={incidentsBySeverity} max={Math.max(...incidentsBySeverity.map((d) => d.value), 1)} suffix="" defaultType="bar" />
         </div>
         <TableToolbar

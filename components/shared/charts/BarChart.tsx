@@ -16,7 +16,7 @@ function HorizontalBarTooltip({
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (
-    <div className="rounded-lg border border-[var(--divider)] bg-white px-3 py-2 text-xs shadow-lg">
+    <div className="rounded-lg border border-[var(--divider)] bg-[var(--surface)] px-3 py-2 text-xs shadow-lg">
       <p className="font-medium text-[var(--text-heading)]">{d.label}</p>
       <p className="text-[var(--text-muted)]">
         {d.value}
