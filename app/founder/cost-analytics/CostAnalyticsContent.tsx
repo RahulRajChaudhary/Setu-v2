@@ -98,7 +98,7 @@ function AdoptionTab() {
             return (
               <div
                 key={p.id}
-                className="card-interactive flex min-w-0 grow basis-full flex-col gap-2 rounded-xl border border-[var(--divider)] bg-white p-3 screen-sm:basis-[calc((100%-var(--space-md))/2)] screen-xl:basis-[calc((100%-(var(--space-md)*3))/4)]"
+                className="card-interactive flex min-w-0 grow basis-full flex-col gap-2 rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-3 screen-sm:basis-[calc((100%-var(--space-md))/2)] screen-xl:basis-[calc((100%-(var(--space-md)*3))/4)]"
                 style={{ boxShadow: "var(--card-shadow)" }}
               >
                 <div className="flex items-center justify-between gap-2">

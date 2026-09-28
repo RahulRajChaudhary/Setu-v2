@@ -23,7 +23,7 @@ export default function StatTile({
   const t = TONE[tone];
   return (
     <div
-      className="card-interactive flex flex-col gap-1.5 rounded-lg border border-[var(--divider)] bg-white p-[var(--space-sm)]"
+      className="card-interactive flex flex-col gap-1.5 rounded-lg border border-[var(--divider)] bg-[var(--surface)] p-[var(--space-sm)]"
       style={{ boxShadow: "var(--card-shadow)" }}
     >
       <div className="flex items-center justify-between gap-2">

@@ -149,7 +149,7 @@ export default function AnalyticsBarChart({
 
         {hoverIndex !== null && data[hoverIndex] && (
           <div
-            className="pointer-events-none absolute top-1 z-10 flex min-w-[9rem] flex-col gap-1 rounded-lg border border-[var(--divider)] bg-white p-2 text-xs shadow-lg"
+            className="pointer-events-none absolute top-1 z-10 flex min-w-[9rem] flex-col gap-1 rounded-lg border border-[var(--divider)] bg-[var(--surface)] p-2 text-xs shadow-lg"
             style={{
               left: tooltipAlignRight ? undefined : `${hoverLeftPct}%`,
               right: tooltipAlignRight ? `${100 - (hoverLeftPct ?? 0)}%` : undefined,

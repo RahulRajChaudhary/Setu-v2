@@ -3,14 +3,20 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const WEEKDAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
 ];
 
+// JS Date#getDay() is 0=Sunday..6=Saturday; convert to a Monday-first index
+// (0=Monday..6=Sunday) so the grid lines up with the Monday-first WEEKDAYS row.
+function mondayFirstDay(date: Date) {
+  return (date.getDay() + 6) % 7;
+}
+
 function buildGrid(year: number, month: number) {
-  const firstDay = new Date(year, month, 1).getDay();
+  const firstDay = mondayFirstDay(new Date(year, month, 1));
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const daysInPrevMonth = new Date(year, month, 0).getDate();
 
@@ -36,22 +42,22 @@ export default function CalendarCard() {
 
   return (
     <div
-      className="flex h-full w-full min-w-0 flex-col gap-3 rounded-[1.25rem] border border-[var(--divider)] bg-white p-4 screen-xl:max-w-[28rem]"
-      style={{ boxShadow: "var(--card-shadow)" }}
+      className="flex h-full w-full min-w-0 flex-col gap-[clamp(0.5rem,3cqi,0.875rem)] rounded-[1.25rem] border border-[var(--divider)] bg-[var(--surface)] p-[clamp(0.75rem,4cqi,1.25rem)]"
+      style={{ boxShadow: "var(--card-shadow)", containerType: "inline-size" }}
     >
-      <div className="flex shrink-0 items-center justify-between">
-        <div>
-          <p className="text-base font-bold leading-tight text-[var(--icon-chip-fg)]">
+      <div className="flex shrink-0 items-center justify-between gap-2">
+        <div className="min-w-0">
+          <p className="truncate font-bold leading-tight text-[var(--icon-chip-fg)] text-[clamp(0.9375rem,5cqi,1.25rem)]">
             {MONTH_NAMES[cursor.getMonth()]}
           </p>
-          <p className="text-xs font-medium text-[var(--text-muted)]">{cursor.getFullYear()}</p>
+          <p className="text-[clamp(0.6875rem,3cqi,0.8125rem)] font-medium text-[var(--text-muted)]">{cursor.getFullYear()}</p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           {!isCurrentMonth && (
             <button
               type="button"
               onClick={() => setCursor(new Date(today.getFullYear(), today.getMonth(), 1))}
-              className="tap-pop mr-1 rounded-full bg-[var(--icon-chip-bg)] px-2.5 py-1 text-[0.6875rem] font-semibold text-[var(--icon-chip-fg)] transition-colors hover:brightness-95"
+              className="tap-pop mr-1 rounded-full bg-[var(--icon-chip-bg)] px-2.5 py-1 text-[clamp(0.625rem,2.8cqi,0.6875rem)] font-semibold text-[var(--icon-chip-fg)] transition-colors hover:brightness-95"
             >
               Today
             </button>
@@ -60,39 +66,39 @@ export default function CalendarCard() {
             type="button"
             aria-label="Previous month"
             onClick={() => setCursor((c) => new Date(c.getFullYear(), c.getMonth() - 1, 1))}
-            className="tap-pop flex h-7 w-7 items-center justify-center rounded-[0.625rem] text-[var(--text-muted)] transition-colors hover:bg-[var(--search-bg)] hover:text-[var(--icon-chip-fg)]"
+            className="tap-pop flex items-center justify-center rounded-[0.625rem] text-[var(--text-muted)] transition-colors hover:bg-[var(--search-bg)] hover:text-[var(--icon-chip-fg)] h-[clamp(1.625rem,7cqi,2rem)] w-[clamp(1.625rem,7cqi,2rem)] [&>svg]:h-[45%] [&>svg]:w-[45%]"
           >
-            <ChevronLeft size={14} />
+            <ChevronLeft />
           </button>
           <button
             type="button"
             aria-label="Next month"
             onClick={() => setCursor((c) => new Date(c.getFullYear(), c.getMonth() + 1, 1))}
-            className="tap-pop flex h-7 w-7 items-center justify-center rounded-[0.625rem] text-[var(--text-muted)] transition-colors hover:bg-[var(--search-bg)] hover:text-[var(--icon-chip-fg)]"
+            className="tap-pop flex items-center justify-center rounded-[0.625rem] text-[var(--text-muted)] transition-colors hover:bg-[var(--search-bg)] hover:text-[var(--icon-chip-fg)] h-[clamp(1.625rem,7cqi,2rem)] w-[clamp(1.625rem,7cqi,2rem)] [&>svg]:h-[45%] [&>svg]:w-[45%]"
           >
-            <ChevronRight size={14} />
+            <ChevronRight />
           </button>
         </div>
       </div>
 
-      <div className="grid shrink-0 grid-cols-7 gap-y-1 text-center">
+      <div className="grid shrink-0 grid-cols-7 text-center">
         {WEEKDAYS.map((w) => (
-          <span key={w} className="text-[0.6875rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]/70">
+          <span key={w} className="text-[clamp(0.625rem,3.2cqi,0.8125rem)] font-semibold uppercase tracking-wide text-[var(--text-muted)]/70">
             {w}
           </span>
         ))}
       </div>
 
-      <div className="grid flex-1 grid-cols-7 gap-y-1.5 text-center">
+      <div className="grid min-h-0 flex-1 grid-cols-7 grid-rows-6 text-center">
         {cells.map((cell, i) => {
           const isToday = isCurrentMonth && cell.inMonth && cell.day === today.getDate();
-          const isWeekend = i % 7 === 0 || i % 7 === 6;
+          const isWeekend = i % 7 === 5 || i % 7 === 6;
           return (
             <div key={i} className="flex items-center justify-center">
               <span
-                className={`tap-pop flex h-7 w-7 items-center justify-center rounded-full text-xs transition-colors ${
+                className={`tap-pop flex aspect-square items-center justify-center rounded-full font-medium text-[clamp(0.8125rem,5cqi,1.0625rem)] transition-colors w-[clamp(1.625rem,15cqi,2.5rem)] ${
                   isToday
-                    ? "bg-[var(--icon-btn-navy)] font-semibold text-white shadow-sm"
+                    ? "bg-[var(--accent-solid)] font-semibold text-white shadow-sm"
                     : cell.inMonth
                       ? `cursor-pointer hover:bg-[var(--search-bg)] ${isWeekend ? "text-[var(--text-muted)]" : "text-[var(--text-secondary)]"}`
                       : "text-[var(--divider)]"

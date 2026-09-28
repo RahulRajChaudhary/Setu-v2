@@ -56,7 +56,7 @@ export default function AuditExplorerPage() {
           <button
             type="button"
             onClick={() => setExported(true)}
-            className="tap-pop rounded-lg bg-[var(--icon-btn-navy)] px-3 py-1.5 text-xs font-semibold text-white transition-transform hover:scale-[1.03]"
+            className="tap-pop rounded-lg bg-[var(--accent-solid)] px-3 py-1.5 text-xs font-semibold text-white transition-transform hover:scale-[1.03]"
           >
             Export signed report
           </button>
@@ -106,7 +106,7 @@ export default function AuditExplorerPage() {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-[var(--card-border)] bg-white p-3">
+    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--surface)] p-3">
       <p className="text-xs text-[var(--text-muted)]">{label}</p>
       <p className="text-lg font-bold text-[var(--text-heading)]">{value}</p>
     </div>

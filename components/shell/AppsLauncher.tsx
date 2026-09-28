@@ -20,21 +20,26 @@ function sortApps(apps: LauncherApp[], mode: SortMode, lastUsed: Record<string, 
   return copy;
 }
 
-function AppIcon({ app, size }: { app: LauncherApp; size: number }) {
+function AppIcon({ app, size, bg = "var(--surface)" }: { app: LauncherApp; size: number; bg?: string }) {
   const [errored, setErrored] = useState(false);
 
   if (app.logoUrl && !errored) {
     return (
-      <img
-        src={app.logoUrl}
-        alt={app.name}
-        width={size}
-        height={size}
-        style={{ width: size, height: size }}
-        className="pointer-events-none shrink-0 rounded-full object-cover"
-        draggable={false}
-        onError={() => setErrored(true)}
-      />
+      <span
+        className="pointer-events-none block shrink-0"
+        style={{ width: size, height: size, backgroundColor: bg }}
+      >
+        <img
+          src={app.logoUrl}
+          alt={app.name}
+          width={size}
+          height={size}
+          style={{ width: size, height: size, mixBlendMode: "multiply" }}
+          className="block object-cover"
+          draggable={false}
+          onError={() => setErrored(true)}
+        />
+      </span>
     );
   }
 
@@ -42,17 +47,17 @@ function AppIcon({ app, size }: { app: LauncherApp; size: number }) {
     const Icon = app.icon;
     return (
       <span
-        className="pointer-events-none flex shrink-0 items-center justify-center rounded-full"
-        style={{ width: size, height: size, backgroundColor: app.bg ?? "#E2E8F0" }}
+        className="pointer-events-none flex shrink-0 items-center justify-center"
+        style={{ width: size, height: size }}
       >
-        <Icon size={Math.round(size * 0.5)} color={app.fg ?? "#0B1B3B"} />
+        <Icon size={Math.round(size * 0.62)} color={app.fg ?? "var(--icon-btn-navy)"} />
       </span>
     );
   }
 
   return (
     <span
-      className="pointer-events-none flex shrink-0 items-center justify-center rounded-full bg-[var(--search-bg)] text-sm font-semibold text-[var(--text-secondary)]"
+      className="pointer-events-none flex shrink-0 items-center justify-center text-sm font-semibold text-[var(--text-secondary)]"
       style={{ width: size, height: size }}
     >
       {app.name.charAt(0).toUpperCase()}
@@ -196,7 +201,7 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
         absolute right-0 top-[calc(100%+var(--page-pad-y))] z-50
         flex max-h-[42rem] w-[28rem] max-w-[calc(100vw-1.5rem)]
         flex-col overflow-hidden rounded-xl border border-[var(--divider)]
-        bg-white shadow-xl
+        bg-[var(--surface)] shadow-xl
       "
     >
       <div className="flex shrink-0 items-center justify-between px-4 pt-4">
@@ -207,7 +212,7 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
           onClick={() => setEditMode((v) => !v)}
           className={`tap-pop flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
             editMode
-              ? "bg-[var(--icon-btn-navy)] text-white"
+              ? "bg-[var(--accent-solid)] text-white"
               : "text-[var(--text-muted)] hover:bg-[var(--search-bg)]"
           }`}
         >
@@ -230,7 +235,7 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
                   ref={favoritesGridRef}
                   data-zone="favorites"
                   className={`grid grid-cols-3 gap-1 rounded-lg pb-1 transition-colors ${
-                    dragOver?.zone === "favorites" ? "bg-white ring-2 ring-[var(--icon-btn-navy)]/30" : ""
+                    dragOver?.zone === "favorites" ? "bg-[var(--search-bg)] ring-2 ring-[var(--icon-btn-navy)]/30" : ""
                   }`}
                 >
                   {favoriteApps.map((app, index) => (
@@ -241,12 +246,12 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
                       onClick={() => handleTileClick(app)}
                       onPointerDown={(e) => handlePointerDown(e, app)}
                       style={{ touchAction: dragEnabled ? "none" : undefined, ...jiggleStyle(index) }}
-                      className={`tap-pop flex flex-col items-center gap-2 rounded-lg px-2 py-3 text-center transition-colors hover:bg-white ${
+                      className={`tap-pop flex flex-col items-center gap-2 rounded-lg px-2 py-3 text-center transition-colors hover:bg-[var(--search-bg)] ${
                         dragEnabled && dragId !== app.id ? "launcher-jiggle" : ""
                       } ${dragId === app.id ? "opacity-30" : ""}`}
                     >
                       <span className="relative">
-                        <AppIcon app={app} size={58} />
+                        <AppIcon app={app} size={58} bg="var(--search-bg)" />
                         {editMode && (
                           <span className="pointer-events-none absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--status-critical-fg)] text-[0.5rem] text-white">
                             &minus;
@@ -275,7 +280,7 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
                     onClick={() => setSortMode("alpha")}
                     className={`px-2 py-0.5 font-medium transition-colors ${
                       sortMode === "alpha"
-                        ? "bg-[var(--icon-btn-navy)] text-white"
+                        ? "bg-[var(--accent-solid)] text-white"
                         : "text-[var(--text-muted)] hover:bg-[var(--search-bg)]"
                     }`}
                   >
@@ -286,7 +291,7 @@ export default function AppsLauncher({ onClose }: { onClose: () => void }) {
                     onClick={() => setSortMode("recent")}
                     className={`px-2 py-0.5 font-medium transition-colors ${
                       sortMode === "recent"
-                        ? "bg-[var(--icon-btn-navy)] text-white"
+                        ? "bg-[var(--accent-solid)] text-white"
                         : "text-[var(--text-muted)] hover:bg-[var(--search-bg)]"
                     }`}
                   >

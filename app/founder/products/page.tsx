@@ -85,7 +85,7 @@ export default function ProductsPage() {
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
     <div
-      className="rounded-[var(--card-radius)] border border-[var(--divider)] bg-white p-[var(--card-pad)]"
+      className="rounded-[var(--card-radius)] border border-[var(--divider)] bg-[var(--surface)] p-[var(--card-pad)]"
       style={{ boxShadow: "var(--card-shadow)" }}
     >
       <p className="text-xs text-[var(--text-muted)]">{label}</p>

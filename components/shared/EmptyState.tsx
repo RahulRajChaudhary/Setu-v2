@@ -13,7 +13,7 @@ export default function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-[var(--space-sm)] rounded-xl border border-dashed border-[var(--card-border)] bg-white px-6 py-16 text-center">
+    <div className="flex flex-col items-center justify-center gap-[var(--space-sm)] rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--surface)] px-6 py-16 text-center">
       {icon ?? <Inbox size={40} color="#D1D5DB" />}
       <div>
         <p className="text-sm font-semibold text-[var(--text-secondary)]">{title}</p>

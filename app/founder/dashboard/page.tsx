@@ -112,7 +112,7 @@ export default function ControlRoomPage() {
   return (
     <div className="flex flex-col gap-[var(--space-lg)]">
 
-      <div className="grid grid-cols-1 items-stretch gap-[var(--space-md)] screen-xl:grid-cols-[minmax(0,3fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 items-stretch gap-[var(--space-md)] screen-xl:grid-cols-[minmax(0,4.2fr)_minmax(0,1fr)]">
         <div className="grid min-w-0 grid-cols-2 gap-[var(--space-md)] screen-sm:grid-cols-4">
           <div className="min-w-0">
             <GreetingCard name="Dhruv Singla" />
@@ -291,7 +291,7 @@ export default function ControlRoomPage() {
                   aria-pressed={growthRangeDays === opt.value}
                   className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
                     growthRangeDays === opt.value
-                      ? "bg-white text-[var(--text-heading)] shadow-sm"
+                      ? "bg-[var(--surface)] text-[var(--text-heading)] shadow-sm"
                       : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
                   }`}
                 >
@@ -333,7 +333,7 @@ export default function ControlRoomPage() {
               <DrillLink
                 key={area.id}
                 href={area.href}
-                className="card-interactive tap-pop group relative flex min-w-0 grow basis-full items-center gap-2.5 rounded-[var(--card-radius)] border border-[var(--divider)] bg-white p-[var(--card-pad)] screen-sm:basis-[calc((100%-var(--space-sm))/2)] screen-lg:basis-[calc((100%-(var(--space-sm)*2))/3)]"
+                className="card-interactive tap-pop group relative flex min-w-0 grow basis-full items-center gap-2.5 rounded-[var(--card-radius)] border border-[var(--divider)] bg-[var(--surface)] p-[var(--card-pad)] screen-sm:basis-[calc((100%-var(--space-sm))/2)] screen-lg:basis-[calc((100%-(var(--space-sm)*2))/3)]"
                 style={{ boxShadow: "var(--card-shadow)" }}
               >
                 <span

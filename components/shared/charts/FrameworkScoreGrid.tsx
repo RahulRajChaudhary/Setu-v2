@@ -29,7 +29,7 @@ export default function FrameworkScoreGrid({
         return (
           <div
             key={d.label}
-            className={`card-interactive flex flex-col gap-3 rounded-[var(--card-radius)] border border-[var(--divider)] bg-white ${big ? "p-5" : "p-4"}`}
+            className={`card-interactive flex flex-col gap-3 rounded-[var(--card-radius)] border border-[var(--divider)] bg-[var(--surface)] ${big ? "p-5" : "p-4"}`}
             style={{ boxShadow: "var(--card-shadow)" }}
           >
             <div className="flex items-center justify-between gap-2">

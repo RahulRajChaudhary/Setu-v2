@@ -108,7 +108,7 @@ const NAV_ITEMS_BY_PERSONA: Record<Persona, NavItem[]> = {
   "compliance-officer": COMPLIANCE_OFFICER_NAV_ITEMS,
 };
 
-const INDICATOR_COLOR = "#0B1B3B";
+const INDICATOR_COLOR = "var(--sidebar-active)";
 const INACTIVE_ICON_COLOR = "#475569";
 
 export default function Sidebar() {
@@ -184,7 +184,15 @@ export default function Sidebar() {
           alt="Setu"
           width={63}
           height={77}
-          className="h-[2.5rem] w-[2rem]"
+          className="h-[2.5rem] w-[2rem] dark:hidden"
+          priority
+        />
+        <Image
+          src="/logo-dark.svg"
+          alt="Setu"
+          width={63}
+          height={77}
+          className="hidden h-[2.5rem] w-[2rem] dark:block"
           priority
         />
       </Link>
@@ -265,7 +273,7 @@ export default function Sidebar() {
 
                   screen-sm:block
 
-                  ${isActive ? "font-semibold text-[#0B1B3B]" : "text-slate-600"}
+                  ${isActive ? "font-semibold text-[var(--sidebar-active)]" : "text-[var(--text-muted)]"}
                 `}
               >
                 {item.label}

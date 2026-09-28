@@ -161,7 +161,7 @@ export default function ComplianceRiskContent() {
 
 function Stat({ label, value, tone }: { label: string; value: number; tone: "critical" | "warning" }) {
   return (
-    <div className="rounded-xl border border-[var(--divider)] bg-white p-3">
+    <div className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-3">
       <p className="text-xs text-[var(--text-muted)]">{label}</p>
       <p className={`text-lg font-bold ${value > 0 ? (tone === "critical" ? "text-[var(--status-critical-fg)]" : "text-[var(--status-warning-fg)]") : "text-[var(--text-heading)]"}`}>
         {value}

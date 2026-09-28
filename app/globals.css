@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Class-based dark mode — without this, Tailwind's `dark:` variant defaults to the
+   `prefers-color-scheme` media query instead of following the app's theme toggle. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Responsive breakpoints — real viewport media queries in rem, so the layout
    reflows on window resize AND browser zoom (zoom shrinks the CSS viewport).
    Names are kept from the earlier screen-tier variants so page markup is unchanged. */
@@ -50,8 +54,28 @@ html {
   --kbd-border: #E5E7EB;
   --icon-btn-bg: #F3F4F6;
   --icon-btn-navy: #0B1B3B;
+<<<<<<< HEAD
   --notification-dot: #60A5FA;
+=======
+  /* Solid accent that white text sits on (buttons, active pills, today marker,
+     greeting card). Kept separate from --icon-btn-navy, which is also used as a
+     foreground accent color and goes light in dark mode. */
+  --accent-solid: #0B1B3B;
+  /* Unread-notification dot — same light blue in both themes (unlike
+     --icon-btn-navy, which intentionally goes navy-in-light/light-in-dark). */
+  --notification-dot: #8FB4FF;
+>>>>>>> 1b3a71e841bd8bbb2aedc976944fd673e4718b00
   --divider: #E5E7EB;
+  --surface: #FFFFFF;
+  --sidebar-active: #0B1B3B;
+  --assistant-border: #C7CAFF;
+  --assistant-hover: #F1F3FF;
+  --assistant-sidebar-bg: #F7F8FC;
+  --assistant-panel-from: #EEF1FF;
+  --assistant-panel-via: #F1F6FF;
+  --assistant-panel-to: #FFFFFF;
+  --assistant-button-from: #F5F9FF;
+  --assistant-button-to: #CCE1FF;
 
   --shell-bg: #FFFFFF;
   --page-bg: #FFFFFF;
@@ -67,6 +91,13 @@ html {
   --status-info-bg: #E8EBFB;
   --status-neutral-fg: #4B5563;
   --status-neutral-bg: #F3F4F6;
+
+  /* Cleaner, brighter tones for big KPI value numbers on the card surface —
+     kept separate from the darker --status-*-fg badge text (which needs the
+     extra depth to stay legible on its pale badge background). */
+  --kpi-good: #15A34A;
+  --kpi-warn: #D97706;
+  --kpi-bad: #DC2626;
 
   --chart-1: #2563EB;
   --chart-2: #059669;
@@ -98,10 +129,12 @@ html {
   --space-2xs: 0.25rem;
   --space-xs: 0.375rem;
   --space-sm: 0.5rem;
-  --space-md: 0.625rem;
+  --space-md: clamp(0.75rem, 0.5rem + 0.85vw, 1.25rem);
   --space-lg: 0.875rem;
 
-  --card-pad: 0.625rem;
+  /* Viewport-aware (not just root-font-scaled) so cards visibly gain breathing
+     room on large screens and stay tight on small ones. */
+  --card-pad: clamp(0.625rem, 0.4rem + 0.9vw, 1.25rem);
   --page-pad-x: 0.75rem;
   --page-pad-y: 0.5rem;
 
@@ -111,6 +144,87 @@ html {
   --font-caption: 0.8125rem;
   --font-value-lg: 2.25rem;
   --font-value-md: 1.125rem;
+}
+
+.dark {
+  --chevron: #C7CCD3;
+  --avatar-bg: #1E2A44;
+  --avatar-text: #8FB4FF;
+  --text-secondary: #C7CCD3;
+  --role-text: #8B93A1;
+  --workspace-pill-border: #232B36;
+  --search-bg: #1C232E;
+  --search-placeholder: #6B7480;
+  --kbd-border: #232B36;
+  --icon-btn-bg: #1C232E;
+  --icon-btn-navy: #8FB4FF;
+  --accent-solid: #2E4E86;
+  --notification-dot: #8FB4FF;
+  --divider: #232B36;
+
+  --shell-bg: #0B0F14;
+  --page-bg: #0B0F14;
+  --surface: #141A22;
+  --surface-muted: #1C232E;
+
+  --status-healthy-fg: #4ADE80;
+  --status-healthy-bg: #14301F;
+  --status-warning-fg: #FBBF24;
+  --status-warning-bg: #3A2A0A;
+  --status-critical-fg: #F87171;
+  --status-critical-bg: #3A1414;
+  --status-info-fg: #93A9FF;
+  --status-info-bg: #1E2A55;
+  --status-neutral-fg: #A7B0BD;
+  --status-neutral-bg: #1C232E;
+
+  --kpi-good: #4ADE80;
+  --kpi-warn: #FBBF24;
+  --kpi-bad: #FB7185;
+
+  --chart-1: #60A5FA;
+  --chart-2: #34D399;
+  --chart-3: #FBBF24;
+  --chart-4: #F87171;
+  --chart-5: #A78BFA;
+  --chart-6: #22D3EE;
+  --card-border: #232B36;
+
+  --card-shadow: 0 0 0.3rem rgba(0, 0, 0, 0.4);
+  --card-shadow-hover: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.55);
+
+  --text-heading: #F1F3F5;
+  --text-muted: #8B93A1;
+
+  --icon-chip-bg: linear-gradient(135deg, rgba(96, 165, 250, 0.16) 0%, rgba(96, 165, 250, 0.06) 100%);
+  --icon-chip-fg: #8FB4FF;
+
+  --trend-up-bg: #14301F;
+  --trend-up-fg: #4ADE80;
+  --trend-down-bg: #3A1414;
+  --trend-down-fg: #F87171;
+
+  --sidebar-active: #8FB4FF;
+  --assistant-border: #3A3F6B;
+  --assistant-hover: #1D2233;
+  --assistant-sidebar-bg: #10151D;
+  --assistant-panel-from: #171426;
+  --assistant-panel-via: #12131C;
+  --assistant-panel-to: #0B0F14;
+  --assistant-button-from: #1C2A44;
+  --assistant-button-to: #2A4270;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body,
+  header,
+  aside,
+  section,
+  table,
+  input,
+  button {
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+  }
 }
 
 html,
@@ -156,6 +270,10 @@ button:disabled,
   animation: page-fade-in 0.25s ease-out;
 }
 
+.chat-icon-tooltip {
+  animation: page-fade-in 0.15s ease-out;
+}
+
 @keyframes tap-pop {
   0% {
     transform: scale(1);
@@ -170,6 +288,19 @@ button:disabled,
 
 .tap-pop:active {
   animation: tap-pop 0.18s ease-out;
+}
+
+@keyframes assistant-bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateY(-0.25rem);
+    opacity: 1;
+  }
 }
 
 @keyframes launcher-jiggle {

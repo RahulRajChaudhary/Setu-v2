@@ -378,7 +378,7 @@ export default function EngineeringLeadDashboardPage() {
                   aria-pressed={errorFilter === f.id}
                   className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
                     errorFilter === f.id
-                      ? "bg-white text-[var(--text-heading)] shadow-sm"
+                      ? "bg-[var(--surface)] text-[var(--text-heading)] shadow-sm"
                       : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
                   }`}
                 >
@@ -414,7 +414,7 @@ export default function EngineeringLeadDashboardPage() {
                   aria-pressed={deployRangeWeeks === opt.value}
                   className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
                     deployRangeWeeks === opt.value
-                      ? "bg-white text-[var(--text-heading)] shadow-sm"
+                      ? "bg-[var(--surface)] text-[var(--text-heading)] shadow-sm"
                       : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
                   }`}
                 >
@@ -518,7 +518,7 @@ export default function EngineeringLeadDashboardPage() {
             <DrillLink
               key={area.id}
               href={area.href}
-              className="card-interactive tap-pop group relative flex min-w-0 grow basis-full items-center gap-2.5 rounded-[var(--card-radius)] border border-[var(--divider)] bg-white p-[var(--card-pad)] screen-sm:basis-[calc((100%-var(--space-sm))/2)] screen-lg:basis-[calc((100%-(var(--space-sm)*2))/3)]"
+              className="card-interactive tap-pop group relative flex min-w-0 grow basis-full items-center gap-2.5 rounded-[var(--card-radius)] border border-[var(--divider)] bg-[var(--surface)] p-[var(--card-pad)] screen-sm:basis-[calc((100%-var(--space-sm))/2)] screen-lg:basis-[calc((100%-(var(--space-sm)*2))/3)]"
               style={{ boxShadow: "var(--card-shadow)" }}
             >
               <span
