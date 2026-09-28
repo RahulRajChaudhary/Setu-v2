@@ -63,6 +63,10 @@ html {
   --notification-dot: #8FB4FF;
   --divider: #E5E7EB;
   --surface: #FFFFFF;
+  /* Product-logo chip backdrop — always white in both themes, so the logo (a
+     flattened PNG meant to sit on white) renders the same way in dark mode as
+     it does here instead of disappearing against the dark shell. */
+  --logo-chip-bg: #FFFFFF;
   --sidebar-active: #0B1B3B;
   --assistant-border: #C7CAFF;
   --assistant-hover: #F1F3FF;
