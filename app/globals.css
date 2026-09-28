@@ -278,6 +278,19 @@ button:disabled,
   animation: tap-pop 0.18s ease-out;
 }
 
+@keyframes assistant-bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateY(-0.25rem);
+    opacity: 1;
+  }
+}
+
 @keyframes launcher-jiggle {
   0%, 100% {
     transform: rotate(-1.5deg);
