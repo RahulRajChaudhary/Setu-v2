@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, Plus, Bell, ExternalLink, History, Settings } from "lucide-react";
@@ -65,13 +66,32 @@ export default function Header() {
         />
       )}
 
+      {/* Logo — Sidebar's own logo only renders at screen-sm+ (it becomes a bottom tab
+          bar below that, with no room for branding), so the header picks it up here
+          for phones/small tablets. Hidden again once Sidebar's logo takes over. */}
+      <Link
+        href={`${persona.routeBase}/dashboard`}
+        aria-label="Go to dashboard"
+        className="flex shrink-0 items-center screen-sm:hidden"
+      >
+        <Image src="/logo.svg" alt="Setu" width={63} height={77} className="h-[1.75rem] w-[1.4rem] dark:hidden" priority />
+        <Image
+          src="/logo-dark.svg"
+          alt="Setu"
+          width={63}
+          height={77}
+          className="hidden h-[1.75rem] w-[1.4rem] dark:block"
+          priority
+        />
+      </Link>
+
       {/* Search — a normal flex item (not position:fixed), so it can never paint over
           the icon cluster on the right. min-w-0 lets it shrink on narrow/foldable
           screens instead of overlapping anything; max-w caps it on wide screens. */}
       <div className="flex min-w-0 flex-1 items-center justify-center px-1 screen-sm:px-2">
         <div
           className="
-            flex h-[3.125rem] w-full min-w-0
+            flex h-11 w-full min-w-0
             max-w-[30rem]
             items-center
             gap-2
@@ -81,6 +101,7 @@ export default function Header() {
             bg-[var(--search-bg)]
             px-3
 
+            screen-sm:h-[3.125rem]
             screen-sm:border-[var(--divider)]
           "
         >
@@ -350,7 +371,7 @@ export default function Header() {
               {/* Brand row */}
               <div className="flex items-center justify-between px-4 py-3.5">
                 <p className="text-base font-semibold text-[var(--text-heading)]">
-                  Sahayogi One
+                  Setu
                 </p>
 
                 <button

@@ -262,6 +262,10 @@ button:disabled,
   animation: page-fade-in 0.25s ease-out;
 }
 
+.chat-icon-tooltip {
+  animation: page-fade-in 0.15s ease-out;
+}
+
 @keyframes tap-pop {
   0% {
     transform: scale(1);
