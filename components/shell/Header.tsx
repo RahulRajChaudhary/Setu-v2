@@ -242,7 +242,7 @@ export default function Header() {
                         rounded-full
                         ${
                           notification.unread
-                            ? "bg-[var(--icon-btn-navy)]"
+                            ? "bg-[var(--notification-dot)]"
                             : "bg-transparent"
                         }
                       `}
