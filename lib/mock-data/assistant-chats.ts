@@ -1,5 +1,7 @@
 export type ChatRole = "user" | "assistant";
 
+export type ChatStatus = "idle" | "pending" | "error";
+
 export type ChatMessage = {
   id: string;
   role: ChatRole;

@@ -58,9 +58,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           conversations={chat.conversations}
           activeId={chat.activeId}
           activeConversation={chat.activeConversation}
+          activeStatus={chat.activeStatus}
           onSelect={chat.handleSelect}
           onNewChat={chat.handleNewChat}
           onSend={chat.handleSend}
+          onRegenerate={chat.handleRegenerate}
           onExpand={() => setMode("expanded")}
           onCollapse={() => setMode("docked")}
           onClose={() => setMode("closed")}
