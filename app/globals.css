@@ -156,6 +156,14 @@ html {
   --icon-btn-navy: #8FB4FF;
   --accent-solid: #2E4E86;
   --notification-dot: #8FB4FF;
+  /* Product logo PNGs are flat brand assets on a white background, knocked out with
+     mix-blend-mode: multiply against a light backdrop (multiply(white, x) = x). That
+     only works when the backdrop behind the image is actually light, so in dark theme
+     we sit the logo on its own light chip instead of the dark shell surface — otherwise
+     multiply darkens the whole square into a blackish blob. Deliberately NOT declared
+     in :root: AppsLauncher's AppIcon falls back to its per-call `bg` prop when this
+     variable is undefined, so light theme is untouched. */
+  --app-logo-chip-bg: #F3F4F6;
   --divider: #232B36;
 
   --shell-bg: #0B0F14;

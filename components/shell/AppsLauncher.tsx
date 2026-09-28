@@ -26,16 +26,23 @@ function AppIcon({ app, size, bg = "var(--surface)" }: { app: LauncherApp; size:
   if (app.logoUrl && !errored) {
     return (
       <span
-        className="pointer-events-none block shrink-0"
-        style={{ width: size, height: size, backgroundColor: bg }}
+        className="pointer-events-none flex shrink-0 items-center justify-center dark:rounded-[0.625rem] dark:p-1.5 dark:shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
+        style={
+          {
+            width: size,
+            height: size,
+            // Falls back to the caller's `bg` in light theme, where --app-logo-chip-bg
+            // is intentionally undeclared — see the comment on that token in globals.css.
+            "--icon-bg-light": bg,
+            backgroundColor: "var(--app-logo-chip-bg, var(--icon-bg-light))",
+          } as React.CSSProperties
+        }
       >
         <img
           src={app.logoUrl}
           alt={app.name}
-          width={size}
-          height={size}
-          style={{ width: size, height: size, mixBlendMode: "multiply" }}
-          className="block object-cover"
+          style={{ mixBlendMode: "multiply" }}
+          className="block h-full w-full object-cover dark:rounded-md"
           draggable={false}
           onError={() => setErrored(true)}
         />
