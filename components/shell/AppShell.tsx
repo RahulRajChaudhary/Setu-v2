@@ -25,9 +25,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             painting at viewport-center once the column has zero width. */}
         <div
           className={`flex min-w-0 flex-col overflow-hidden transition-[flex-grow,opacity] duration-300 ease-out ${
-            mode === "expanded" ? "pointer-events-none opacity-0" : "opacity-100"
+            mode === "fullscreen" ? "pointer-events-none opacity-0" : "opacity-100"
           }`}
-          style={{ flexGrow: mode === "expanded" ? 0 : 1, flexBasis: 0 }}
+          style={{ flexGrow: mode === "fullscreen" ? 0 : 1, flexBasis: 0 }}
         >
           <Header />
           <main
@@ -63,8 +63,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           onNewChat={chat.handleNewChat}
           onSend={chat.handleSend}
           onRegenerate={chat.handleRegenerate}
-          onExpand={() => setMode("expanded")}
-          onCollapse={() => setMode("docked")}
+          onExpand={() => setMode("fullscreen")}
+          onCollapse={() => setMode("compact")}
           onClose={() => setMode("closed")}
         />
       </div>
@@ -90,7 +90,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               screen-2xl:w-[2.5rem]
             "
           />
-          <AssistantButton onClick={() => setMode("docked")} />
+          <AssistantButton onClick={() => setMode("compact")} />
         </>
       )}
     </div>
