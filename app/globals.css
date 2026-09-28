@@ -63,10 +63,6 @@ html {
   --notification-dot: #8FB4FF;
   --divider: #E5E7EB;
   --surface: #FFFFFF;
-  /* Product-logo chip backdrop — always white in both themes, so the logo (a
-     flattened PNG meant to sit on white) renders the same way in dark mode as
-     it does here instead of disappearing against the dark shell. */
-  --logo-chip-bg: #FFFFFF;
   --sidebar-active: #0B1B3B;
   --assistant-border: #C7CAFF;
   --assistant-hover: #F1F3FF;
@@ -147,6 +143,12 @@ html {
 }
 
 .dark {
+  /* Dark-only: product-logo chip backdrop. These logos are flattened PNGs on
+     white, made transparent-ish via mix-blend-mode: multiply — which only
+     works against a light surface, so without this they vanish into the
+     dark shell. Deliberately absent from :root so light theme stays exactly
+     as before (no chip, no background). */
+  --logo-chip-bg: #FFFFFF;
   --chevron: #C7CCD3;
   --avatar-bg: #1E2A44;
   --avatar-text: #8FB4FF;

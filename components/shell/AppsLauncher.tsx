@@ -27,7 +27,7 @@ function AppIcon({ app, size }: { app: LauncherApp; size: number }) {
     return (
       <span
         className="pointer-events-none block shrink-0 rounded-md"
-        style={{ width: size, height: size, backgroundColor: "var(--logo-chip-bg)" }}
+        style={{ width: size, height: size, backgroundColor: "var(--logo-chip-bg, transparent)" }}
       >
         <img
           src={app.logoUrl}
