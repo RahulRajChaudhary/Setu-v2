@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { Mic, Paperclip, Send, Maximize2, Minimize2, X, PanelLeft, RotateCw } from "lucide-react";
+import { Mic, Paperclip, Send, Maximize2, Minimize2, X, PanelLeft, Menu, RotateCw } from "lucide-react";
 import type { ChatStatus, Conversation } from "@/lib/mock-data/assistant-chats";
 import type { AssistantMode } from "./AssistantRegion";
 import LoadingDots from "./LoadingDots";
@@ -71,7 +71,7 @@ export default function AIConversationPanel({
               onClick={onToggleHistory}
               className="tap-pop flex h-8 w-8 items-center justify-center rounded-full text-[var(--text-muted)] transition-colors hover:bg-[var(--search-bg)]"
             >
-              <PanelLeft size={16} />
+              <Menu size={16} />
             </button>
           )}
           {isWorkspace && onToggleMobileHistory && (
