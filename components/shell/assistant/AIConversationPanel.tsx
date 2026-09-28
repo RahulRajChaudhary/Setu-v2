@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { ChevronRight, Mic, Paperclip, Send, Maximize2, Minimize2, X, PanelLeft } from "lucide-react";
-import type { Conversation } from "@/lib/mock-data/assistant-chats";
+import { ChevronRight, Mic, Paperclip, Send, Maximize2, Minimize2, X, PanelLeft, RotateCw } from "lucide-react";
+import type { ChatStatus, Conversation } from "@/lib/mock-data/assistant-chats";
+import LoadingDots from "./LoadingDots";
 
 const SUGGESTIONS = [
   "What do the dashboard KPIs mean?",
@@ -15,19 +16,27 @@ const SUGGESTIONS = [
 export default function AIConversationPanel({
   variant,
   conversation,
+  status,
   onPrimaryAction,
+  onOpenHistory,
   onClose,
   onSend,
+  onRegenerate,
   onToggleMobileHistory,
 }: {
   variant: "docked" | "workspace";
   conversation: Conversation | null;
+  status: ChatStatus;
   onPrimaryAction: () => void;
+  onOpenHistory?: () => void;
   onClose: () => void;
   onSend: (text: string) => void;
+  onRegenerate: () => void;
   onToggleMobileHistory?: () => void;
 }) {
   const [message, setMessage] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+  const [isAttachPulsing, setIsAttachPulsing] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const isWorkspace = variant === "workspace";
   const widthClass = isWorkspace ? "mx-auto w-full max-w-3xl" : "w-full";
@@ -43,15 +52,37 @@ export default function AIConversationPanel({
     setMessage("");
   }
 
+  function handleMicClick() {
+    setIsRecording(true);
+    window.setTimeout(() => setIsRecording(false), 1200);
+  }
+
+  function handleAttachClick() {
+    setIsAttachPulsing(true);
+    window.setTimeout(() => setIsAttachPulsing(false), 900);
+  }
+
   return (
     <div className="flex min-w-0 flex-1 flex-col overflow-hidden bg-gradient-to-b from-[var(--assistant-panel-from)] via-[var(--assistant-panel-via)] to-[var(--assistant-panel-to)]">
       {/* Header */}
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-[var(--divider)] px-4 py-3">
         <div className="flex items-center gap-2">
+          {!isWorkspace && onOpenHistory && (
+            <button
+              type="button"
+              title="Chat history"
+              aria-label="Open chat history"
+              onClick={onOpenHistory}
+              className="tap-pop flex h-8 w-8 items-center justify-center rounded-full text-[var(--text-muted)] transition-colors hover:bg-[var(--search-bg)]"
+            >
+              <PanelLeft size={16} />
+            </button>
+          )}
           {isWorkspace && onToggleMobileHistory && (
             <button
               type="button"
               title="Chat history"
+              aria-label="Open chat history"
               onClick={onToggleMobileHistory}
               className="tap-pop flex h-8 w-8 items-center justify-center rounded-full text-[var(--text-muted)] transition-colors hover:bg-[var(--search-bg)] screen-sm:hidden"
             >
@@ -63,6 +94,7 @@ export default function AIConversationPanel({
           <button
             type="button"
             title={isWorkspace ? "Collapse" : "Expand"}
+            aria-label={isWorkspace ? "Collapse assistant" : "Expand assistant"}
             onClick={onPrimaryAction}
             className="tap-pop flex h-8 w-8 items-center justify-center rounded-full text-[var(--text-muted)] transition-colors hover:bg-[var(--search-bg)]"
           >
@@ -126,6 +158,29 @@ export default function AIConversationPanel({
                   </div>
                 </div>
               ))}
+
+              {status === "pending" && (
+                <div className="flex justify-start">
+                  <div className="rounded-2xl bg-[var(--surface)] px-3 py-1 shadow-[0_1px_0.25rem_rgba(15,23,42,0.06)]">
+                    <LoadingDots />
+                  </div>
+                </div>
+              )}
+
+              {status === "error" && (
+                <div className="flex justify-start">
+                  <div className="flex max-w-[85%] flex-col items-start gap-2 rounded-2xl border border-[var(--status-critical-fg)]/20 bg-[var(--status-critical-bg)] px-4 py-2.5 text-sm text-[var(--status-critical-fg)]">
+                    <span>Unable to generate a response.</span>
+                    <button
+                      type="button"
+                      onClick={onRegenerate}
+                      className="tap-pop rounded-full border border-[var(--status-critical-fg)]/30 px-3 py-1 text-xs font-medium text-[var(--status-critical-fg)] transition-colors hover:bg-[var(--status-critical-fg)]/10"
+                    >
+                      Try again
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -136,7 +191,15 @@ export default function AIConversationPanel({
         <div
           className={`flex items-center gap-2 rounded-full border border-[var(--assistant-border)] bg-[var(--surface)]/90 py-2 pl-4 pr-2 shadow-[0_2px_0.625rem_rgba(99,102,241,0.15)] ${widthClass}`}
         >
-          <button type="button" title="Voice input" className="tap-pop flex h-6 w-6 shrink-0 items-center justify-center text-[var(--text-muted)] transition-transform hover:scale-110">
+          <button
+            type="button"
+            title="Voice input"
+            aria-label="Voice input"
+            onClick={handleMicClick}
+            className={`tap-pop flex h-6 w-6 shrink-0 items-center justify-center transition-transform hover:scale-110 ${
+              isRecording ? "text-[#7C3AED]" : "text-[var(--text-muted)]"
+            }`}
+          >
             <Mic size={16} />
           </button>
           <input
@@ -147,16 +210,36 @@ export default function AIConversationPanel({
               if (e.key === "Enter") handleSend(message);
             }}
             placeholder="Ask anything..."
+            aria-label="Message"
             className="min-w-0 flex-1 bg-transparent text-sm text-[var(--text-heading)] outline-none placeholder:text-[var(--search-placeholder)]"
           />
-          <button type="button" title="Attach a file" className="tap-pop flex h-6 w-6 shrink-0 items-center justify-center text-[var(--text-muted)] transition-transform hover:scale-110">
+          <button
+            type="button"
+            title="Regenerate response"
+            aria-label="Regenerate response"
+            onClick={onRegenerate}
+            disabled={status === "pending" || !conversation || conversation.messages.length === 0}
+            className="tap-pop flex h-6 w-6 shrink-0 items-center justify-center text-[var(--text-muted)] transition-transform hover:scale-110 disabled:opacity-40 disabled:hover:scale-100"
+          >
+            <RotateCw size={16} className={status === "pending" ? "animate-spin" : ""} />
+          </button>
+          <button
+            type="button"
+            title="Attach a file"
+            aria-label="Attach a file"
+            onClick={handleAttachClick}
+            className={`tap-pop flex h-6 w-6 shrink-0 items-center justify-center transition-transform hover:scale-110 ${
+              isAttachPulsing ? "text-[#7C3AED]" : "text-[var(--text-muted)]"
+            }`}
+          >
             <Paperclip size={16} />
           </button>
           <button
             type="button"
             title="Send"
+            aria-label="Send message"
             onClick={() => handleSend(message)}
-            disabled={message.trim().length === 0}
+            disabled={message.trim().length === 0 || status === "pending"}
             className="tap-pop flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#7C3AED] to-[#2563EB] text-white shadow-md transition-transform hover:scale-105 disabled:opacity-40 disabled:hover:scale-100"
           >
             <Send size={16} />
