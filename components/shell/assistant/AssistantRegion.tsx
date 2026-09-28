@@ -5,7 +5,15 @@ import AIChatSidebar from "./AIChatSidebar";
 import AIConversationPanel from "./AIConversationPanel";
 import type { ChatStatus, Conversation } from "@/lib/mock-data/assistant-chats";
 
-export type AssistantMode = "closed" | "compact" | "fullscreen";
+export type AssistantMode = "closed" | "compact" | "history" | "fullscreen";
+
+function getFlexBasis(mode: AssistantMode, railCollapsed: boolean) {
+  if (mode === "closed") return "0px";
+  if (mode === "history") {
+    return `calc(clamp(20rem,28vw,26rem) + ${railCollapsed ? "4rem" : "16rem"})`;
+  }
+  return "clamp(20rem,28vw,26rem)"; // compact and fullscreen (fullscreen ignores basis, uses flexGrow:1)
+}
 
 export default function AssistantRegion({
   mode,
@@ -18,6 +26,7 @@ export default function AssistantRegion({
   onSend,
   onRegenerate,
   onExpand,
+  onOpenHistory,
   onCollapse,
   onClose,
 }: {
@@ -31,12 +40,14 @@ export default function AssistantRegion({
   onSend: (text: string) => void;
   onRegenerate: () => void;
   onExpand: () => void;
+  onOpenHistory: () => void;
   onCollapse: () => void;
   onClose: () => void;
 }) {
   const [railCollapsed, setRailCollapsed] = useState(false);
   const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
   const isFullscreen = mode === "fullscreen";
+  const showHistory = mode === "history" || mode === "fullscreen";
 
   function handleSelect(id: string) {
     onSelect(id);
@@ -56,11 +67,11 @@ export default function AssistantRegion({
       }`}
       style={{
         flexGrow: isFullscreen ? 1 : 0,
-        flexBasis: mode === "closed" ? "0px" : "clamp(20rem,28vw,26rem)",
+        flexBasis: getFlexBasis(mode, railCollapsed),
         flexShrink: 0,
       }}
     >
-      {isFullscreen && (
+      {showHistory && (
         <div className="hidden h-full screen-sm:flex">
           <AIChatSidebar
             conversations={conversations}
@@ -75,9 +86,10 @@ export default function AssistantRegion({
 
       <AIConversationPanel
         variant={isFullscreen ? "workspace" : "docked"}
+        mode={mode}
         conversation={activeConversation}
         onPrimaryAction={isFullscreen ? onCollapse : onExpand}
-        onOpenHistory={!isFullscreen ? onExpand : undefined}
+        onToggleHistory={!isFullscreen ? (mode === "history" ? onCollapse : onOpenHistory) : undefined}
         onClose={onClose}
         onSend={onSend}
         onRegenerate={onRegenerate}
@@ -85,7 +97,7 @@ export default function AssistantRegion({
         onToggleMobileHistory={isFullscreen ? () => setMobileHistoryOpen(true) : undefined}
       />
 
-      {isFullscreen && mobileHistoryOpen && (
+      {showHistory && mobileHistoryOpen && (
         <div className="fixed inset-0 z-50 flex screen-sm:hidden">
           <div aria-hidden="true" onClick={() => setMobileHistoryOpen(false)} className="absolute inset-0 bg-black/30" />
           <div className="relative h-full w-[80%] max-w-[18rem] shadow-2xl">

@@ -64,6 +64,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           onSend={chat.handleSend}
           onRegenerate={chat.handleRegenerate}
           onExpand={() => setMode("fullscreen")}
+          onOpenHistory={() => setMode("history")}
           onCollapse={() => setMode("compact")}
           onClose={() => setMode("closed")}
         />

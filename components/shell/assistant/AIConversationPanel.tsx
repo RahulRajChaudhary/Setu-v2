@@ -2,33 +2,29 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { ChevronRight, Mic, Paperclip, Send, Maximize2, Minimize2, X, PanelLeft, RotateCw } from "lucide-react";
+import { Mic, Paperclip, Send, Maximize2, Minimize2, X, PanelLeft, RotateCw } from "lucide-react";
 import type { ChatStatus, Conversation } from "@/lib/mock-data/assistant-chats";
+import type { AssistantMode } from "./AssistantRegion";
 import LoadingDots from "./LoadingDots";
-
-const SUGGESTIONS = [
-  "What do the dashboard KPIs mean?",
-  "How can I customize the dashboard view?",
-  "How do I drill into pending approvals?",
-  "Can I filter incidents by their current status?",
-];
 
 export default function AIConversationPanel({
   variant,
+  mode,
   conversation,
   status,
   onPrimaryAction,
-  onOpenHistory,
+  onToggleHistory,
   onClose,
   onSend,
   onRegenerate,
   onToggleMobileHistory,
 }: {
   variant: "docked" | "workspace";
+  mode: AssistantMode;
   conversation: Conversation | null;
   status: ChatStatus;
   onPrimaryAction: () => void;
-  onOpenHistory?: () => void;
+  onToggleHistory?: () => void;
   onClose: () => void;
   onSend: (text: string) => void;
   onRegenerate: () => void;
@@ -67,12 +63,12 @@ export default function AIConversationPanel({
       {/* Header */}
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-[var(--divider)] px-4 py-3">
         <div className="flex items-center gap-2">
-          {!isWorkspace && onOpenHistory && (
+          {!isWorkspace && onToggleHistory && (
             <button
               type="button"
-              title="Chat history"
-              aria-label="Open chat history"
-              onClick={onOpenHistory}
+              title={mode === "history" ? "Close chat history" : "Open chat history"}
+              aria-label={mode === "history" ? "Close chat history" : "Open chat history"}
+              onClick={onToggleHistory}
               className="tap-pop flex h-8 w-8 items-center justify-center rounded-full text-[var(--text-muted)] transition-colors hover:bg-[var(--search-bg)]"
             >
               <PanelLeft size={16} />
@@ -117,32 +113,17 @@ export default function AIConversationPanel({
       <div ref={scrollRef} className="flex flex-1 flex-col overflow-y-auto px-5">
         <div className={`flex flex-1 flex-col ${widthClass}`}>
           {!conversation ? (
-            <>
-              <div className="relative flex flex-col items-center py-6">
-                <div
-                  aria-hidden="true"
-                  className="absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(124,58,237,0.18),transparent)]"
-                />
-                <Image src="/bot-icon.svg" alt="" width={92} height={124} className="relative drop-shadow-lg" priority />
-                <p className="relative mt-3 text-sm text-[var(--text-secondary)]">
-                  Hello! I&rsquo;m <span className="font-bold text-[var(--text-heading)]">Sahayogi</span>
-                </p>
-                <p className="relative text-sm text-[var(--text-muted)]">How can I help you today?</p>
-              </div>
-              <div className="mb-4 flex flex-col gap-3">
-                {SUGGESTIONS.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => handleSend(s)}
-                    className="tap-pop card-interactive flex w-full items-center justify-between gap-2 rounded-2xl bg-[var(--surface)] px-5 py-4 text-left text-sm text-[var(--text-heading)] shadow-[0_1px_0.25rem_rgba(15,23,42,0.08)]"
-                  >
-                    <span className="truncate">{s}</span>
-                    <ChevronRight size={14} className="shrink-0 text-[var(--text-muted)]" />
-                  </button>
-                ))}
-              </div>
-            </>
+            <div className="relative flex flex-col items-center py-6">
+              <div
+                aria-hidden="true"
+                className="absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(124,58,237,0.18),transparent)]"
+              />
+              <Image src="/bot-icon.svg" alt="" width={92} height={124} className="relative drop-shadow-lg" priority />
+              <p className="relative mt-3 text-sm text-[var(--text-secondary)]">
+                Hello! I&rsquo;m <span className="font-bold text-[var(--text-heading)]">Sahayogi</span>
+              </p>
+              <p className="relative text-sm text-[var(--text-muted)]">How can I help you today?</p>
+            </div>
           ) : (
             <div className="flex flex-1 flex-col gap-3 py-4">
               {conversation.messages.map((m) => (
