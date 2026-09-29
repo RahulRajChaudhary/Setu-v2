@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import Card from "@/components/shared/Card";
 import DataTable, { type Column } from "@/components/shared/DataTable";
-import StatusBadge from "@/components/shared/StatusBadge";
+import StatusBadge, { StatusDot } from "@/components/shared/StatusBadge";
 import TableToolbar from "@/components/shared/TableToolbar";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import AdoptionBarList from "@/components/shared/charts/AdoptionBarList";
@@ -25,13 +25,22 @@ export default function ProductsPage() {
       key: "name",
       header: "Product",
       render: (r) => (
-        <Link href={`/founder/products/${r.id}`} className="font-medium text-[var(--icon-btn-navy)] hover:underline">
+        <Link href={`/founder/products/${r.id}`} className="inline-flex items-center gap-2 font-medium text-[var(--icon-btn-navy)] hover:underline">
+          <StatusDot status={r.health} />
           {r.name}
         </Link>
       ),
       sortValue: (r) => r.name,
     },
-    { key: "brand", header: "Brand", render: (r) => r.brand },
+    {
+      key: "brand",
+      header: "Brand",
+      render: (r) => (
+        <span className="inline-flex items-center rounded-full bg-[var(--search-bg)] px-2 py-0.5 text-xs font-medium text-[var(--text-secondary)]">
+          {r.brand}
+        </span>
+      ),
+    },
     {
       key: "health",
       header: "Health",
@@ -72,8 +81,9 @@ export default function ProductsPage() {
             const up = deltaPct >= 0;
             const color = up ? "var(--status-healthy-fg)" : "var(--status-critical-fg)";
             return (
-              <div
+              <Link
                 key={p.id}
+                href={`/founder/products/${p.id}`}
                 className="card-interactive flex min-w-0 grow basis-full flex-col gap-2 rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-3 screen-sm:basis-[calc((100%-var(--space-md))/2)] screen-xl:basis-[calc((100%-(var(--space-md)*3))/4)]"
                 style={{ boxShadow: "var(--card-shadow)" }}
               >
@@ -90,7 +100,7 @@ export default function ProductsPage() {
                 </div>
                 <p className="text-lg font-bold leading-none text-[var(--text-heading)]">{last}</p>
                 <LineChart series={series} height={44} color={color} fill showEndDot />
-              </div>
+              </Link>
             );
           })}
         </div>
