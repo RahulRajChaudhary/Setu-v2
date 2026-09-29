@@ -8,8 +8,9 @@ import EmptyState from "@/components/shared/EmptyState";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import TabBar, { useActiveTab, type Tab } from "@/components/shared/TabBar";
 import LineChart from "@/components/shared/charts/LineChart";
+import Gauge from "@/components/shared/charts/Gauge";
 import { products } from "@/lib/mock-data/products";
-import { productHealthGrid } from "@/lib/mock-data/operations";
+import { productHealthGrid, productHealthSignals } from "@/lib/mock-data/operations";
 
 const TABS: Tab[] = [
   { id: "overview", label: "Overview" },
@@ -22,6 +23,7 @@ export default function ProductDetailContent() {
   const activeTab = useActiveTab(TABS);
   const product = products.find((p) => p.id === params.id);
   const healthRow = productHealthGrid.find((p) => p.id === params.id);
+  const signals = product ? productHealthSignals[product.id] : undefined;
 
   if (!product) {
     return (
@@ -78,6 +80,39 @@ export default function ProductDetailContent() {
             <LineChart series={product.usageTrend30d.map((y, x) => ({ x, y }))} height={100} />
           </Card>
         </div>
+      )}
+
+      {activeTab === "health" && (
+        signals ? (
+          <Card title={`${product.name} — golden signals`} description="p95 latency, traffic, error rate (with SLO line) and resource saturation, last 24h">
+            <div className="grid grid-cols-1 gap-[var(--space-md)] screen-lg:grid-cols-4">
+              <div>
+                <p className="mb-1 text-[0.6875rem] font-medium text-[var(--role-text)]">p95 latency (ms)</p>
+                <LineChart series={signals.p95LatencyMs.series} thresholdY={signals.p95LatencyMs.sloMs} thresholdLabel="SLO" height={64} />
+              </div>
+              <div>
+                <p className="mb-1 text-[0.6875rem] font-medium text-[var(--role-text)]">Requests / sec</p>
+                <LineChart series={signals.requestsPerSec.series} color="var(--chart-2)" height={64} />
+              </div>
+              <div>
+                <p className="mb-1 text-[0.6875rem] font-medium text-[var(--role-text)]">Error rate % (SLO line)</p>
+                <LineChart series={signals.errorRatePct.series} thresholdY={signals.errorRatePct.sloPct} thresholdLabel="SLO" color="var(--chart-4)" height={64} />
+              </div>
+              <div>
+                <p className="mb-1 text-[0.6875rem] font-medium text-[var(--role-text)]">Saturation</p>
+                <Gauge
+                  value={signals.saturationPct}
+                  status={signals.saturationPct >= 80 ? "critical" : signals.saturationPct >= 60 ? "warning" : "healthy"}
+                />
+              </div>
+            </div>
+          </Card>
+        ) : (
+          <EmptyState
+            title="No golden-signal telemetry"
+            description={`${product.name} doesn't have p95 latency, traffic, error-rate or saturation telemetry wired up in the mock yet.`}
+          />
+        )
       )}
     </div>
   );
