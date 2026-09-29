@@ -2,30 +2,23 @@
 
 import { useMemo, useState } from "react";
 import Card from "@/components/shared/Card";
+import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import DataTable, { type Column } from "@/components/shared/DataTable";
 import StatusBadge from "@/components/shared/StatusBadge";
 import TableToolbar from "@/components/shared/TableToolbar";
 import { auditKpis, auditEvents, type AuditEvent } from "@/lib/mock-data/audit-explorer";
 
-const RESULT_FILTERS = [
-  { value: "all", label: "All" },
-  { value: "Success", label: "Success" },
-  { value: "Failed", label: "Failed" },
-];
-
 export default function AuditExplorerPage() {
   const [exported, setExported] = useState(false);
   const [search, setSearch] = useState("");
-  const [result, setResult] = useState("all");
 
   const filteredEvents = useMemo(() => {
-    return auditEvents.filter((e) => {
-      const matchesResult = result === "all" || e.result === result;
-      const q = search.trim().toLowerCase();
-      const matchesSearch = q === "" || e.actor.toLowerCase().includes(q) || e.action.toLowerCase().includes(q) || e.entity.toLowerCase().includes(q);
-      return matchesResult && matchesSearch;
-    });
-  }, [search, result]);
+    const q = search.trim().toLowerCase();
+    if (q === "") return auditEvents;
+    return auditEvents.filter(
+      (e) => e.actor.toLowerCase().includes(q) || e.action.toLowerCase().includes(q) || e.entity.toLowerCase().includes(q),
+    );
+  }, [search]);
 
   const columns: Column<AuditEvent>[] = [
     { key: "time", header: "Time", render: (r) => <span className="font-mono-id text-xs">{r.time}</span>, sortValue: (r) => r.time, className: "whitespace-nowrap" },
@@ -37,11 +30,17 @@ export default function AuditExplorerPage() {
       header: "Result",
       render: (r) => <StatusBadge status={r.result === "Success" ? "healthy" : "critical"} label={r.result} />,
       sortValue: (r) => r.result,
+      filterConfig: {
+        type: "multiSelect",
+        accessor: (r) => r.result,
+        options: ["Success", "Failed"].map((v) => ({ value: v, label: v })),
+      },
     },
   ];
 
   return (
     <div className="flex flex-col gap-[var(--space-lg)]">
+      <Breadcrumbs items={[{ label: "Audit" }]} />
 
       <div className="grid grid-cols-2 gap-[var(--space-sm)] screen-sm:grid-cols-4">
         <Stat label="Total events" value={auditKpis.totalEvents.toLocaleString()} />
@@ -71,9 +70,6 @@ export default function AuditExplorerPage() {
           search={search}
           onSearchChange={setSearch}
           searchPlaceholder="Search actor, action or entity..."
-          filterOptions={RESULT_FILTERS}
-          activeFilter={result}
-          onFilterChange={setResult}
         />
         <DataTable
           columns={columns}
@@ -81,7 +77,7 @@ export default function AuditExplorerPage() {
           getRowKey={(r) => r.id}
           pageSize={6}
           emptyTitle="No events match"
-          emptyDescription="Try a different search term or result filter."
+          emptyDescription="Try a different search term or result filter, or clear a column filter."
           renderExpanded={(r) => (
             <dl className="grid grid-cols-1 gap-[var(--space-sm)] text-xs screen-420:grid-cols-3">
               <div>

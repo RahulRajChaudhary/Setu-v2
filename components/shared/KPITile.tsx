@@ -146,12 +146,16 @@ export default function KPITile({
             </p>
           )}
           {secondary && secondary.length > 0 && (
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            // flex-nowrap (not flex-wrap): a second line here makes this tile
+            // taller than its row siblings, and the grid's default row-stretch
+            // then forces every sibling in that row to match — truncate each
+            // label instead of ever wrapping to a second line.
+            <div className="flex flex-nowrap items-center gap-x-2 overflow-hidden">
               {secondary.map((s) => (
-                <span key={s.label} className="flex items-center gap-1.5 text-[clamp(0.75rem,4cqi,0.875rem)] text-[var(--text-muted)]">
+                <span key={s.label} className="flex min-w-0 shrink items-center gap-1 text-[clamp(0.75rem,4cqi,0.875rem)] text-[var(--text-muted)]">
                   <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: s.color }} />
-                  <span className="font-semibold" style={{ color: s.color }}>{s.value}</span>
-                  {s.label}
+                  <span className="shrink-0 font-semibold" style={{ color: s.color }}>{s.value}</span>
+                  <span className="truncate">{s.label}</span>
                 </span>
               ))}
             </div>

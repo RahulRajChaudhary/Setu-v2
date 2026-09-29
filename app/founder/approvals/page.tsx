@@ -3,6 +3,7 @@
 import { useState } from "react";
 import StatusBadge from "@/components/shared/StatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
+import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { approvalQueue } from "@/lib/mock-data/approvals";
 import type { ApprovalItem, Severity } from "@/lib/mock-data/types";
 
@@ -34,6 +35,7 @@ export default function ApprovalsPage() {
 
   return (
     <div className="flex flex-col gap-[var(--space-lg)]">
+      <Breadcrumbs items={[{ label: "Operations Inbox" }]} />
 
       {queue.length === 0 ? (
         <EmptyState
@@ -64,6 +66,7 @@ export default function ApprovalsPage() {
                   </div>
                   <p className="text-sm font-semibold text-[var(--text-secondary)]">{item.title}</p>
                   <p className="text-xs text-[var(--role-text)]">{item.requester}</p>
+                  <p className="text-xs text-[var(--text-muted)]">{item.impact}</p>
                 </button>
               </li>
             ))}

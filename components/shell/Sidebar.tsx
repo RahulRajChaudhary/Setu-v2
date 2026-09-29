@@ -15,7 +15,7 @@ type NavItem = {
   icon: (color: string) => ReactNode;
 };
 
-// Shared by Founder and Engineering Lead — same generic 6 sections for both today.
+// Shared by Engineering Lead — generic 6 sections, unchanged.
 const OPERATOR_NAV_ITEMS: NavItem[] = [
   {
     label: "Approvals",
@@ -61,6 +61,60 @@ const OPERATOR_NAV_ITEMS: NavItem[] = [
   },
 ];
 
+// Founder's own nav — relabeled/reordered against the frozen sidebar taxonomy
+// (docs/Founder-Dashboard-Data-Spec.md §0), grouped: Operations Inbox (home
+// approval queue) -> Platform Ops (workspaces/subscriptions/releases/health/
+// incidents, tabbed) -> Products -> Compliance & Risk -> Cost & Analytics ->
+// Audit. No separate "Home" entry — the shell logo already links to the
+// Control Room (dashboard). "Operations Inbox" and the tabbed console were
+// both labelled "Operations" at first — renamed the console to "Platform
+// Ops" since the two adjacent, near-identical sidebar labels read as
+// duplicates/a mistake.
+const FOUNDER_NAV_ITEMS: NavItem[] = [
+  {
+    label: "Operations Inbox",
+    slug: "approvals",
+    bg: "#D1FAE5",
+    fg: "#059669",
+    icon: (color) => <ClipboardCheck color={color} size={20} />,
+  },
+  {
+    label: "Platform Ops",
+    slug: "operations",
+    bg: "#DBEAFE",
+    fg: "#2563EB",
+    icon: (color) => <Settings color={color} size={20} />,
+  },
+  {
+    label: "Product 360",
+    slug: "products",
+    bg: "#EDE9FE",
+    fg: "#7C3AED",
+    icon: (color) => <Box color={color} size={20} />,
+  },
+  {
+    label: "Compliance & Risk",
+    slug: "compliance-risk",
+    bg: "#CFFAFE",
+    fg: "#0891B2",
+    icon: (color) => <ShieldCheck color={color} size={20} />,
+  },
+  {
+    label: "Cost & Analytics",
+    slug: "cost-analytics",
+    bg: "#CCFBF1",
+    fg: "#0D9488",
+    icon: (color) => <TrendingUp color={color} size={20} />,
+  },
+  {
+    label: "Audit",
+    slug: "audit-explorer",
+    bg: "#FFEDD5",
+    fg: "#EA580C",
+    icon: (color) => <FileSearch color={color} size={20} />,
+  },
+];
+
 // Compliance Officer's own 5 sections — matches the canonical sidebar taxonomy
 // (Security & Compliance group: compliance, risks-vendors, privacy-requests,
 // access-reviews, audit-explorer), not the generic operator list above.
@@ -103,7 +157,7 @@ const COMPLIANCE_OFFICER_NAV_ITEMS: NavItem[] = [
 ];
 
 const NAV_ITEMS_BY_PERSONA: Record<Persona, NavItem[]> = {
-  founder: OPERATOR_NAV_ITEMS,
+  founder: FOUNDER_NAV_ITEMS,
   "engineering-lead": OPERATOR_NAV_ITEMS,
   "compliance-officer": COMPLIANCE_OFFICER_NAV_ITEMS,
 };

@@ -5,6 +5,7 @@ import Link from "next/link";
 import Card from "@/components/shared/Card";
 import StatusBadge from "@/components/shared/StatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
+import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import LineChart from "@/components/shared/charts/LineChart";
 import { products } from "@/lib/mock-data/products";
 import { rolloutTimeline, productHealthGrid } from "@/lib/mock-data/operations";
@@ -31,10 +32,8 @@ export default function ProductDetailPage() {
 
   return (
     <div className="flex flex-col gap-[var(--space-lg)]">
+      <Breadcrumbs items={[{ label: "Product 360", href: "/founder/products" }, { label: product.name }]} />
       <div>
-        <Link href="/founder/products" className="text-xs font-medium text-[var(--icon-btn-navy)] hover:underline">
-          &larr; Product 360
-        </Link>
         <h1 className="text-[length:var(--font-page-title)] font-bold tracking-tight text-[var(--text-heading)]">{product.name}</h1>
       </div>
 

@@ -2,6 +2,7 @@
 
 import { Fragment, useMemo, useState, type ReactNode } from "react";
 import EmptyState from "./EmptyState";
+import { FilterHeader, TableFilterMenu, useTableFilters, type FilterColumnConfig } from "./filters";
 
 export type Column<T> = {
   key: string;
@@ -9,6 +10,11 @@ export type Column<T> = {
   render: (row: T) => ReactNode;
   sortValue?: (row: T) => string | number;
   className?: string;
+  /** Opts this column into a hover-revealed filter trigger next to its header
+   *  label. `select`/`multiSelect` render as a `TableFilterMenu` (two-pane
+   *  category -> checkbox-options flyout); `text`/`dateRange` render as a
+   *  direct `FilterHeader` popover. */
+  filterConfig?: FilterColumnConfig<T>;
 };
 
 export default function DataTable<T>({
@@ -37,11 +43,23 @@ export default function DataTable<T>({
   const [page, setPage] = useState(0);
   const [expanded, setExpanded] = useState<string | null>(null);
 
+  const filterConfigs = useMemo(() => {
+    const configs: Partial<Record<string, FilterColumnConfig<T>>> = {};
+    for (const column of columns) {
+      if (column.filterConfig) configs[column.key] = column.filterConfig;
+    }
+    return configs;
+  }, [columns]);
+
+  const { filters, setFilter, filteredRows } = useTableFilters(rows, filterConfigs);
+  const hasFilterableColumns = Object.keys(filterConfigs).length > 0;
+  const baseRows = hasFilterableColumns ? filteredRows : rows;
+
   const sorted = useMemo(() => {
-    if (!sortKey) return rows;
+    if (!sortKey) return baseRows;
     const column = columns.find((c) => c.key === sortKey);
-    if (!column?.sortValue) return rows;
-    const copy = [...rows];
+    if (!column?.sortValue) return baseRows;
+    const copy = [...baseRows];
     copy.sort((a, b) => {
       const av = column.sortValue!(a);
       const bv = column.sortValue!(b);
@@ -49,7 +67,7 @@ export default function DataTable<T>({
       return sortDir === "asc" ? cmp : -cmp;
     });
     return copy;
-  }, [rows, sortKey, sortDir, columns]);
+  }, [baseRows, sortKey, sortDir, columns]);
 
   const pageCount = Math.max(1, Math.ceil(sorted.length / pageSize));
   const clampedPage = Math.min(page, pageCount - 1);
@@ -57,6 +75,10 @@ export default function DataTable<T>({
 
   if (rows.length === 0) {
     return <EmptyState title={emptyTitle} description={emptyDescription} />;
+  }
+
+  if (baseRows.length === 0) {
+    return <EmptyState title="No rows match your filters" description="Clear a filter to see more results." />;
   }
 
   function toggleSort(column: Column<T>) {
@@ -79,19 +101,36 @@ export default function DataTable<T>({
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className={`px-2.5 py-1.5 font-semibold text-[var(--role-text)] ${column.className ?? ""}`}
+                  className={`group px-2.5 py-1.5 font-semibold text-[var(--role-text)] ${column.className ?? ""}`}
                 >
-                  <button
-                    type="button"
-                    onClick={() => toggleSort(column)}
-                    disabled={!column.sortValue}
-                    className={`inline-flex items-center gap-1 ${column.sortValue ? "cursor-pointer" : "cursor-default"}`}
-                  >
-                    {column.header}
-                    {sortKey === column.key && (
-                      <span aria-hidden="true">{sortDir === "asc" ? "↑" : "↓"}</span>
-                    )}
-                  </button>
+                  <span className="inline-flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => toggleSort(column)}
+                      disabled={!column.sortValue}
+                      className={`inline-flex items-center gap-1 ${column.sortValue ? "cursor-pointer" : "cursor-default"}`}
+                    >
+                      {column.header}
+                      {sortKey === column.key && (
+                        <span aria-hidden="true">{sortDir === "asc" ? "↑" : "↓"}</span>
+                      )}
+                    </button>
+                    {column.filterConfig?.type === "text" || column.filterConfig?.type === "dateRange" ? (
+                      <FilterHeader
+                        label={column.header}
+                        config={column.filterConfig}
+                        value={filters[column.key]}
+                        onApply={(value) => setFilter(column.key, value)}
+                      />
+                    ) : column.filterConfig ? (
+                      <TableFilterMenu
+                        categories={[{ id: column.key, label: column.header, options: column.filterConfig.options }]}
+                        filters={filters}
+                        onApply={(_, value) => setFilter(column.key, value)}
+                        label={`Filter ${column.header}`}
+                      />
+                    ) : null}
+                  </span>
                 </th>
               ))}
             </tr>

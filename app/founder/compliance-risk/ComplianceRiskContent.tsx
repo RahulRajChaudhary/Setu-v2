@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
 import Card from "@/components/shared/Card";
+import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import TabBar, { useActiveTab } from "@/components/shared/TabBar";
 import DataTable, { type Column } from "@/components/shared/DataTable";
 import StatusBadge from "@/components/shared/StatusBadge";
-import TableToolbar from "@/components/shared/TableToolbar";
 import FrameworkScoreGrid from "@/components/shared/charts/FrameworkScoreGrid";
 import RiskHeatMap from "@/components/shared/charts/RiskHeatMap";
 import {
@@ -28,44 +28,46 @@ const CONTROL_STATUS = {
   Exception: "critical",
 } as const;
 
-const CONTROL_STATUS_FILTERS = [
-  { value: "all", label: "All" },
-  { value: "Effective", label: "Effective" },
-  { value: "On track", label: "On track" },
-  { value: "Exception", label: "Exception" },
-];
-
-const CRITICALITY_FILTERS = [
-  { value: "all", label: "All" },
-  { value: "Critical", label: "Critical" },
-  { value: "High", label: "High" },
-];
-
 export default function ComplianceRiskContent() {
   const active = useActiveTab(TABS);
-  const [controlStatus, setControlStatus] = useState("all");
-  const [vendorCriticality, setVendorCriticality] = useState("all");
-
-  const filteredControls = useMemo(
-    () => controlsTable.filter((c) => controlStatus === "all" || c.status === controlStatus),
-    [controlStatus]
-  );
-
-  const filteredVendors = useMemo(
-    () => vendorTable.filter((v) => vendorCriticality === "all" || v.criticality === vendorCriticality),
-    [vendorCriticality]
-  );
+  const activeLabel = TABS.find((t) => t.id === active)?.label ?? TABS[0].label;
 
   const controlColumns: Column<(typeof controlsTable)[number]>[] = [
-    { key: "id", header: "Control ID", render: (r) => <span className="font-mono-id text-xs">{r.id}</span> },
+    {
+      key: "id",
+      header: "Control ID",
+      render: (r) => (
+        <Link href={`/founder/controls/${r.id}`} className="font-mono-id text-xs text-[var(--icon-btn-navy)] hover:underline">
+          {r.id}
+        </Link>
+      ),
+    },
     { key: "statement", header: "Statement", render: (r) => r.statement },
     { key: "frameworks", header: "Frameworks", render: (r) => <span className="text-xs text-[var(--role-text)]">{r.frameworks}</span> },
     { key: "dueDate", header: "Due date", render: (r) => r.dueDate, sortValue: (r) => r.dueDate },
-    { key: "status", header: "Status", render: (r) => <StatusBadge status={CONTROL_STATUS[r.status]} label={r.status} /> },
+    {
+      key: "status",
+      header: "Status",
+      render: (r) => <StatusBadge status={CONTROL_STATUS[r.status]} label={r.status} />,
+      filterConfig: {
+        type: "multiSelect",
+        accessor: (r) => r.status,
+        options: ["Effective", "On track", "Exception"].map((v) => ({ value: v, label: v })),
+      },
+    },
   ];
 
   const vendorColumns: Column<(typeof vendorTable)[number]>[] = [
-    { key: "vendor", header: "Vendor", render: (r) => <span className="font-medium">{r.vendor}</span>, sortValue: (r) => r.vendor },
+    {
+      key: "vendor",
+      header: "Vendor",
+      render: (r) => (
+        <Link href={`/founder/vendors/${r.id}`} className="font-medium text-[var(--icon-btn-navy)] hover:underline">
+          {r.vendor}
+        </Link>
+      ),
+      sortValue: (r) => r.vendor,
+    },
     { key: "service", header: "Service", render: (r) => r.service },
     {
       key: "criticality",
@@ -73,6 +75,11 @@ export default function ComplianceRiskContent() {
       render: (r) => (
         <StatusBadge status={r.criticality === "Critical" ? "critical" : "warning"} label={r.criticality} />
       ),
+      filterConfig: {
+        type: "multiSelect",
+        accessor: (r) => r.criticality,
+        options: ["Critical", "High"].map((v) => ({ value: v, label: v })),
+      },
     },
     { key: "renewalDate", header: "Renewal", render: (r) => r.renewalDate, sortValue: (r) => r.renewalDate },
     { key: "lastReview", header: "Last review", render: (r) => r.lastReview },
@@ -80,6 +87,7 @@ export default function ComplianceRiskContent() {
 
   return (
     <div className="flex flex-col gap-[var(--space-lg)]">
+      <Breadcrumbs items={[{ label: "Compliance & Risk", href: "/founder/compliance-risk" }, { label: activeLabel }]} />
       <TabBar tabs={TABS} />
 
       {active === "compliance" ? (
@@ -109,14 +117,12 @@ export default function ComplianceRiskContent() {
           </Card>
 
           <Card title="Controls">
-            <TableToolbar filterOptions={CONTROL_STATUS_FILTERS} activeFilter={controlStatus} onFilterChange={setControlStatus} />
             <DataTable
               columns={controlColumns}
-              rows={filteredControls}
+              rows={controlsTable}
               getRowKey={(r) => r.id}
               pageSize={6}
-              emptyTitle="No controls match"
-              emptyDescription="Try a different status filter."
+              emptyTitle="No controls"
             />
           </Card>
         </div>
@@ -131,7 +137,9 @@ export default function ComplianceRiskContent() {
               {topRisks.map((r) => (
                 <li key={r.id} className="flex items-start justify-between gap-2 rounded-lg border border-[var(--divider)] p-3">
                   <div>
-                    <p className="text-sm font-medium text-[var(--text-secondary)]">{r.label}</p>
+                    <Link href={`/founder/risks/${r.id}`} className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--icon-btn-navy)] hover:underline">
+                      {r.label}
+                    </Link>
                     <p className="text-xs text-[var(--role-text)]">
                       Owner: {r.owner} &middot; {r.treatmentStatus} &middot; due {r.dueDate}
                     </p>
@@ -143,14 +151,12 @@ export default function ComplianceRiskContent() {
           </Card>
 
           <Card title="Vendor criticality">
-            <TableToolbar filterOptions={CRITICALITY_FILTERS} activeFilter={vendorCriticality} onFilterChange={setVendorCriticality} />
             <DataTable
               columns={vendorColumns}
-              rows={filteredVendors}
+              rows={vendorTable}
               getRowKey={(r) => r.id}
               pageSize={6}
-              emptyTitle="No vendors match"
-              emptyDescription="Try a different criticality filter."
+              emptyTitle="No vendors"
             />
           </Card>
         </div>

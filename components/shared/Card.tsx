@@ -31,7 +31,12 @@ export default function Card({
           {action}
         </div>
       )}
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
+      {/* No overflow-hidden here: it used to clip the top of any hovered
+          .card-interactive child (translateY + a larger box-shadow both
+          cross this wrapper's edge) — children that truly need clipping
+          (e.g. DataTable's horizontal scroll) already manage their own
+          overflow container. */}
+      <div className="flex min-h-0 flex-1 flex-col">{children}</div>
     </section>
   );
 }

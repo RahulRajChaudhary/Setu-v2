@@ -201,8 +201,8 @@ export default function ControlRoomPage() {
               iconBg="#CFFAFE"
               iconFg="#0891B2"
               secondary={[
-                { label: "Failed/Exception", value: complianceKpis.controlsFailedException, color: "var(--status-warning-fg)" },
-                { label: "Evidence due", value: complianceKpis.evidenceDueThisMonth, color: "var(--status-info-fg)" },
+                { label: "Failed", value: complianceKpis.controlsFailedException, color: "var(--status-warning-fg)" },
+                { label: "Evidence", value: complianceKpis.evidenceDueThisMonth, color: "var(--status-info-fg)" },
               ]}
             />
           </div>
@@ -227,17 +227,17 @@ export default function ControlRoomPage() {
       </div>
 
       <div className="grid grid-cols-1 items-stretch gap-[var(--space-md)] screen-sm:grid-cols-2">
-        <Card title="Controls effective by framework" description="Effective controls per framework" className="min-h-[clamp(11rem,28vh,22rem)]">
-          <div className="flex flex-col items-center gap-[var(--space-md)] screen-sm:flex-row screen-sm:items-center">
+        <Card title="Controls effective by framework" description="Effective controls per framework" className="min-h-[clamp(10rem,24vh,17rem)]">
+          <div className="flex flex-col items-center gap-[var(--space-xs)] screen-sm:flex-row screen-sm:items-center">
             <div className="flex w-full justify-center screen-sm:w-auto screen-sm:flex-1">
               <DonutChart
                 data={controlsEffectiveByFramework.map((f) => ({ label: f.label, value: f.effective, color: f.color }))}
-                size={112}
+                size={92}
                 centerLabel="controls"
                 legend={false}
               />
             </div>
-            <ul className="flex w-full flex-col gap-2.5 screen-sm:flex-1">
+            <ul className="flex w-full flex-col gap-1.5 screen-sm:flex-1">
               {controlsEffectiveByFramework.map((f) => {
                 const status = f.value >= 90 ? "healthy" : f.value >= 75 ? "warning" : "critical";
                 const bandWord = f.value >= 90 ? "Effective" : f.value >= 75 ? "Needs attention" : "At risk";
@@ -258,15 +258,15 @@ export default function ControlRoomPage() {
             </ul>
           </div>
 
-          <div className="mt-[var(--space-md)] border-t border-[var(--divider)] pt-[var(--space-md)]">
-            <h3 className="mb-[var(--space-sm)] text-sm font-semibold text-[var(--text-heading)]">Top risks</h3>
-            <ul className="flex flex-col gap-[var(--space-sm)]">
+          <div className="mt-[var(--space-xs)] border-t border-[var(--divider)] pt-[var(--space-xs)]">
+            <h3 className="mb-[var(--space-xs)] text-sm font-semibold text-[var(--text-heading)]">Top risks</h3>
+            <ul className="flex flex-col gap-1">
               {topRisks.map((risk) => (
-                <li key={risk.id} className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="text-sm font-medium text-[var(--text-secondary)]">{risk.label}</p>
-                    <p className="text-xs text-[var(--role-text)]">Owner: {risk.owner}</p>
-                  </div>
+                <li key={risk.id} className="flex items-center justify-between gap-2">
+                  <p className="min-w-0 flex-1 truncate text-sm text-[var(--text-secondary)]">
+                    <span className="font-medium">{risk.label}</span>
+                    <span className="text-xs text-[var(--role-text)]"> &middot; {risk.owner}</span>
+                  </p>
                   <StatusBadge
                     status={risk.likelihood * risk.impact >= 16 ? "critical" : "warning"}
                     label={`${risk.likelihood * risk.impact}`}
@@ -280,7 +280,7 @@ export default function ControlRoomPage() {
         <Card
           title="Growth"
           description="New customers vs. trial-to-paid, cumulative"
-          className="min-h-[clamp(11rem,28vh,22rem)]"
+          className="min-h-[clamp(10rem,24vh,17rem)]"
           action={
             <div className="flex items-center gap-0.5 rounded-full bg-[var(--surface-muted)] p-0.5">
               {GROWTH_RANGE_OPTIONS.map((opt) => (
@@ -303,14 +303,14 @@ export default function ControlRoomPage() {
         >
           <AreaTrendChart
             className="min-h-0 flex-1"
-            heightClassName="h-full min-h-[14rem]"
+            heightClassName="h-full min-h-[9.5rem]"
             series={[
               { key: "newCustomers", label: "New customers", color: "var(--chart-1)", data: growthTrend.map((d) => d.newCustomers) },
               { key: "trialToPaid", label: "Trial → paid", color: "var(--chart-3)", data: growthTrend.map((d) => d.trialToPaid) },
             ]}
             xLabels={growthTrend.map((d) => d.label)}
           />
-          <dl className="mt-[var(--space-sm)] grid grid-cols-2 gap-[var(--space-sm)] border-t border-[var(--divider)] pt-[var(--space-sm)] screen-sm:grid-cols-4">
+          <dl className="mt-[var(--space-xs)] grid grid-cols-2 gap-[var(--space-sm)] border-t border-[var(--divider)] pt-[var(--space-xs)] screen-sm:grid-cols-4">
             <div>
               <dt className="text-xs text-[var(--role-text)]">New customers</dt>
               <dd className="text-lg font-semibold text-[var(--text-secondary)]">{newCustomersTotal}</dd>

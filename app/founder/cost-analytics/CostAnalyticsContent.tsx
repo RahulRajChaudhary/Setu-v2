@@ -1,14 +1,15 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
 import { TrendingUp } from "lucide-react";
 import Card from "@/components/shared/Card";
+import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import TabBar, { useActiveTab } from "@/components/shared/TabBar";
 import ToggleChart from "@/components/shared/charts/ToggleChart";
-import LineChart from "@/components/shared/charts/LineChart";
 import UsageAllowanceBar from "@/components/shared/charts/UsageAllowanceBar";
-import AdoptionBarList from "@/components/shared/charts/AdoptionBarList";
-import { costKpis, costByProvider, costAnomalies, usageVsPlanAllowance } from "@/lib/mock-data/cost-analytics";
-import { products, productKpis } from "@/lib/mock-data/products";
+import DrillLink from "@/components/shared/DrillLink";
+import { costKpis, costByProvider, costAnomalies, topWorkspacesByCost, usageVsPlanAllowance } from "@/lib/mock-data/cost-analytics";
 
 const TABS = [
   { id: "cost", label: "Cost" },
@@ -17,9 +18,11 @@ const TABS = [
 
 export default function CostAnalyticsContent() {
   const active = useActiveTab(TABS);
+  const activeLabel = TABS.find((t) => t.id === active)?.label ?? TABS[0].label;
 
   return (
     <div className="flex flex-col gap-[var(--space-lg)]">
+      <Breadcrumbs items={[{ label: "Cost & Analytics", href: "/founder/cost-analytics" }, { label: activeLabel }]} />
       <TabBar tabs={TABS} />
 
       {active === "cost" ? <CostTab /> : <AdoptionTab />}
@@ -28,6 +31,8 @@ export default function CostAnalyticsContent() {
 }
 
 function CostTab() {
+  const [flagged, setFlagged] = useState<Set<string>>(new Set());
+
   return (
     <div className="flex flex-col gap-[var(--space-md)]">
       <div className="grid grid-cols-1 gap-[var(--space-md)] screen-sm:grid-cols-2">
@@ -54,70 +59,78 @@ function CostTab() {
         </Card>
       </div>
 
-      <Card title="Cost anomalies">
+      <Card title="Top workspaces by cost" description="Highest MTD spend, share of total platform cost">
         <ul className="flex flex-col gap-[var(--space-sm)]">
-          {costAnomalies.map((a) => (
-            <li key={a.id} className="rounded-lg border border-[var(--divider)] p-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-medium text-[var(--text-secondary)]">{a.scope}</span>
-                <span className="rounded-full bg-[var(--status-warning-bg)] px-2 py-0.5 text-xs font-semibold text-[var(--status-warning-fg)]">
-                  +{a.pctSpike}%
-                </span>
-              </div>
-              <p className="mt-1 text-xs text-[var(--role-text)]">{a.metric} — {a.cause}</p>
+          {topWorkspacesByCost.map((w) => (
+            <li key={w.workspaceId} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--divider)] p-3">
+              <Link href={`/founder/workspaces/${w.workspaceId}`} className="text-sm font-medium text-[var(--icon-btn-navy)] hover:underline">
+                {w.workspace}
+              </Link>
+              <span className="flex items-center gap-2 text-sm">
+                <span className="font-semibold text-[var(--text-secondary)]">₹{w.costMtd.toLocaleString("en-IN")}</span>
+                <span className="text-xs text-[var(--text-muted)]">{w.pctOfTotal}% of total</span>
+              </span>
             </li>
           ))}
         </ul>
       </Card>
 
-      <Card title="Usage vs plan allowance" description="Share of each product's plan capacity used this month">
-        <UsageAllowanceBar data={usageVsPlanAllowance} />
+      <Card title="Cost anomalies">
+        <ul className="flex flex-col gap-[var(--space-sm)]">
+          {costAnomalies.map((a) => {
+            const drillHref = a.workspaceId ? `/founder/workspaces/${a.workspaceId}` : a.productId ? `/founder/products/${a.productId}` : null;
+            const isFlagged = flagged.has(a.id);
+            return (
+              <li key={a.id} className="rounded-lg border border-[var(--divider)] p-3">
+                <div className="flex items-center justify-between gap-2">
+                  {drillHref ? (
+                    <Link href={drillHref} className="text-sm font-medium text-[var(--icon-btn-navy)] hover:underline">
+                      {a.scope}
+                    </Link>
+                  ) : (
+                    <span className="text-sm font-medium text-[var(--text-secondary)]">{a.scope}</span>
+                  )}
+                  <span className="rounded-full bg-[var(--status-warning-bg)] px-2 py-0.5 text-xs font-semibold text-[var(--status-warning-fg)]">
+                    +{a.pctSpike}%
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-[var(--role-text)]">{a.metric} — {a.cause}</p>
+                <div className="mt-2">
+                  {isFlagged ? (
+                    <span className="text-xs font-medium text-[var(--status-healthy-fg)]">Flagged to Operations Inbox</span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setFlagged((prev) => new Set(prev).add(a.id))}
+                      className="tap-pop text-xs font-medium text-[var(--icon-btn-navy)] hover:underline"
+                    >
+                      Flag to Operations Inbox
+                    </button>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       </Card>
     </div>
   );
 }
 
+// Per-product adoption % and its 30-day usage sparkline live on the Products
+// page (docs/Founder-Dashboard-Data-Spec.md §5) — this tab keeps the
+// capacity-vs-allowance view, which is genuinely cost/analytics-flavored
+// (plan headroom, not adoption itself), and cross-links to Products for the
+// adoption breakdown instead of duplicating that chart here.
 function AdoptionTab() {
-  const adoptionData = products.map((p) => ({ label: p.name, value: p.adoptionPct, health: p.health }));
-
   return (
     <div className="flex flex-col gap-[var(--space-md)]">
-      <Card title="Adoption % per product" description="Share of eligible workspaces using each product, sorted highest first">
-        <AdoptionBarList data={adoptionData} average={productKpis.averageAdoptionPct} />
-      </Card>
-
-      <Card title="Usage trend, last 30 days" description="Daily usage index with change vs the start of the period">
-        <div className="flex flex-wrap gap-[var(--space-md)]">
-          {products.map((p) => {
-            const series = p.usageTrend30d.map((y, x) => ({ x, y }));
-            const first = p.usageTrend30d[0];
-            const last = p.usageTrend30d[p.usageTrend30d.length - 1];
-            const deltaPct = Math.round(((last - first) / first) * 100);
-            const up = deltaPct >= 0;
-            const color = up ? "var(--status-healthy-fg)" : "var(--status-critical-fg)";
-            return (
-              <div
-                key={p.id}
-                className="card-interactive flex min-w-0 grow basis-full flex-col gap-2 rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-3 screen-sm:basis-[calc((100%-var(--space-md))/2)] screen-xl:basis-[calc((100%-(var(--space-md)*3))/4)]"
-                style={{ boxShadow: "var(--card-shadow)" }}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <p className="truncate text-xs font-medium text-[var(--text-muted)]" title={p.name}>
-                    {p.name}
-                  </p>
-                  <span
-                    className="flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[0.625rem] font-semibold"
-                    style={{ background: up ? "var(--status-healthy-bg)" : "var(--status-critical-bg)", color }}
-                  >
-                    {up ? "▲" : "▼"} {Math.abs(deltaPct)}%
-                  </span>
-                </div>
-                <p className="text-lg font-bold leading-none text-[var(--text-heading)]">{last}</p>
-                <LineChart series={series} height={44} color={color} fill showEndDot />
-              </div>
-            );
-          })}
-        </div>
+      <Card
+        title="Usage vs plan allowance"
+        description="Share of each product's plan capacity used this month"
+        action={<DrillLink href="/founder/products">See per-product adoption</DrillLink>}
+      >
+        <UsageAllowanceBar data={usageVsPlanAllowance} />
       </Card>
     </div>
   );
