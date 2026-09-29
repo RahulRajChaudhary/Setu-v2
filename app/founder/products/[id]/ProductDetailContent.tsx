@@ -10,7 +10,7 @@ import TabBar, { useActiveTab, type Tab } from "@/components/shared/TabBar";
 import LineChart from "@/components/shared/charts/LineChart";
 import Gauge from "@/components/shared/charts/Gauge";
 import { products } from "@/lib/mock-data/products";
-import { productHealthGrid, productHealthSignals } from "@/lib/mock-data/operations";
+import { productHealthGrid, productHealthSignals, releaseRows } from "@/lib/mock-data/operations";
 
 const TABS: Tab[] = [
   { id: "overview", label: "Overview" },
@@ -18,12 +18,25 @@ const TABS: Tab[] = [
   { id: "releases", label: "Releases" },
 ];
 
+function releaseStatusLevel(status: string): "healthy" | "warning" | "critical" | "info" {
+  if (status === "Complete") return "healthy";
+  if (status === "In progress") return "info";
+  if (status.toLowerCase().includes("rollback")) return "critical";
+  return "warning";
+}
+
 export default function ProductDetailContent() {
   const params = useParams<{ id: string }>();
   const activeTab = useActiveTab(TABS);
   const product = products.find((p) => p.id === params.id);
   const healthRow = productHealthGrid.find((p) => p.id === params.id);
   const signals = product ? productHealthSignals[product.id] : undefined;
+  const productReleases = product
+    ? releaseRows
+        .filter((r) => r.product === product.name)
+        .slice()
+        .sort((a, b) => (a.deployedAt < b.deployedAt ? 1 : -1))
+    : [];
 
   if (!product) {
     return (
@@ -111,6 +124,44 @@ export default function ProductDetailContent() {
           <EmptyState
             title="No golden-signal telemetry"
             description={`${product.name} doesn't have p95 latency, traffic, error-rate or saturation telemetry wired up in the mock yet.`}
+          />
+        )
+      )}
+
+      {activeTab === "releases" && (
+        productReleases.length > 0 ? (
+          <Card title={`${product.name} — release history`}>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[560px] text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--divider)] text-left text-xs font-medium text-[var(--text-muted)]">
+                    <th className="py-2 pr-4">Version</th>
+                    <th className="py-2 pr-4">Deployed</th>
+                    <th className="py-2 pr-4">Status</th>
+                    <th className="py-2 pr-4">Blast radius</th>
+                    <th className="py-2 pr-4">Approval ref</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {productReleases.map((r) => (
+                    <tr key={r.id} className="border-b border-[var(--divider)] last:border-0">
+                      <td className="py-2 pr-4 font-medium text-[var(--text-secondary)]">{r.version}</td>
+                      <td className="py-2 pr-4 text-[var(--role-text)]">{r.deployedAt}</td>
+                      <td className="py-2 pr-4">
+                        <StatusBadge status={releaseStatusLevel(r.status)} label={r.status} />
+                      </td>
+                      <td className="py-2 pr-4 text-[var(--role-text)]">{r.blastRadiusPct}%</td>
+                      <td className="py-2 pr-4 text-[var(--role-text)]">{r.approvalRef ?? "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        ) : (
+          <EmptyState
+            title="No releases yet"
+            description={`${product.name} has no recorded releases in the mock catalogue.`}
           />
         )
       )}
