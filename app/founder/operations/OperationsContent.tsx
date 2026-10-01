@@ -162,6 +162,11 @@ function WorkspacesTab() {
 }
 
 function SubscriptionsTab() {
+  const searchParams = useSearchParams();
+  const productFilter = searchParams.get("product");
+  const filteredSubscriptionRows = productFilter
+    ? subscriptionRows.filter((s) => s.product === productFilter)
+    : subscriptionRows;
   const totalPlanMix = subscriptionKpis.planMix.reduce((sum, p) => sum + p.count, 0);
 
   const columns: Column<(typeof subscriptionRows)[number]>[] = [
@@ -191,7 +196,17 @@ function SubscriptionsTab() {
   ];
 
   return (
-    <Card title="Subscriptions" description="Status distribution across active plan commitments">
+    <Card
+      title="Subscriptions"
+      description="Status distribution across active plan commitments"
+      action={
+        productFilter ? (
+          <Link href="/founder/operations?tab=subscriptions" className="text-xs font-medium text-[var(--icon-btn-navy)] hover:underline">
+            Filtered to {productFilter} &middot; Clear
+          </Link>
+        ) : undefined
+      }
+    >
       <div className="mb-4 grid grid-cols-2 gap-[var(--space-sm)] screen-sm:grid-cols-4">
         <StatTile label="Active" value={subscriptionKpis.active} tone="healthy" icon={<CheckCircle2 size={16} />} />
         <StatTile label="Grace" value={subscriptionKpis.grace} tone="warning" icon={<Clock size={16} />} />
@@ -202,7 +217,7 @@ function SubscriptionsTab() {
         <div className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-4" style={{ boxShadow: "var(--card-shadow)" }}>
           <ToggleChart data={subscriptionStatusDonut} defaultType="pie" />
         </div>
-        <DataTable columns={columns} rows={subscriptionRows} getRowKey={(r) => r.id} pageSize={5} emptyTitle="No subscriptions" />
+        <DataTable columns={columns} rows={filteredSubscriptionRows} getRowKey={(r) => r.id} pageSize={5} emptyTitle="No subscriptions" />
       </div>
     </Card>
   );
