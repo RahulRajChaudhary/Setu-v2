@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { LayoutGrid, CheckCircle2, Clock, Rocket, AlertCircle, RefreshCw, Layers, ChevronRight, ChevronDown } from "lucide-react";
+import { LayoutGrid, CheckCircle2, Clock, Rocket, AlertCircle, RefreshCw, Layers, ChevronRight, ChevronDown, Power, Flag } from "lucide-react";
 import Card from "@/components/shared/Card";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import DataTable, { type Column } from "@/components/shared/DataTable";
@@ -11,7 +11,6 @@ import StatusBadge, { StatusDot, type StatusLevel } from "@/components/shared/St
 import StatTile from "@/components/shared/StatTile";
 import TabBar, { useActiveTab, type Tab } from "@/components/shared/TabBar";
 import TableToolbar from "@/components/shared/TableToolbar";
-import RolloutProgressBar from "@/components/shared/charts/RolloutProgressBar";
 import Funnel from "@/components/shared/charts/Funnel";
 import ToggleChart from "@/components/shared/charts/ToggleChart";
 import MultiLineChart from "@/components/shared/charts/MultiLineChart";
@@ -486,17 +485,14 @@ function ReleasesTab() {
         })}
       </div>
       <div className="mt-4">
-        <p className="mb-2 text-xs font-semibold text-[var(--role-text)]">Rollout progress</p>
-        <RolloutProgressBar
-          data={[...rolloutTimeline]
+        <p className="mb-2 text-xs font-semibold text-[var(--role-text)]">Rollout progress &mdash; canary stages</p>
+        <ul className="grid grid-cols-1 gap-[var(--space-sm)] screen-lg:grid-cols-2">
+          {[...rolloutTimeline]
             .sort((x, y) => Number(y.status === "rollback") - Number(x.status === "rollback"))
-            .map((r) => ({
-              label: r.product,
-              percent: r.pctRolledOut,
-              // An escalated rollback is paused awaiting the Founder, not yet rolled back.
-              status: r.status === "rollback" ? ("paused" as const) : r.status === "in-progress" ? ("active" as const) : ("complete" as const),
-            }))}
-        />
+            .map((r) => (
+              <RolloutStageCard key={r.id} id={r.id} name={r.product} pct={r.pctRolledOut} status={r.status} />
+            ))}
+        </ul>
       </div>
       <div className="mt-4">
         <div className="mb-2 flex items-center justify-between gap-2">
@@ -524,14 +520,11 @@ function FeatureFlagsCard({ productFilter }: { productFilter?: string }) {
       {rows.length === 0 ? (
         <p className="text-sm text-[var(--role-text)]">No feature flags for this product.</p>
       ) : (
-        <RolloutProgressBar
-          data={rows.map((f) => ({
-            label: `${f.flagName} · ${f.product}`,
-            percent: f.rolloutPct,
-            // Kill switch armed = rollout frozen.
-            status: f.killSwitchEnabled ? ("paused" as const) : f.rolloutPct === 100 ? ("complete" as const) : ("active" as const),
-          }))}
-        />
+        <ul className="grid grid-cols-1 gap-[var(--space-sm)] screen-lg:grid-cols-2">
+          {rows.map((f) => (
+            <FlagCard key={f.id} flag={f} />
+          ))}
+        </ul>
       )}
     </Card>
   );
@@ -823,6 +816,96 @@ function ErrorDelta({ before, after }: { before: number; after: number }) {
   const status: StatusLevel = delta >= 1 ? "critical" : delta > 0.1 ? "warning" : "healthy";
   const sign = delta > 0 ? "+" : "";
   return <StatusBadge status={status} label={delta === 0 ? "no change" : `${sign}${delta} pt`} />;
+}
+
+const ROLLOUT_STAGES = [10, 50, 100];
+
+const ROLLOUT_TONE = {
+  rollback: { fg: "var(--status-critical-fg)", bg: "var(--status-critical-bg)", level: "critical", word: "Paused — rollback escalated" },
+  "in-progress": { fg: "var(--chart-1)", bg: "var(--status-info-bg)", level: "info", word: "In progress" },
+  complete: { fg: "var(--status-healthy-fg)", bg: "var(--status-healthy-bg)", level: "healthy", word: "Complete" },
+} as const;
+
+// Release rollout as a staged track: the fill is the live % and the ticks are
+// the canary checkpoints, so you can see which stage a release is stuck at.
+function RolloutStageCard({ id, name, pct, status }: { id: string; name: string; pct: number; status: keyof typeof ROLLOUT_TONE }) {
+  const tone = ROLLOUT_TONE[status];
+  return (
+    <li className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-3" style={{ borderLeft: `3px solid ${tone.fg}` }}>
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <Link href={`/founder/releases/${id}`} className="truncate text-sm font-semibold text-[var(--text-heading)] hover:underline">
+          {name}
+        </Link>
+        <StatusBadge status={tone.level} label={tone.word} />
+      </div>
+      <div className="relative mx-4 mb-6 h-2.5 rounded-full bg-[var(--surface-muted)]">
+        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: tone.fg }} />
+        {ROLLOUT_STAGES.map((stage) => (
+          <div key={stage} className="absolute top-0 h-full" style={{ left: `${stage}%` }}>
+            <span
+              className="absolute -top-0.5 h-3.5 w-0.5 -translate-x-1/2 rounded"
+              style={{ backgroundColor: pct >= stage ? "var(--surface)" : "var(--text-muted)", opacity: pct >= stage ? 0.9 : 0.5 }}
+            />
+            <span className="absolute top-4 -translate-x-1/2 text-[0.6875rem] text-[var(--text-muted)]">{stage}%</span>
+          </div>
+        ))}
+        <span
+          className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[var(--surface)]"
+          style={{ left: `${pct}%`, backgroundColor: tone.fg }}
+          title={`${pct}% rolled out`}
+        />
+      </div>
+      <p className="text-xs text-[var(--text-secondary)]">
+        <span className="font-semibold text-[var(--text-heading)]">{pct}%</span> of production on this version
+        {status === "rollback" && " — stopped before the next stage"}
+      </p>
+    </li>
+  );
+}
+
+// Feature flag as an audience-reach meter (10 blocks = 10% each) plus an explicit
+// kill-switch state — a flag is "who sees it", not "how far a deploy has got".
+function FlagCard({ flag }: { flag: (typeof featureFlagRows)[number] }) {
+  const filled = Math.round(flag.rolloutPct / 10);
+  const color = flag.killSwitchEnabled ? "var(--status-critical-fg)" : flag.rolloutPct === 100 ? "var(--status-healthy-fg)" : "var(--chart-1)";
+  return (
+    <li className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="flex items-center gap-1.5 truncate font-mono-id text-sm font-semibold text-[var(--text-heading)]">
+            <Flag size={14} className="shrink-0 text-[var(--text-muted)]" />
+            {flag.flagName}
+          </p>
+          <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+            {flag.product} &middot; updated {flag.updatedAt}
+          </p>
+        </div>
+        <p className="shrink-0 text-right">
+          <span className="text-xl font-bold leading-none text-[var(--text-heading)]">{flag.rolloutPct}%</span>
+          <span className="block text-[0.6875rem] text-[var(--text-muted)]">of audience</span>
+        </p>
+      </div>
+      <div className="mt-3 flex gap-1" role="img" aria-label={`${flag.rolloutPct}% of audience has this feature`}>
+        {Array.from({ length: 10 }, (_, i) => (
+          <span key={i} className="h-2.5 flex-1 rounded-sm" style={{ backgroundColor: i < filled ? color : "var(--surface-muted)" }} />
+        ))}
+      </div>
+      <div className="mt-3 flex items-center justify-between text-xs">
+        <span className="text-[var(--text-muted)]">{flag.rolloutPct === 100 ? "Fully on" : flag.rolloutPct <= 10 ? "Early access" : "Gradual rollout"}</span>
+        <span
+          className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium"
+          style={
+            flag.killSwitchEnabled
+              ? { background: "var(--status-critical-bg)", color: "var(--status-critical-fg)" }
+              : { background: "var(--surface-muted)", color: "var(--text-muted)" }
+          }
+        >
+          <Power size={12} />
+          {flag.killSwitchEnabled ? "Kill switch armed" : "Kill switch off"}
+        </span>
+      </div>
+    </li>
+  );
 }
 
 const AREA_TONE: Record<"healthy" | "warning" | "critical", { bg: string; fg: string }> = {
