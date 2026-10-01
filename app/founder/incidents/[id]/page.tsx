@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import Card from "@/components/shared/Card";
 import StatusBadge from "@/components/shared/StatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
@@ -57,7 +58,16 @@ export default function IncidentDetailPage() {
 
       {incident.linkedRelease && (
         <Card title="Linked release">
-          <p className="text-sm text-[var(--text-secondary)]">{incident.linkedRelease}</p>
+          {incident.linkedReleaseId ? (
+            <Link
+              href={`/founder/releases/${incident.linkedReleaseId}`}
+              className="text-sm font-medium text-[var(--icon-btn-navy)] hover:underline"
+            >
+              {incident.linkedRelease} &rarr;
+            </Link>
+          ) : (
+            <p className="text-sm text-[var(--text-secondary)]">{incident.linkedRelease}</p>
+          )}
         </Card>
       )}
     </div>

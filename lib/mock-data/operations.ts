@@ -181,6 +181,7 @@ export const incidentRows = [
     status: "Mitigating",
     timeOpen: "2h 10m",
     linkedRelease: "Chat with Sahayogi v3.4",
+    linkedReleaseId: "rel-1",
   },
   {
     id: "inc-2",
@@ -193,6 +194,7 @@ export const incidentRows = [
     status: "Monitoring",
     timeOpen: "45m",
     linkedRelease: null,
+    linkedReleaseId: null,
   },
   {
     id: "inc-3",
@@ -207,6 +209,7 @@ export const incidentRows = [
     status: "Resolved",
     timeOpen: "3h 5m",
     linkedRelease: null,
+    linkedReleaseId: null,
   },
 ];
 
