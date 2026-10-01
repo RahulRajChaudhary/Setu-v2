@@ -72,11 +72,11 @@ export const rolloutTimeline = [
 ];
 
 export const releaseRows = [
-  { id: "rel-1", product: "Chat with Sahayogi", version: "v3.4", deployedAt: "2026-09-27", status: "Rollback escalated", blastRadiusPct: 42, approvalRef: "apr-2" },
-  { id: "rel-2", product: "BoSS", version: "v2.1", deployedAt: "2026-09-24", status: "Complete", blastRadiusPct: 100, approvalRef: null },
-  { id: "rel-3", product: "Tax Sahayogi", version: "v1.6", deployedAt: "2026-09-28", status: "In progress", blastRadiusPct: 75, approvalRef: null },
-  { id: "rel-4", product: "Sahayogi One", version: "v4.0", deployedAt: "2026-09-20", status: "Complete", blastRadiusPct: 100, approvalRef: null },
-  { id: "rel-5", product: "Office Sahayogi", version: "v1.2", deployedAt: "2026-09-18", status: "Complete", blastRadiusPct: 100, approvalRef: null },
+  { id: "rel-1", product: "Chat with Sahayogi", version: "v3.4", deployedAt: "2026-09-27", status: "Rollback escalated", blastRadiusPct: 42, approvalRef: "apr-2", code: "REL-889" },
+  { id: "rel-2", product: "BoSS", version: "v2.1", deployedAt: "2026-09-24", status: "Complete", blastRadiusPct: 100, approvalRef: null, code: null },
+  { id: "rel-3", product: "Tax Sahayogi", version: "v1.6", deployedAt: "2026-09-28", status: "In progress", blastRadiusPct: 75, approvalRef: null, code: null },
+  { id: "rel-4", product: "Sahayogi One", version: "v4.0", deployedAt: "2026-09-20", status: "Complete", blastRadiusPct: 100, approvalRef: null, code: null },
+  { id: "rel-5", product: "Office Sahayogi", version: "v1.2", deployedAt: "2026-09-18", status: "Complete", blastRadiusPct: 100, approvalRef: null, code: null },
 ];
 
 export const productHealthGrid = [

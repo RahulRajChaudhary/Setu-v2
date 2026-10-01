@@ -1,4 +1,6 @@
-import type { AreaTile, RiskRow, StatusLevel } from "./types";
+import type { AreaTile, StatusLevel } from "./types";
+import { productHealthGrid, incidentRows } from "./operations";
+import { approvalQueue } from "./approvals";
 
 export type KpiSnapshot = {
   productsHealthy: { healthy: number; active: number; status: StatusLevel };
@@ -8,46 +10,32 @@ export type KpiSnapshot = {
 };
 
 export function generateKpiSnapshot(): KpiSnapshot {
+  const healthy = productHealthGrid.filter((p) => p.status === "healthy").length;
+  const openIncidents = incidentRows.filter((i) => i.status !== "Resolved").length;
   return {
-    productsHealthy: { healthy: 6, active: 9, status: "warning" },
-    waitingForApproval: { count: 3, status: "warning" },
-    openIncidents: { count: 1, status: "warning" },
+    productsHealthy: {
+      healthy,
+      active: productHealthGrid.length,
+      status: healthy === productHealthGrid.length ? "healthy" : "warning",
+    },
+    waitingForApproval: {
+      count: approvalQueue.length,
+      status: approvalQueue.length > 0 ? "warning" : "healthy",
+    },
+    openIncidents: {
+      count: openIncidents,
+      status: openIncidents > 0 ? "warning" : "healthy",
+    },
+    // No backing per-day cost array exists yet in the mock layer — this one
+    // metric stays a literal until a cost time-series is modeled.
     platformCostTrend: { pctChange: 8, status: "healthy" },
   };
 }
 
-export const needsYourDecision = [
-  {
-    id: "dec-1",
-    type: "Risk acceptance",
-    title: "Accept residual risk: vendor SSO outage exposure",
-    requester: "Priya N. (Compliance Officer)",
-    impact: "High — affects SSO for 3 workspaces",
-    owner: "Founder",
-    deadline: "2026-09-24",
-    severity: "high" as const,
-  },
-  {
-    id: "dec-2",
-    type: "Rollback approval",
-    title: "Approve rollback: Chat with Sahayogi v3.4 release",
-    requester: "Arjun M. (Engineering Lead)",
-    impact: "Critical — blast radius exceeds threshold",
-    owner: "Founder",
-    deadline: "2026-09-23",
-    severity: "critical" as const,
-  },
-  {
-    id: "dec-3",
-    type: "Permanent suspension",
-    title: "Suspend workspace: Acme Traders (fraud flag)",
-    requester: "Ops escalation",
-    impact: "Medium — 1 workspace, 4 active users",
-    owner: "Founder",
-    deadline: "2026-09-26",
-    severity: "medium" as const,
-  },
-];
+// The Control Room's "Needs Your Decision" table is the Operations Inbox
+// approval queue, not a separate dataset — previously these were two
+// hand-duplicated arrays that could silently drift apart.
+export { approvalQueue as needsYourDecision } from "./approvals";
 
 export const areasAtGlance: AreaTile[] = [
   { id: "platform", label: "Platform", status: "healthy", cause: "All core services nominal", href: "/founder/operations" },
@@ -61,11 +49,7 @@ export const areasAtGlance: AreaTile[] = [
   { id: "dependencies", label: "Dependencies", status: "warning", cause: "1 vendor DPA renewal due in 7d", href: "/founder/compliance-risk" },
 ];
 
-export const topRisks: RiskRow[] = [
-  { id: "r1", label: "Vendor SSO provider single point of failure (Sahayogi One)", owner: "Priya N.", likelihood: 4, impact: 5, treatmentStatus: "Escalated", dueDate: "2026-09-24" },
-  { id: "r2", label: "WhatsApp Business API throughput cap during peak broadcast", owner: "Arjun M.", likelihood: 3, impact: 4, treatmentStatus: "In treatment", dueDate: "2026-10-02" },
-  { id: "r3", label: "Data residency gap for multi-state GST filings (Tax Sahayogi)", owner: "Priya N.", likelihood: 2, impact: 4, treatmentStatus: "Monitoring", dueDate: "2026-10-15" },
-];
+export { topRisks } from "./compliance-risk";
 
 export const controlsEffectiveByFramework = [
   { label: "ISO 27001", value: 94, effective: 47, total: 50, color: "var(--chart-2)" },

@@ -6,6 +6,17 @@ import EmptyState from "@/components/shared/EmptyState";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { approvalQueue } from "@/lib/mock-data/approvals";
 import type { ApprovalItem, Severity } from "@/lib/mock-data/types";
+import Link from "next/link";
+import { releaseRows } from "@/lib/mock-data/operations";
+import { topRisks } from "@/lib/mock-data/compliance-risk";
+
+function resolveReference(reference: string): { href: string; label: string } | null {
+  const risk = topRisks.find((r) => r.code === reference);
+  if (risk) return { href: `/founder/risks/${risk.id}`, label: reference };
+  const release = releaseRows.find((r) => r.code === reference);
+  if (release) return { href: `/founder/releases/${release.id}`, label: reference };
+  return null;
+}
 
 const SEVERITY_STATUS: Record<Severity, "healthy" | "warning" | "critical"> = {
   low: "healthy",
@@ -76,7 +87,21 @@ export default function ApprovalsPage() {
             <div className="flex flex-col gap-[var(--space-md)] rounded-[var(--card-radius)] border border-[var(--card-border)] bg-[var(--surface)] p-5" style={{ boxShadow: "var(--card-shadow)" }}>
               <div className="flex items-center justify-between gap-2">
                 <StatusBadge status={SEVERITY_STATUS[selected.severity]} label={selected.type} />
-                <span className="text-xs text-[var(--role-text)]">{selected.reference}</span>
+                {(() => {
+                  const resolved = resolveReference(selected.reference);
+                  return resolved ? (
+                    <Link href={resolved.href} className="text-xs font-medium text-[var(--icon-btn-navy)] hover:underline">
+                      {resolved.label} &rarr;
+                    </Link>
+                  ) : (
+                    <span
+                      className="text-xs text-[var(--role-text)]"
+                      title="Owned by BoSS Customer Service — no Setu-side record to link to"
+                    >
+                      {selected.reference}
+                    </span>
+                  );
+                })()}
               </div>
               <h2 className="text-base font-semibold text-[var(--text-secondary)]">{selected.title}</h2>
 
