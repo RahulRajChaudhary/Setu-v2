@@ -362,6 +362,10 @@ function HealthTab() {
   const filteredHealthGrid = productFilter
     ? productHealthGrid.filter((p) => p.id === productFilter)
     : productHealthGrid;
+  const productName = productFilter ? filteredHealthGrid[0]?.name : undefined;
+  const filteredDependencyMap = productName ? dependencyMap.filter((d) => d.product === productName) : dependencyMap;
+  const filteredIntegrationRows = productName ? integrationRows.filter((i) => i.product === productName) : integrationRows;
+  const filteredSyntheticChecks = productName ? syntheticChecks.filter((c) => c.product === productName) : syntheticChecks;
 
   return (
     <div className="flex flex-col gap-[var(--space-md)]">
@@ -452,48 +456,60 @@ function HealthTab() {
       </Card>
 
       <Card title="Dependency map" description="Product to dependent service, with live status">
-        <ul className="flex flex-col gap-2">
-          {dependencyMap.map((d) => (
-            <li key={d.id} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--divider)] p-3 text-sm">
-              <span className="text-[var(--text-secondary)]">
-                <span className="font-medium">{d.product}</span> &rarr; {d.service}
-              </span>
-              <StatusBadge status={d.status} label={d.status} />
-            </li>
-          ))}
-        </ul>
+        {filteredDependencyMap.length === 0 ? (
+          <p className="text-sm text-[var(--role-text)]">No service dependencies for this product.</p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {filteredDependencyMap.map((d) => (
+              <li key={d.id} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--divider)] p-3 text-sm">
+                <span className="text-[var(--text-secondary)]">
+                  <span className="font-medium">{d.product}</span> &rarr; {d.service}
+                </span>
+                <StatusBadge status={d.status} label={d.status} />
+              </li>
+            ))}
+          </ul>
+        )}
       </Card>
 
       <Card title="Integrations" description="Third-party and partner integration health, separate from internal service dependencies above">
-        <ul className="flex flex-col gap-2">
-          {integrationRows.map((i) => (
-            <li key={i.id} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--divider)] p-3 text-sm">
-              <span className="text-[var(--text-secondary)]">
-                <span className="font-medium">{i.name}</span> &middot; {i.product}
-                <span className="ml-2 text-xs text-[var(--text-muted)]">
-                  last sync {i.lastSyncAt} &middot; {i.errorCount24h} errors/24h
+        {filteredIntegrationRows.length === 0 ? (
+          <p className="text-sm text-[var(--role-text)]">No integrations for this product.</p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {filteredIntegrationRows.map((i) => (
+              <li key={i.id} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--divider)] p-3 text-sm">
+                <span className="text-[var(--text-secondary)]">
+                  <span className="font-medium">{i.name}</span> &middot; {i.product}
+                  <span className="ml-2 text-xs text-[var(--text-muted)]">
+                    last sync {i.lastSyncAt} &middot; {i.errorCount24h} errors/24h
+                  </span>
                 </span>
-              </span>
-              <StatusBadge status={i.status} label={i.status} />
-            </li>
-          ))}
-        </ul>
+                <StatusBadge status={i.status} label={i.status} />
+              </li>
+            ))}
+          </ul>
+        )}
       </Card>
 
       <Card title="Synthetic checks" description="Login, signup and message-send probes">
-        <ul className="flex flex-col gap-2">
-          {syntheticChecks.map((c) => (
-            <li key={c.id} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--divider)] p-3 text-sm">
-              <span className="text-[var(--text-secondary)]">
-                <span className="font-medium">{c.product}</span> — {c.check}
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-[var(--text-muted)]">{c.lastRun}</span>
-                <StatusBadge status={c.status === "pass" ? "healthy" : "critical"} label={c.status} />
-              </div>
-            </li>
-          ))}
-        </ul>
+        {filteredSyntheticChecks.length === 0 ? (
+          <p className="text-sm text-[var(--role-text)]">No synthetic checks for this product.</p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {filteredSyntheticChecks.map((c) => (
+              <li key={c.id} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--divider)] p-3 text-sm">
+                <span className="text-[var(--text-secondary)]">
+                  <span className="font-medium">{c.product}</span> — {c.check}
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-[var(--text-muted)]">{c.lastRun}</span>
+                  <StatusBadge status={c.status === "pass" ? "healthy" : "critical"} label={c.status} />
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </Card>
     </div>
   );
