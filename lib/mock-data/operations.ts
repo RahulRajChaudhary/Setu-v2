@@ -174,14 +174,8 @@ export const releaseRows = [
   },
 ];
 
-// Derived from releaseRows so the chart/timeline can never drift from the
-// table they sit next to (they used to be hand-typed and disagreed).
-export const releaseErrorRates = releaseRows.map((r) => ({
-  label: `${r.product} ${r.version}`,
-  before: r.preErrorPct,
-  after: r.postErrorPct,
-}));
-
+// Derived from releaseRows so the timeline can never drift from the table
+// it sits next to (it used to be hand-typed and disagreed).
 export const rolloutTimeline = releaseRows.map((r) => ({
   id: r.id,
   product: `${r.product} ${r.version}`,

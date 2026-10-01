@@ -11,6 +11,7 @@ import StatusBadge, { StatusDot, type StatusLevel } from "@/components/shared/St
 import StatTile from "@/components/shared/StatTile";
 import TabBar, { useActiveTab, type Tab } from "@/components/shared/TabBar";
 import TableToolbar from "@/components/shared/TableToolbar";
+import RolloutProgressBar from "@/components/shared/charts/RolloutProgressBar";
 import Funnel from "@/components/shared/charts/Funnel";
 import ToggleChart from "@/components/shared/charts/ToggleChart";
 import MultiLineChart from "@/components/shared/charts/MultiLineChart";
@@ -25,14 +26,12 @@ import {
   subscriptionStatusDonut,
   subscriptionRows,
   doraScorecard,
-  releaseErrorRates,
   rolloutTimeline,
   releaseRows,
   featureFlagRows,
   productHealthGrid,
   productHealthSignals,
   dependencyMap,
-  integrationRows,
   syntheticChecks,
   incidentsBySeverity,
   incidentRows,
@@ -441,7 +440,17 @@ function ReleasesTab() {
         options: ["Rollback escalated", "Complete", "In progress"].map((v) => ({ value: v, label: v })),
       },
     },
-    { key: "blastRadiusPct", header: "Rolled out", render: (r) => `${r.blastRadiusPct}%`, sortValue: (r) => r.blastRadiusPct },
+    {
+      key: "errorRate",
+      header: "Error rate before → after",
+      render: (r) => (
+        <span className="text-[var(--text-secondary)]">
+          {r.preErrorPct}% &rarr; <span className="font-semibold text-[var(--text-heading)]">{r.postErrorPct}%</span>
+        </span>
+      ),
+      sortValue: (r) => r.postErrorPct - r.preErrorPct,
+    },
+    { key: "change", header: "Change", render: (r) => <ErrorDelta before={r.preErrorPct} after={r.postErrorPct} /> },
   ];
 
   return (
@@ -472,8 +481,17 @@ function ReleasesTab() {
         })}
       </div>
       <div className="mt-4">
-        <p className="mb-2 text-xs font-semibold text-[var(--role-text)]">Rollout progress and error-rate impact — rollbacks first</p>
-        <ReleaseImpactList />
+        <p className="mb-2 text-xs font-semibold text-[var(--role-text)]">Rollout progress</p>
+        <RolloutProgressBar
+          data={[...rolloutTimeline]
+            .sort((x, y) => Number(y.status === "rollback") - Number(x.status === "rollback"))
+            .map((r) => ({
+              label: r.product,
+              percent: r.pctRolledOut,
+              // An escalated rollback is paused awaiting the Founder, not yet rolled back.
+              status: r.status === "rollback" ? ("paused" as const) : r.status === "in-progress" ? ("active" as const) : ("complete" as const),
+            }))}
+        />
       </div>
       <div className="mt-4">
         <div className="mb-2 flex items-center justify-between gap-2">
@@ -501,31 +519,14 @@ function FeatureFlagsCard({ productFilter }: { productFilter?: string }) {
       {rows.length === 0 ? (
         <p className="text-sm text-[var(--role-text)]">No feature flags for this product.</p>
       ) : (
-        <ul className="flex flex-col gap-[var(--space-sm)]">
-          {rows.map((f) => (
-            <li key={f.id}>
-              <div className="mb-1 flex items-center justify-between text-xs">
-                <span className="font-medium text-[var(--text-secondary)]">
-                  {f.flagName} <span className="text-[var(--text-muted)]">&middot; {f.product}</span>
-                </span>
-                {f.killSwitchEnabled ? (
-                  <StatusBadge status="critical" label="Kill switch armed" />
-                ) : (
-                  <span className="text-[var(--text-muted)]">{f.rolloutPct}% rolled out</span>
-                )}
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--search-bg)]">
-                <div
-                  className="h-full rounded-full"
-                  style={{
-                    width: `${f.rolloutPct}%`,
-                    backgroundColor: f.killSwitchEnabled ? "var(--status-critical-fg)" : "var(--chart-1)",
-                  }}
-                />
-              </div>
-            </li>
-          ))}
-        </ul>
+        <RolloutProgressBar
+          data={rows.map((f) => ({
+            label: `${f.flagName} · ${f.product}`,
+            percent: f.rolloutPct,
+            // Kill switch armed = rollout frozen.
+            status: f.killSwitchEnabled ? ("paused" as const) : f.rolloutPct === 100 ? ("complete" as const) : ("active" as const),
+          }))}
+        />
       )}
     </Card>
   );
@@ -539,7 +540,6 @@ function HealthTab() {
   );
   const productName = productFilter ? filteredHealthGrid[0]?.name : undefined;
   const filteredDependencyMap = bySeverity(productName ? dependencyMap.filter((d) => d.product === productName) : dependencyMap);
-  const filteredIntegrationRows = bySeverity(productName ? integrationRows.filter((i) => i.product === productName) : integrationRows);
   const filteredSyntheticChecks = [...(productName ? syntheticChecks.filter((c) => c.product === productName) : syntheticChecks)].sort(
     (a, b) => Number(b.status === "fail") - Number(a.status === "fail"),
   );
@@ -557,8 +557,7 @@ function HealthTab() {
           ) : undefined
         }
       >
-        <HealthSummaryBar products={filteredHealthGrid} />
-        <div className="mt-[var(--space-md)] overflow-hidden rounded-xl border border-[var(--divider)]">
+        <div className="overflow-hidden rounded-xl border border-[var(--divider)]">
           <div className={`hidden bg-[var(--surface-muted)] px-4 py-2 text-xs font-semibold text-[var(--text-muted)] screen-lg:grid ${HEALTH_COLS}`}>
             <span>Product</span>
             <span>Uptime 30d</span>
@@ -613,27 +612,6 @@ function HealthTab() {
         )}
       </Card>
       </div>
-
-      <Card title="Integrations" description="Third-party and partner integration health, separate from internal service dependencies above">
-        {filteredIntegrationRows.length === 0 ? (
-          <p className="text-sm text-[var(--role-text)]">No integrations for this product.</p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {filteredIntegrationRows.map((i) => (
-              <li key={i.id} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--divider)] p-3 text-sm">
-                <span className="text-[var(--text-secondary)]">
-                  <span className="font-medium">{i.name}</span> &middot; {i.product}
-                  <span className="ml-2 text-xs text-[var(--text-muted)]">
-                    last sync {i.lastSyncAt} &middot; {i.errorCount24h} errors/24h
-                  </span>
-                </span>
-                <StatusBadge status={i.status} label={i.status} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
-
     </div>
   );
 }
@@ -709,32 +687,6 @@ const HEALTH_COLS =
   "screen-lg:grid-cols-[minmax(10rem,1.3fr)_5.5rem_minmax(8rem,1fr)_minmax(8rem,1fr)_minmax(8rem,1fr)_minmax(6rem,0.8fr)] screen-lg:items-center screen-lg:gap-4";
 const ERROR_SLO_PCT = 1.5;
 const dayLabel = (x: number) => (x === 29 ? "today" : `${29 - x}d ago`);
-
-function HealthSummaryBar({ products }: { products: { status: HealthStatus }[] }) {
-  const counts = (["critical", "warning", "healthy"] as const).map((st) => ({
-    status: st,
-    count: products.filter((p) => p.status === st).length,
-  }));
-  return (
-    <div>
-      <div className="flex h-2.5 w-full gap-0.5 overflow-hidden rounded-full" role="img" aria-label={counts.map((c) => `${c.count} ${c.status}`).join(", ")}>
-        {counts
-          .filter((c) => c.count > 0)
-          .map((c) => (
-            <div key={c.status} style={{ flex: c.count, backgroundColor: AREA_TONE[c.status].fg }} />
-          ))}
-      </div>
-      <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--text-secondary)]">
-        {counts.map((c) => (
-          <li key={c.status} className="flex items-center gap-1.5">
-            <StatusDot status={c.status} />
-            <span className="font-semibold text-[var(--text-heading)]">{c.count}</span> {c.status}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
 
 function MetricCell({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -866,58 +818,6 @@ function ErrorDelta({ before, after }: { before: number; after: number }) {
   const status: StatusLevel = delta >= 1 ? "critical" : delta > 0.1 ? "warning" : "healthy";
   const sign = delta > 0 ? "+" : "";
   return <StatusBadge status={status} label={delta === 0 ? "no change" : `${sign}${delta} pt`} />;
-}
-
-function ReleaseImpactList() {
-  return (
-    <ul className="divide-y divide-[var(--divider)] rounded-xl border border-[var(--divider)]">
-      <li className="hidden bg-[var(--surface-muted)] px-4 py-2 text-xs font-semibold text-[var(--text-muted)] screen-lg:grid screen-lg:grid-cols-[minmax(10rem,1.2fr)_minmax(10rem,1.5fr)_minmax(10rem,1fr)_6rem] screen-lg:gap-4">
-        <span>Release</span>
-        <span>Rollout</span>
-        <span>Error rate before &rarr; after</span>
-        <span className="text-right">Change</span>
-      </li>
-      {[...rolloutTimeline]
-        .sort((x, y) => Number(y.status === "rollback") - Number(x.status === "rollback"))
-        .map((r) => {
-          const rate = releaseErrorRates.find((e) => e.label === r.product);
-          const color = r.status === "rollback" ? "var(--status-critical-fg)" : r.status === "in-progress" ? "var(--chart-1)" : "var(--status-healthy-fg)";
-          return (
-            <li
-              key={r.id}
-              className="grid grid-cols-1 gap-2 px-4 py-3 screen-lg:grid-cols-[minmax(10rem,1.2fr)_minmax(10rem,1.5fr)_minmax(10rem,1fr)_6rem] screen-lg:items-center screen-lg:gap-4"
-              style={{ borderLeft: `3px solid ${color}` }}
-            >
-              <div className="flex items-center gap-2">
-                <Link href={`/founder/releases/${r.id}`} className="truncate text-sm font-semibold text-[var(--text-heading)] hover:underline">
-                  {r.product}
-                </Link>
-                <StatusBadge
-                  status={r.status === "rollback" ? "critical" : r.status === "in-progress" ? "info" : "healthy"}
-                  label={r.status === "rollback" ? "rollback escalated" : r.status}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-[var(--surface-muted)]">
-                  <div className="h-full rounded-full" style={{ width: `${r.pctRolledOut}%`, backgroundColor: color }} />
-                </div>
-                <span className="w-9 text-right text-xs font-semibold text-[var(--text-heading)]">{r.pctRolledOut}%</span>
-              </div>
-              <p className="text-sm text-[var(--text-secondary)]">
-                {rate ? (
-                  <>
-                    {rate.before}% &rarr; <span className="font-semibold text-[var(--text-heading)]">{rate.after}%</span>
-                  </>
-                ) : (
-                  "—"
-                )}
-              </p>
-              <div className="screen-lg:text-right">{rate && <ErrorDelta before={rate.before} after={rate.after} />}</div>
-            </li>
-          );
-        })}
-    </ul>
-  );
 }
 
 const AREA_TONE: Record<"healthy" | "warning" | "critical", { bg: string; fg: string }> = {
