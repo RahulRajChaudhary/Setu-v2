@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { LayoutGrid, CheckCircle2, Clock, Rocket, AlertCircle, RefreshCw, Layers, ChevronRight } from "lucide-react";
+import { LayoutGrid, CheckCircle2, Clock, Rocket, AlertCircle, RefreshCw, Layers, ChevronRight, ChevronDown } from "lucide-react";
 import Card from "@/components/shared/Card";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import DataTable, { type Column } from "@/components/shared/DataTable";
@@ -13,6 +13,7 @@ import TabBar, { useActiveTab, type Tab } from "@/components/shared/TabBar";
 import TableToolbar from "@/components/shared/TableToolbar";
 import Funnel from "@/components/shared/charts/Funnel";
 import ToggleChart from "@/components/shared/charts/ToggleChart";
+import MultiLineChart from "@/components/shared/charts/MultiLineChart";
 import LineChart from "@/components/shared/charts/LineChart";
 import { products } from "@/lib/mock-data/products";
 import {
@@ -537,7 +538,7 @@ function HealthTab() {
     <div className="flex flex-col gap-[var(--space-md)]">
       <Card
         title="Product health"
-        description="Uptime, golden signals and saturation per product — worst first. Sparklines cover the last 24h; the dashed line is the SLO."
+        description="Uptime, golden signals and saturation per product — worst first. Sparklines cover the last 24h; the dashed line is the SLO. Expand a row for p95/p99 latency split by success vs error."
         action={
           productFilter ? (
             <Link href="/founder/operations?tab=health" className="text-xs font-medium text-[var(--icon-btn-navy)] hover:underline">
@@ -746,12 +747,22 @@ function HealthRow({
   const errPct = Math.min(100, (product.errorRatePct / ERROR_SLO_PCT) * 100);
   const sat = signals?.saturationPct;
   const satStatus: HealthStatus | undefined = sat === undefined ? undefined : sat >= 80 ? "critical" : sat >= 60 ? "warning" : "healthy";
+  const [open, setOpen] = useState(false);
   return (
-    <li
-      className={`grid grid-cols-2 gap-3 px-4 py-3 ${HEALTH_COLS}`}
-      style={{ borderLeft: `3px solid ${tone.fg}` }}
-    >
+    <li style={{ borderLeft: `3px solid ${tone.fg}` }}>
+    <div className={`grid grid-cols-2 gap-3 px-4 py-3 ${HEALTH_COLS}`}>
       <div className="col-span-2 flex items-center gap-2 screen-lg:col-span-1">
+        {signals && (
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            aria-label={`${open ? "Hide" : "Show"} latency detail for ${product.name}`}
+            className="shrink-0 rounded p-0.5 text-[var(--text-muted)] hover:bg-[var(--surface-muted)]"
+          >
+            <ChevronDown size={16} className={`transition-transform ${open ? "" : "-rotate-90"}`} />
+          </button>
+        )}
         <StatusBadge status={product.status} label={product.status} />
         <Link href={`/founder/products/${product.id}`} className="truncate text-sm font-semibold text-[var(--text-heading)] hover:underline">
           {product.name}
@@ -804,6 +815,29 @@ function HealthRow({
           <span className="text-xs text-[var(--text-muted)]">&mdash;</span>
         )}
       </MetricCell>
+    </div>
+    {open && signals && (
+      <div className="border-t border-[var(--divider)] bg-[var(--surface-muted)] px-4 py-3">
+        <p className="mb-2 text-xs font-semibold text-[var(--text-heading)]">
+          Latency, last 24h &mdash; p95 split by outcome, with p99
+          <span className="ml-2 font-normal text-[var(--text-muted)]">
+            p99 {signals.p99LatencyMs.series.at(-1)?.y} ms now &middot; failed requests run {Math.round(
+              ((signals.p95Split.error.at(-1)?.y ?? 0) / (signals.p95Split.success.at(-1)?.y || 1)) * 10,
+            ) / 10}x slower than successful ones
+          </span>
+        </p>
+        <MultiLineChart
+          unit=" ms"
+          thresholdY={signals.p95LatencyMs.sloMs}
+          thresholdLabel="p95 SLO"
+          lines={[
+            { label: "p95 success", color: "var(--chart-2)", series: signals.p95Split.success },
+            { label: "p95 error", color: "var(--chart-4)", series: signals.p95Split.error },
+            { label: "p99 overall", color: "var(--chart-1)", series: signals.p99LatencyMs.series, dashed: true },
+          ]}
+        />
+      </div>
+    )}
     </li>
   );
 }

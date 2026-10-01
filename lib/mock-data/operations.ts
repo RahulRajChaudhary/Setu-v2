@@ -231,7 +231,7 @@ function series24h(base: number, jitter: number) {
 // Per-product Golden Signals (latency/traffic/errors/saturation), keyed by
 // productHealthGrid.id — spec §7. Every product carries a full signal set
 // in the mock so the health matrix has no empty rows.
-export const productHealthSignals: Record<
+const baseHealthSignals: Record<
   string,
   {
     p95LatencyMs: { series: { x: number; y: number }[]; sloMs: number };
@@ -295,6 +295,33 @@ export const productHealthSignals: Record<
     saturationPct: 44,
   },
 };
+
+type Series = { x: number; y: number }[];
+const scaleSeries = (series: Series, k: number): Series => series.map((p) => ({ x: p.x, y: Math.round(p.y * k) }));
+
+// Spec §7: p95/p99 latency, last 24h, split success vs error. Derived from the
+// base p95 series so the mock stays internally consistent: failed requests run
+// ~2.2x slower than successful ones, and p99 sits ~2.4x above p95 (above the error-only p95, since errors are
+// the slow tail).
+export const productHealthSignals = Object.fromEntries(
+  Object.entries(baseHealthSignals).map(([id, sig]) => [
+    id,
+    {
+      ...sig,
+      p99LatencyMs: { series: scaleSeries(sig.p95LatencyMs.series, 2.4) },
+      p95Split: {
+        success: scaleSeries(sig.p95LatencyMs.series, 0.94),
+        error: scaleSeries(sig.p95LatencyMs.series, 2.2),
+      },
+    },
+  ]),
+) as Record<
+  string,
+  (typeof baseHealthSignals)[string] & {
+    p99LatencyMs: { series: Series };
+    p95Split: { success: Series; error: Series };
+  }
+>;
 
 // Simple node list: product -> dependent services, per spec §7.
 export const dependencyMap = [
