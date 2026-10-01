@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { LayoutGrid, CheckCircle2, Clock, Rocket, AlertCircle, RefreshCw, Layers } from "lucide-react";
+import { LayoutGrid, CheckCircle2, Clock, Rocket, AlertCircle, RefreshCw, Layers, ChevronRight } from "lucide-react";
 import Card from "@/components/shared/Card";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import DataTable, { type Column } from "@/components/shared/DataTable";
-import StatusBadge from "@/components/shared/StatusBadge";
+import StatusBadge, { StatusDot, type StatusLevel } from "@/components/shared/StatusBadge";
 import StatTile from "@/components/shared/StatTile";
 import TabBar, { useActiveTab, type Tab } from "@/components/shared/TabBar";
 import TableToolbar from "@/components/shared/TableToolbar";
@@ -39,16 +39,116 @@ import {
   incidentRows,
   mttaTrend30d,
   mttrTrend30d,
+  type HealthStatus,
   incidentsLinkedToReleasesPct,
 } from "@/lib/mock-data/operations";
 
+const SEVERITY_RANK: Record<HealthStatus, number> = { critical: 0, warning: 1, healthy: 2 };
+const bySeverity = <T extends { status: HealthStatus }>(rows: T[]) =>
+  [...rows].sort((a, b) => SEVERITY_RANK[a.status] - SEVERITY_RANK[b.status]);
+
+// Everything below is derived from the same mock rows the tabs render, so the
+// header strip and tab badges can never disagree with the tables.
+const openIncidents = incidentRows.filter((i) => i.status !== "Resolved");
+const highOpenIncidents = openIncidents.filter((i) => i.severity === "high");
+const rollbackDecisions = releaseRows.filter((r) => r.approvalRef !== null);
+const unhealthyProducts = productHealthGrid.filter((p) => p.status !== "healthy");
+const failingChecks = syntheticChecks.filter((c) => c.status === "fail");
+const subscriptionsAtRisk = subscriptionKpis.grace + subscriptionKpis.restricted;
+
 const TABS: Tab[] = [
-  { id: "workspaces", label: "Workspaces" },
-  { id: "subscriptions", label: "Subscriptions" },
-  { id: "releases", label: "Releases" },
-  { id: "health", label: "Health" },
-  { id: "incidents", label: "Incidents" },
+  {
+    id: "workspaces",
+    label: "Workspaces",
+    badge: {
+      count: provisioningDriftRows.length,
+      tone: provisioningDriftRows.some((d) => d.severity === "critical") ? "critical" : "warning",
+    },
+  },
+  { id: "subscriptions", label: "Subscriptions", badge: { count: subscriptionKpis.restricted, tone: "critical" } },
+  { id: "releases", label: "Releases", badge: { count: rollbackDecisions.length, tone: "critical" } },
+  {
+    id: "health",
+    label: "Health",
+    badge: {
+      count: unhealthyProducts.length,
+      tone: unhealthyProducts.some((p) => p.status === "critical") ? "critical" : "warning",
+    },
+  },
+  { id: "incidents", label: "Incidents", badge: { count: openIncidents.length, tone: highOpenIncidents.length > 0 ? "critical" : "warning" } },
 ];
+
+type AttentionItem = { key: string; tone: StatusLevel; text: string; href: string };
+
+function buildAttention(): AttentionItem[] {
+  const items: AttentionItem[] = [];
+  if (rollbackDecisions.length > 0)
+    items.push({
+      key: "rollback",
+      tone: "critical",
+      text: `${rollbackDecisions.length} rollback awaiting your decision`,
+      href: "/founder/approvals",
+    });
+  if (highOpenIncidents.length > 0)
+    items.push({
+      key: "incidents",
+      tone: "critical",
+      text: `${highOpenIncidents.length} high-severity incident open`,
+      href: "/founder/operations?tab=incidents",
+    });
+  if (unhealthyProducts.length > 0)
+    items.push({
+      key: "health",
+      tone: unhealthyProducts.some((p) => p.status === "critical") ? "critical" : "warning",
+      text: `${unhealthyProducts.length} of ${productHealthGrid.length} products not healthy`,
+      href: "/founder/operations?tab=health",
+    });
+  if (failingChecks.length > 0)
+    items.push({
+      key: "synthetics",
+      tone: "critical",
+      text: `${failingChecks.length} synthetic check failing`,
+      href: "/founder/operations?tab=health",
+    });
+  if (subscriptionsAtRisk > 0)
+    items.push({
+      key: "subs",
+      tone: "warning",
+      text: `${subscriptionsAtRisk} subscriptions in grace / restricted`,
+      href: "/founder/operations?tab=subscriptions",
+    });
+  return items;
+}
+
+function AttentionStrip() {
+  const items = buildAttention();
+  if (items.length === 0) {
+    return (
+      <div className="flex items-center gap-2 rounded-xl border border-[var(--divider)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--status-healthy-fg)]">
+        <CheckCircle2 size={16} /> All clear — nothing on Platform Ops needs your attention.
+      </div>
+    );
+  }
+  return (
+    <section aria-label="Needs your attention" className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-3" style={{ boxShadow: "var(--card-shadow)" }}>
+      <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Needs your attention</h2>
+      <ul className="flex flex-wrap gap-2">
+        {items.map((i) => (
+          <li key={i.key}>
+            <Link
+              href={i.href}
+              className="group inline-flex items-center gap-1.5 rounded-full border border-[var(--divider)] py-1 pl-2 pr-1.5 text-xs font-medium text-[var(--text-secondary)] hover:border-[var(--icon-btn-navy)]"
+            >
+              <StatusDot status={i.tone} />
+              {i.text}
+              <ChevronRight size={14} className="text-[var(--text-muted)] group-hover:text-[var(--icon-btn-navy)]" />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
 
 export default function OperationsContent() {
   const active = useActiveTab(TABS);
@@ -57,6 +157,7 @@ export default function OperationsContent() {
   return (
     <div className="flex flex-col gap-[var(--space-lg)]">
       <Breadcrumbs items={[{ label: "Platform Ops", href: "/founder/operations" }, { label: activeTab.label }]} />
+      <AttentionStrip />
       <TabBar tabs={TABS} />
 
       {active === "workspaces" && <WorkspacesTab />}
@@ -95,7 +196,7 @@ function WorkspacesTab() {
     {
       key: "status",
       header: "Account status",
-      render: (r) => r.status,
+      render: (r) => <StatusBadge status={r.status === "Active" ? "healthy" : r.status === "Grace" ? "warning" : "critical"} label={r.status} />,
       sortValue: (r) => r.status,
       filterConfig: {
         type: "multiSelect",
@@ -153,12 +254,13 @@ function WorkspacesTab() {
         <div className="mb-4 grid grid-cols-2 gap-[var(--space-sm)] screen-sm:grid-cols-4">
           <StatTile label="Total" value={workspaceKpis.total} tone="info" icon={<LayoutGrid size={16} />} />
           <StatTile label="Active" value={workspaceKpis.active} tone="healthy" icon={<CheckCircle2 size={16} />} />
-          <StatTile label="Grace / restricted" value={workspaceKpis.graceOrRestricted} tone="warning" icon={<Clock size={16} />} />
+          <StatTile label="Grace / restricted" value={workspaceKpis.graceOrRestricted} tone="warning" icon={<Clock size={16} />} note="View subscriptions" href="/founder/operations?tab=subscriptions" />
           <StatTile
             label="Failed provisioning (24h)"
             value={workspaceKpis.failedProvisioning24h}
             tone={workspaceKpis.failedProvisioning24h > 0 ? "critical" : "healthy"}
             icon={<AlertCircle size={16} />}
+            note={`${provisioningDriftRows.length} drift records below`}
           />
         </div>
         <div className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-4" style={{ boxShadow: "var(--card-shadow)" }}>
@@ -205,7 +307,9 @@ function SubscriptionsTab() {
     );
   }, [search, productFilteredRows]);
 
-  const totalPlanMix = subscriptionKpis.planMix.reduce((sum, p) => sum + p.count, 0);
+  const paidPlans = subscriptionKpis.planMix.filter((p) => p.plan !== "Trial");
+  const paidPlanTotal = paidPlans.reduce((sum, p) => sum + p.count, 0);
+  const paidPlanNote = paidPlans.map((p) => `${p.plan} ${p.count}`).join(" · ");
 
   const columns: Column<(typeof subscriptionRows)[number]>[] = [
     {
@@ -272,7 +376,7 @@ function SubscriptionsTab() {
         <StatTile label="Active" value={subscriptionKpis.active} tone="healthy" icon={<CheckCircle2 size={16} />} />
         <StatTile label="Grace" value={subscriptionKpis.grace} tone="warning" icon={<Clock size={16} />} />
         <StatTile label="Restricted" value={subscriptionKpis.restricted} tone="critical" icon={<AlertCircle size={16} />} />
-        <StatTile label="Plan mix" value={totalPlanMix} tone="info" icon={<Layers size={16} />} />
+        <StatTile label="Paid plans" value={paidPlanTotal} tone="info" icon={<Layers size={16} />} note={paidPlanNote} />
       </div>
       <div className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-4" style={{ boxShadow: "var(--card-shadow)" }}>
         <ToggleChart data={subscriptionStatusDonut} defaultType="pie" />
@@ -448,19 +552,21 @@ function FeatureFlagsCard({ productFilter }: { productFilter?: string }) {
 function HealthTab() {
   const searchParams = useSearchParams();
   const productFilter = searchParams.get("product");
-  const filteredHealthGrid = productFilter
-    ? productHealthGrid.filter((p) => p.id === productFilter)
-    : productHealthGrid;
+  const filteredHealthGrid = bySeverity(
+    productFilter ? productHealthGrid.filter((p) => p.id === productFilter) : productHealthGrid,
+  );
   const productName = productFilter ? filteredHealthGrid[0]?.name : undefined;
-  const filteredDependencyMap = productName ? dependencyMap.filter((d) => d.product === productName) : dependencyMap;
-  const filteredIntegrationRows = productName ? integrationRows.filter((i) => i.product === productName) : integrationRows;
-  const filteredSyntheticChecks = productName ? syntheticChecks.filter((c) => c.product === productName) : syntheticChecks;
+  const filteredDependencyMap = bySeverity(productName ? dependencyMap.filter((d) => d.product === productName) : dependencyMap);
+  const filteredIntegrationRows = bySeverity(productName ? integrationRows.filter((i) => i.product === productName) : integrationRows);
+  const filteredSyntheticChecks = [...(productName ? syntheticChecks.filter((c) => c.product === productName) : syntheticChecks)].sort(
+    (a, b) => Number(b.status === "fail") - Number(a.status === "fail"),
+  );
 
   return (
     <div className="flex flex-col gap-[var(--space-md)]">
       <Card
         title="Health"
-        description="Golden-signal status per product, last 30 days"
+        description="Golden-signal status per product, last 30 days — worst first"
         action={
           productFilter ? (
             <Link href="/founder/operations?tab=health" className="text-xs font-medium text-[var(--icon-btn-navy)] hover:underline">
@@ -636,7 +742,7 @@ function IncidentsTab() {
     },
     { key: "commander", header: "Commander", render: (r) => r.commander },
     { key: "workspaces", header: "Workspaces", render: (r) => r.workspaces, sortValue: (r) => r.workspaces },
-    { key: "status", header: "Status", render: (r) => r.status },
+    { key: "status", header: "Status", render: (r) => <StatusBadge status={r.status === "Resolved" ? "healthy" : r.status === "Mitigating" ? "warning" : "info"} label={r.status} /> },
     { key: "timeOpen", header: "Time open", render: (r) => r.timeOpen },
   ];
 
@@ -659,6 +765,8 @@ function IncidentsTab() {
       <div className="mb-4">
         <StatTile
           label="Incidents linked to releases"
+          note={`${incidentRows.filter((i) => i.linkedRelease !== null).length} of ${incidentRows.length} incidents have a release as root cause`}
+          href="/founder/operations?tab=releases"
           value={`${incidentsLinkedToReleasesPct}%`}
           tone={incidentsLinkedToReleasesPct > 0 ? "warning" : "healthy"}
           icon={<RefreshCw size={16} />}

@@ -55,25 +55,15 @@ export const subscriptionRows = [
 export const doraScorecard = [
   { label: "Deployment frequency", value: "3.2/day", band: "Elite" as const },
   { label: "Lead time for changes", value: "48 min", band: "Elite" as const },
-  { label: "Change failure rate", value: "12%", band: "High" as const },
+  { label: "Change failure rate", value: "12%", band: "Elite" as const },
   { label: "MTTR", value: "1h 40m", band: "High" as const },
-];
-
-export const releaseErrorRates = [
-  { label: "Chat w/ Sahayogi v3.4", before: 0.8, after: 4.6 },
-  { label: "BoSS v2.1", before: 0.5, after: 0.6 },
-  { label: "Sahayogi Cloud v1.6", before: 1.1, after: 0.9 },
-];
-
-export const rolloutTimeline = [
-  { id: "rel-1", product: "Chat with Sahayogi v3.4", pctRolledOut: 42, status: "rollback" as const },
-  { id: "rel-2", product: "BoSS v2.1", pctRolledOut: 100, status: "complete" as const },
-  { id: "rel-3", product: "Tax Sahayogi v1.6", pctRolledOut: 75, status: "in-progress" as const },
 ];
 
 export const releaseRows = [
   {
     id: "rel-1",
+    preErrorPct: 0.3,
+    postErrorPct: 4.6,
     product: "Chat with Sahayogi",
     version: "v3.4",
     deployedAt: "2026-09-27",
@@ -94,6 +84,8 @@ export const releaseRows = [
   },
   {
     id: "rel-2",
+    preErrorPct: 0.4,
+    postErrorPct: 0.5,
     product: "BoSS",
     version: "v2.1",
     deployedAt: "2026-09-24",
@@ -114,6 +106,8 @@ export const releaseRows = [
   },
   {
     id: "rel-3",
+    preErrorPct: 1.1,
+    postErrorPct: 1.3,
     product: "Tax Sahayogi",
     version: "v1.6",
     deployedAt: "2026-09-28",
@@ -134,6 +128,8 @@ export const releaseRows = [
   },
   {
     id: "rel-4",
+    preErrorPct: 0.2,
+    postErrorPct: 0.2,
     product: "Sahayogi One",
     version: "v4.0",
     deployedAt: "2026-09-20",
@@ -154,6 +150,8 @@ export const releaseRows = [
   },
   {
     id: "rel-5",
+    preErrorPct: 0.15,
+    postErrorPct: 0.15,
     product: "Office Sahayogi",
     version: "v1.2",
     deployedAt: "2026-09-18",
@@ -173,6 +171,24 @@ export const releaseRows = [
     linkedIncidentId: null,
   },
 ];
+
+// Derived from releaseRows so the chart/timeline can never drift from the
+// table they sit next to (they used to be hand-typed and disagreed).
+export const releaseErrorRates = releaseRows.map((r) => ({
+  label: `${r.product} ${r.version}`,
+  before: r.preErrorPct,
+  after: r.postErrorPct,
+}));
+
+export const rolloutTimeline = releaseRows.map((r) => ({
+  id: r.id,
+  product: `${r.product} ${r.version}`,
+  pctRolledOut: r.blastRadiusPct,
+  status: (r.status === "Rollback escalated" ? "rollback" : r.status === "In progress" ? "in-progress" : "complete") as
+    | "rollback"
+    | "in-progress"
+    | "complete",
+}));
 
 export type HealthStatus = "healthy" | "warning" | "critical";
 
@@ -274,13 +290,6 @@ export const syntheticChecks = [
   { id: "syn-6", check: "Login", product: "Tax Sahayogi", status: "pass" as const, lastRun: "4m ago" },
 ];
 
-export const incidentsBySeverity = [
-  { label: "Critical", value: 0, color: "var(--status-critical-fg)" },
-  { label: "High", value: 1, color: "var(--chart-3)" },
-  { label: "Medium", value: 2, color: "var(--chart-1)" },
-  { label: "Low", value: 3, color: "var(--status-neutral-fg)" },
-];
-
 export const incidentRows = [
   {
     id: "inc-1",
@@ -326,6 +335,15 @@ export const incidentRows = [
     linkedRelease: null,
     linkedReleaseId: null,
   },
+];
+
+// Open (not Resolved) incidents per severity, derived from incidentRows.
+const openIncidents = incidentRows.filter((i) => i.status !== "Resolved");
+export const incidentsBySeverity = [
+  { label: "Critical", value: 0, color: "var(--status-critical-fg)" },
+  { label: "High", value: openIncidents.filter((i) => i.severity === "high").length, color: "var(--chart-3)" },
+  { label: "Medium", value: openIncidents.filter((i) => i.severity === "medium").length, color: "var(--chart-1)" },
+  { label: "Low", value: openIncidents.filter((i) => i.severity === "low").length, color: "var(--status-neutral-fg)" },
 ];
 
 // 30-day trend, per spec §8.
