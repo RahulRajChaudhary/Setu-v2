@@ -6,19 +6,21 @@ import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import DataTable, { type Column } from "@/components/shared/DataTable";
 import StatusBadge from "@/components/shared/StatusBadge";
 import TableToolbar from "@/components/shared/TableToolbar";
-import { auditKpis, auditEvents, type AuditEvent } from "@/lib/mock-data/audit-explorer";
+import { auditKpis, type AuditEvent } from "@/lib/mock-data/audit-explorer";
+import { useAuditLog } from "@/lib/store/decisions-store";
 
 export default function AuditExplorerPage() {
   const [exported, setExported] = useState(false);
   const [search, setSearch] = useState("");
+  const liveEvents = useAuditLog();
 
   const filteredEvents = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (q === "") return auditEvents;
-    return auditEvents.filter(
+    if (q === "") return liveEvents;
+    return liveEvents.filter(
       (e) => e.actor.toLowerCase().includes(q) || e.action.toLowerCase().includes(q) || e.entity.toLowerCase().includes(q),
     );
-  }, [search]);
+  }, [search, liveEvents]);
 
   const columns: Column<AuditEvent>[] = [
     { key: "time", header: "Time", render: (r) => <span className="font-mono-id text-xs">{r.time}</span>, sortValue: (r) => r.time, className: "whitespace-nowrap" },

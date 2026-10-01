@@ -4,11 +4,11 @@ import { useState } from "react";
 import StatusBadge from "@/components/shared/StatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
-import { approvalQueue } from "@/lib/mock-data/approvals";
-import type { ApprovalItem, Severity } from "@/lib/mock-data/types";
+import type { Severity } from "@/lib/mock-data/types";
 import Link from "next/link";
 import { releaseRows } from "@/lib/mock-data/operations";
 import { topRisks } from "@/lib/mock-data/compliance-risk";
+import { useDecisionsQueue, decide as recordDecision } from "@/lib/store/decisions-store";
 
 function resolveReference(reference: string): { href: string; label: string } | null {
   const risk = topRisks.find((r) => r.code === reference);
@@ -28,19 +28,18 @@ const SEVERITY_STATUS: Record<Severity, "healthy" | "warning" | "critical"> = {
 type Decision = { id: string; action: "approved" | "rejected"; reason: string };
 
 export default function ApprovalsPage() {
-  const [queue, setQueue] = useState<ApprovalItem[]>(approvalQueue);
-  const [selectedId, setSelectedId] = useState<string | null>(approvalQueue[0]?.id ?? null);
+  const queue = useDecisionsQueue();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const [history, setHistory] = useState<Decision[]>([]);
 
-  const selected = queue.find((item) => item.id === selectedId) ?? null;
+  const selected = queue.find((item) => item.id === selectedId) ?? queue[0] ?? null;
 
   function decide(action: "approved" | "rejected") {
     if (!selected || reason.trim().length === 0) return;
+    recordDecision(selected, action, reason.trim());
     setHistory((h) => [...h, { id: selected.id, action, reason: reason.trim() }]);
-    const remaining = queue.filter((item) => item.id !== selected.id);
-    setQueue(remaining);
-    setSelectedId(remaining[0]?.id ?? null);
+    setSelectedId(null);
     setReason("");
   }
 
