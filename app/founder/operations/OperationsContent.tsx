@@ -379,7 +379,7 @@ function SubscriptionsTab() {
       }
     >
       <div className="grid grid-cols-1 gap-[var(--space-md)] screen-lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-      <div className="grid grid-cols-2 content-start gap-[var(--space-sm)]">
+      <div className="grid grid-cols-1 grid-rows-2 gap-[var(--space-sm)]">
         <StatTile label="Paid plans" value={paidPlanTotal} tone="info" icon={<Layers size={16} />} note={paidPlanNote} />
         <StatTile
           label="Renewing in 30 days"
