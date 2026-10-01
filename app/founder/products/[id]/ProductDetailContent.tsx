@@ -10,12 +10,23 @@ import DrillLink from "@/components/shared/DrillLink";
 import TabBar, { useActiveTab, type Tab } from "@/components/shared/TabBar";
 import LineChart from "@/components/shared/charts/LineChart";
 import { products } from "@/lib/mock-data/products";
-import { productHealthGrid, releaseRows } from "@/lib/mock-data/operations";
+import {
+  productHealthGrid,
+  releaseRows,
+  dependencyMap,
+  integrationRows,
+  syntheticChecks,
+  subscriptionRows,
+  incidentRows,
+} from "@/lib/mock-data/operations";
+import { costAnomalies } from "@/lib/mock-data/cost-analytics";
 
 const TABS: Tab[] = [
   { id: "overview", label: "Overview" },
   { id: "health", label: "Health" },
   { id: "releases", label: "Releases" },
+  { id: "dependencies", label: "Dependencies" },
+  { id: "subscriptions", label: "Subscriptions" },
 ];
 
 function releaseStatusLevel(status: string): "healthy" | "warning" | "critical" | "info" {
@@ -36,6 +47,14 @@ export default function ProductDetailContent() {
         .slice()
         .sort((a, b) => (a.deployedAt < b.deployedAt ? 1 : -1))
     : [];
+  const productDependencies = product ? dependencyMap.filter((d) => d.product === product.name) : [];
+  const productIntegrations = product ? integrationRows.filter((i) => i.product === product.name) : [];
+  const productSyntheticChecks = product ? syntheticChecks.filter((c) => c.product === product.name) : [];
+  const productSubscriptions = product ? subscriptionRows.filter((s) => s.product === product.name) : [];
+  const productCostAnomaly = product ? costAnomalies.find((a) => a.productId === product.id) : undefined;
+  const activeIncidentCount = product
+    ? incidentRows.filter((i) => i.productId === product.id && i.status !== "Resolved").length
+    : 0;
 
   if (!product) {
     return (
@@ -88,6 +107,25 @@ export default function ProductDetailContent() {
             </Card>
           </div>
 
+          {productCostAnomaly && (
+            <Card title="Cost anomaly">
+              <p className="text-sm text-[var(--text-secondary)]">
+                {productCostAnomaly.metric} up {productCostAnomaly.pctSpike}% — {productCostAnomaly.cause}
+              </p>
+              <DrillLink href="/founder/cost-analytics">View in Cost &amp; Analytics</DrillLink>
+            </Card>
+          )}
+          {activeIncidentCount > 0 && (
+            <Card title="Active incidents">
+              <p className="text-sm text-[var(--text-secondary)]">
+                {activeIncidentCount} open incident{activeIncidentCount > 1 ? "s" : ""} referencing {product.name}.
+              </p>
+              <DrillLink href="/founder/operations" params={{ tab: "incidents" }}>
+                View in Platform Ops
+              </DrillLink>
+            </Card>
+          )}
+
           <Card title="Usage trend, last 30 days">
             <LineChart series={product.usageTrend30d.map((y, x) => ({ x, y }))} height={100} />
           </Card>
@@ -96,7 +134,7 @@ export default function ProductDetailContent() {
 
       {activeTab === "health" && (
         <Card title={`${product.name} — health`}>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col items-start gap-2">
             <StatusBadge status={product.health} label={product.health} />
             {healthRow && (
               <div className="text-xs text-[var(--role-text)]">
@@ -131,6 +169,94 @@ export default function ProductDetailContent() {
             description={`${product.name} has no recorded releases in the mock catalogue.`}
           />
         )
+      )}
+
+      {activeTab === "dependencies" && (
+        <div className="flex flex-col gap-[var(--space-md)]">
+          <Card title={`${product.name} — service dependencies`}>
+            {productDependencies.length === 0 ? (
+              <p className="text-sm text-[var(--role-text)]">No service dependencies recorded for this product.</p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {productDependencies.map((d) => (
+                  <li key={d.id} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--divider)] p-3 text-sm">
+                    <span className="text-[var(--text-secondary)]">{d.service}</span>
+                    <StatusBadge status={d.status} label={d.status} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+          <Card title={`${product.name} — integrations`}>
+            {productIntegrations.length === 0 ? (
+              <p className="text-sm text-[var(--role-text)]">No integrations recorded for this product.</p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {productIntegrations.map((i) => (
+                  <li key={i.id} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--divider)] p-3 text-sm">
+                    <span className="text-[var(--text-secondary)]">
+                      {i.name}
+                      <span className="ml-2 text-xs text-[var(--text-muted)]">
+                        last sync {i.lastSyncAt} &middot; {i.errorCount24h} errors/24h
+                      </span>
+                    </span>
+                    <StatusBadge status={i.status} label={i.status} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+          <Card title={`${product.name} — synthetic checks`}>
+            {productSyntheticChecks.length === 0 ? (
+              <p className="text-sm text-[var(--role-text)]">No synthetic checks recorded for this product.</p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {productSyntheticChecks.map((c) => (
+                  <li key={c.id} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--divider)] p-3 text-sm">
+                    <span className="text-[var(--text-secondary)]">{c.check}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-[var(--text-muted)]">{c.lastRun}</span>
+                      <StatusBadge status={c.status === "pass" ? "healthy" : "critical"} label={c.status} />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+          <DrillLink href="/founder/operations" params={{ tab: "health", product: product.id }}>
+            View full dependency and integration detail in Platform Ops
+          </DrillLink>
+        </div>
+      )}
+
+      {activeTab === "subscriptions" && (
+        <Card title={`${product.name} — subscribed workspaces`}>
+          {productSubscriptions.length === 0 ? (
+            <EmptyState
+              title="No subscriptions"
+              description={`No workspace currently subscribes to ${product.name} in the mock catalogue.`}
+            />
+          ) : (
+            <div className="flex flex-col gap-2">
+              <ul className="flex flex-col gap-2">
+                {productSubscriptions.map((s) => (
+                  <li key={s.id} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--divider)] p-3 text-sm">
+                    <Link href={`/founder/workspaces/${s.workspaceId}`} className="font-medium text-[var(--icon-btn-navy)] hover:underline">
+                      {s.workspace}
+                    </Link>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-[var(--text-muted)]">{s.plan}</span>
+                      <StatusBadge status={s.status === "Active" ? "healthy" : s.status === "Grace" ? "warning" : "critical"} label={s.status} />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <DrillLink href="/founder/operations" params={{ tab: "subscriptions", product: product.name }}>
+                View all subscriptions in Platform Ops
+              </DrillLink>
+            </div>
+          )}
+        </Card>
       )}
     </div>
   );
