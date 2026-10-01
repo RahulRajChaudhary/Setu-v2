@@ -6,11 +6,11 @@ import Card from "@/components/shared/Card";
 import StatusBadge from "@/components/shared/StatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
+import DrillLink from "@/components/shared/DrillLink";
 import TabBar, { useActiveTab, type Tab } from "@/components/shared/TabBar";
 import LineChart from "@/components/shared/charts/LineChart";
-import Gauge from "@/components/shared/charts/Gauge";
 import { products } from "@/lib/mock-data/products";
-import { productHealthGrid, productHealthSignals, releaseRows } from "@/lib/mock-data/operations";
+import { productHealthGrid, releaseRows } from "@/lib/mock-data/operations";
 
 const TABS: Tab[] = [
   { id: "overview", label: "Overview" },
@@ -30,7 +30,6 @@ export default function ProductDetailContent() {
   const activeTab = useActiveTab(TABS);
   const product = products.find((p) => p.id === params.id);
   const healthRow = productHealthGrid.find((p) => p.id === params.id);
-  const signals = product ? productHealthSignals[product.id] : undefined;
   const productReleases = product
     ? releaseRows
         .filter((r) => r.product === product.name)
@@ -96,66 +95,34 @@ export default function ProductDetailContent() {
       )}
 
       {activeTab === "health" && (
-        signals ? (
-          <Card title={`${product.name} — golden signals`} description="p95 latency, traffic, error rate (with SLO line) and resource saturation, last 24h">
-            <div className="grid grid-cols-1 gap-[var(--space-md)] screen-lg:grid-cols-4">
-              <div>
-                <p className="mb-1 text-[0.6875rem] font-medium text-[var(--role-text)]">p95 latency (ms)</p>
-                <LineChart series={signals.p95LatencyMs.series} thresholdY={signals.p95LatencyMs.sloMs} thresholdLabel="SLO" height={64} />
+        <Card title={`${product.name} — health`}>
+          <div className="flex flex-col gap-2">
+            <StatusBadge status={product.health} label={product.health} />
+            {healthRow && (
+              <div className="text-xs text-[var(--role-text)]">
+                <p>Uptime, 30d: {healthRow.uptime30d}%</p>
+                <p>Error rate: {healthRow.errorRatePct}%</p>
               </div>
-              <div>
-                <p className="mb-1 text-[0.6875rem] font-medium text-[var(--role-text)]">Requests / sec</p>
-                <LineChart series={signals.requestsPerSec.series} color="var(--chart-2)" height={64} />
-              </div>
-              <div>
-                <p className="mb-1 text-[0.6875rem] font-medium text-[var(--role-text)]">Error rate % (SLO line)</p>
-                <LineChart series={signals.errorRatePct.series} thresholdY={signals.errorRatePct.sloPct} thresholdLabel="SLO" color="var(--chart-4)" height={64} />
-              </div>
-              <div>
-                <p className="mb-1 text-[0.6875rem] font-medium text-[var(--role-text)]">Saturation</p>
-                <Gauge
-                  value={signals.saturationPct}
-                  status={signals.saturationPct >= 80 ? "critical" : signals.saturationPct >= 60 ? "warning" : "healthy"}
-                />
-              </div>
-            </div>
-          </Card>
-        ) : (
-          <EmptyState
-            title="No golden-signal telemetry"
-            description={`${product.name} doesn't have p95 latency, traffic, error-rate or saturation telemetry wired up in the mock yet.`}
-          />
-        )
+            )}
+            <DrillLink href="/founder/operations" params={{ tab: "health", product: product.id }}>
+              View full health telemetry in Platform Ops
+            </DrillLink>
+          </div>
+        </Card>
       )}
 
       {activeTab === "releases" && (
         productReleases.length > 0 ? (
-          <Card title={`${product.name} — release history`}>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[560px] text-sm">
-                <thead>
-                  <tr className="border-b border-[var(--divider)] text-left text-xs font-medium text-[var(--text-muted)]">
-                    <th className="py-2 pr-4">Version</th>
-                    <th className="py-2 pr-4">Deployed</th>
-                    <th className="py-2 pr-4">Status</th>
-                    <th className="py-2 pr-4">Blast radius</th>
-                    <th className="py-2 pr-4">Approval ref</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {productReleases.map((r) => (
-                    <tr key={r.id} className="border-b border-[var(--divider)] last:border-0">
-                      <td className="py-2 pr-4 font-medium text-[var(--text-secondary)]">{r.version}</td>
-                      <td className="py-2 pr-4 text-[var(--role-text)]">{r.deployedAt}</td>
-                      <td className="py-2 pr-4">
-                        <StatusBadge status={releaseStatusLevel(r.status)} label={r.status} />
-                      </td>
-                      <td className="py-2 pr-4 text-[var(--role-text)]">{r.blastRadiusPct}%</td>
-                      <td className="py-2 pr-4 text-[var(--role-text)]">{r.approvalRef ?? "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <Card title={`${product.name} — latest release`}>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-[var(--text-secondary)]">{productReleases[0].version}</span>
+                <StatusBadge status={releaseStatusLevel(productReleases[0].status)} label={productReleases[0].status} />
+              </div>
+              <p className="text-xs text-[var(--role-text)]">Deployed {productReleases[0].deployedAt} &middot; {productReleases[0].blastRadiusPct}% rolled out</p>
+              <DrillLink href="/founder/operations" params={{ tab: "releases", product: product.name }}>
+                View full release history in Platform Ops
+              </DrillLink>
             </div>
           </Card>
         ) : (
