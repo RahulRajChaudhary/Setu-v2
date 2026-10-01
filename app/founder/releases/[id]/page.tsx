@@ -34,7 +34,9 @@ export default function ReleaseDetailPage() {
         <h1 className="text-[length:var(--font-page-title)] font-bold tracking-tight text-[var(--text-heading)]">
           {release.product} {release.version}
         </h1>
-        <p className="text-sm text-[var(--text-muted)]">Deployed {release.deployedAt}</p>
+        <p className="text-sm text-[var(--text-muted)]">
+          {release.buildRef} &middot; deployed {release.deployedAt} by {release.initiator}
+        </p>
       </div>
 
       <div className="grid grid-cols-1 gap-[var(--space-md)] screen-sm:grid-cols-3">
@@ -46,6 +48,7 @@ export default function ReleaseDetailPage() {
         </Card>
         <Card title="Rolled out">
           <p className="text-2xl font-semibold text-[var(--text-secondary)]">{release.blastRadiusPct}%</p>
+          <p className="mt-1 text-xs text-[var(--role-text)]">{release.rolloutStrategy}</p>
         </Card>
         <Card title="Rollback approval">
           {release.approvalRef ? (
@@ -57,6 +60,38 @@ export default function ReleaseDetailPage() {
           )}
         </Card>
       </div>
+
+      <div className="grid grid-cols-1 gap-[var(--space-md)] screen-sm:grid-cols-2">
+        <Card title="Target environment">
+          <p className="text-sm text-[var(--text-secondary)]">{release.targetEnv}</p>
+        </Card>
+        <Card title="Migration / config changes">
+          <p className="text-sm text-[var(--text-secondary)]">{release.migrationChanges}</p>
+        </Card>
+        <Card title="Pre-deploy health">
+          <p className="text-sm text-[var(--text-secondary)]">{release.preDeployHealth}</p>
+        </Card>
+        <Card title="Post-deploy health">
+          <p className="text-sm text-[var(--text-secondary)]">{release.postDeployHealth}</p>
+        </Card>
+        <Card title="Pause / rollback decision">
+          <p className="text-sm text-[var(--text-secondary)]">{release.pauseRollbackDecision}</p>
+        </Card>
+        <Card title="Rollback evidence">
+          <p className="text-sm text-[var(--text-secondary)]">{release.rollbackEvidence}</p>
+        </Card>
+      </div>
+
+      {release.linkedIncidentId && (
+        <Card title="Linked incident">
+          <Link
+            href={`/founder/incidents/${release.linkedIncidentId}`}
+            className="text-sm font-medium text-[var(--icon-btn-navy)] hover:underline"
+          >
+            View {release.linkedIncidentId} &rarr;
+          </Link>
+        </Card>
+      )}
     </div>
   );
 }
