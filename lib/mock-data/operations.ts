@@ -267,6 +267,7 @@ export const incidentsBySeverity = [
 export const incidentRows = [
   {
     id: "inc-1",
+    productId: "chat-sahayogi",
     title: "Chat with Sahayogi — WhatsApp delivery latency spike",
     severity: "high" as const,
     commander: "Arjun M.",
@@ -280,6 +281,7 @@ export const incidentRows = [
   },
   {
     id: "inc-2",
+    productId: "boss",
     title: "BoSS invoice webhook retry backlog",
     severity: "medium" as const,
     commander: "Rhea S.",
@@ -293,6 +295,7 @@ export const incidentRows = [
   },
   {
     id: "inc-3",
+    productId: "sahayogi-one",
     title: "Sahayogi One dashboard stale cache",
     severity: "low" as const,
     commander: "Dev K.",
