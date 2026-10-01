@@ -19,13 +19,11 @@ export default function DonutChart({
   const strokeWidth = 20;
   const radius = 50 - strokeWidth / 2;
   const circumference = 2 * Math.PI * radius;
-  const gapAngle = data.length > 1 ? 2.5 : 0; // deg of breathing room between slices
+  const gapAngle = data.length > 1 ? 3 : 0; // deg of breathing room between slices
 
-  let cumulativeDeg = 0;
-  const segments = data.map((d) => {
+  const segments = data.map((d, i) => {
     const fraction = (d.value / total) * 360;
-    const startDeg = cumulativeDeg;
-    cumulativeDeg += fraction;
+    const startDeg = data.slice(0, i).reduce((sum, p) => sum + (p.value / total) * 360, 0);
     const sweep = Math.max(fraction - gapAngle, 0);
     const dash = (sweep / 360) * circumference;
     return { ...d, dash, gap: circumference - dash, rotate: startDeg };
@@ -44,7 +42,7 @@ export default function DonutChart({
               fill="none"
               stroke={s.color}
               strokeWidth={strokeWidth}
-              strokeLinecap="round"
+              strokeLinecap="butt"
               strokeDasharray={`${s.dash} ${s.gap}`}
               transform={`rotate(${s.rotate - 90} 50 50)`}
             />

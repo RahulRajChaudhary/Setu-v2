@@ -7,8 +7,10 @@ export const workspaceKpis = {
   criticalExceptions: 2,
 };
 
+// Reconciliation (mock): total 214 = Trial 14 + Active 187 + At risk 9 + Churned 4.
+// Paid plan mix 98+80+18 = 196 = Active 187 + At risk 9 (trial 14 on top = 210 non-churned).
 export const workspaceFunnel = [
-  { label: "Trial", value: 46, color: "var(--chart-1)" },
+  { label: "Trial", value: 14, color: "var(--chart-1)" },
   { label: "Active", value: 187, color: "var(--chart-2)" },
   { label: "At risk", value: 9, color: "var(--chart-3)" },
   { label: "Churned", value: 4, color: "var(--chart-4)" },
@@ -27,15 +29,15 @@ export const subscriptionKpis = {
   grace: 8,
   restricted: 4,
   planMix: [
-    { plan: "Trial", count: 46 },
-    { plan: "Growth", count: 89 },
-    { plan: "Scale", count: 62 },
-    { plan: "Enterprise", count: 17 },
+    { plan: "Trial", count: 14 },
+    { plan: "Growth", count: 98 },
+    { plan: "Scale", count: 80 },
+    { plan: "Enterprise", count: 18 },
   ],
 };
 
 export const subscriptionStatusDonut = [
-  { label: "Trial", value: 46, color: "var(--chart-1)" },
+  { label: "Trial", value: 14, color: "var(--chart-1)" },
   { label: "Active", value: 178, color: "var(--chart-2)" },
   { label: "Grace", value: 8, color: "var(--chart-3)" },
   { label: "Restricted", value: 4, color: "var(--chart-4)" },
@@ -55,25 +57,15 @@ export const subscriptionRows = [
 export const doraScorecard = [
   { label: "Deployment frequency", value: "3.2/day", band: "Elite" as const },
   { label: "Lead time for changes", value: "48 min", band: "Elite" as const },
-  { label: "Change failure rate", value: "12%", band: "High" as const },
+  { label: "Change failure rate", value: "12%", band: "Elite" as const },
   { label: "MTTR", value: "1h 40m", band: "High" as const },
-];
-
-export const releaseErrorRates = [
-  { label: "Chat w/ Sahayogi v3.4", before: 0.8, after: 4.6 },
-  { label: "BoSS v2.1", before: 0.5, after: 0.6 },
-  { label: "Sahayogi Cloud v1.6", before: 1.1, after: 0.9 },
-];
-
-export const rolloutTimeline = [
-  { id: "rel-1", product: "Chat with Sahayogi v3.4", pctRolledOut: 42, status: "rollback" as const },
-  { id: "rel-2", product: "BoSS v2.1", pctRolledOut: 100, status: "complete" as const },
-  { id: "rel-3", product: "Tax Sahayogi v1.6", pctRolledOut: 75, status: "in-progress" as const },
 ];
 
 export const releaseRows = [
   {
     id: "rel-1",
+    preErrorPct: 0.3,
+    postErrorPct: 4.6,
     product: "Chat with Sahayogi",
     version: "v3.4",
     deployedAt: "2026-09-27",
@@ -94,6 +86,8 @@ export const releaseRows = [
   },
   {
     id: "rel-2",
+    preErrorPct: 0.4,
+    postErrorPct: 0.5,
     product: "BoSS",
     version: "v2.1",
     deployedAt: "2026-09-24",
@@ -114,6 +108,8 @@ export const releaseRows = [
   },
   {
     id: "rel-3",
+    preErrorPct: 1.1,
+    postErrorPct: 1.3,
     product: "Tax Sahayogi",
     version: "v1.6",
     deployedAt: "2026-09-28",
@@ -134,6 +130,8 @@ export const releaseRows = [
   },
   {
     id: "rel-4",
+    preErrorPct: 0.2,
+    postErrorPct: 0.2,
     product: "Sahayogi One",
     version: "v4.0",
     deployedAt: "2026-09-20",
@@ -154,6 +152,8 @@ export const releaseRows = [
   },
   {
     id: "rel-5",
+    preErrorPct: 0.15,
+    postErrorPct: 0.15,
     product: "Office Sahayogi",
     version: "v1.2",
     deployedAt: "2026-09-18",
@@ -173,6 +173,18 @@ export const releaseRows = [
     linkedIncidentId: null,
   },
 ];
+
+// Derived from releaseRows so the timeline can never drift from the table
+// it sits next to (it used to be hand-typed and disagreed).
+export const rolloutTimeline = releaseRows.map((r) => ({
+  id: r.id,
+  product: `${r.product} ${r.version}`,
+  pctRolledOut: r.blastRadiusPct,
+  status: (r.status === "Rollback escalated" ? "rollback" : r.status === "In progress" ? "in-progress" : "complete") as
+    | "rollback"
+    | "in-progress"
+    | "complete",
+}));
 
 export type HealthStatus = "healthy" | "warning" | "critical";
 
@@ -211,9 +223,9 @@ function series24h(base: number, jitter: number) {
 }
 
 // Per-product Golden Signals (latency/traffic/errors/saturation), keyed by
-// productHealthGrid.id — spec §7. Only a subset of products carry the full
-// signal set for the mock; the rest show status-grid only, same as today.
-export const productHealthSignals: Record<
+// productHealthGrid.id — spec §7. Every product carries a full signal set
+// in the mock so the health matrix has no empty rows.
+const baseHealthSignals: Record<
   string,
   {
     p95LatencyMs: { series: { x: number; y: number }[]; sloMs: number };
@@ -252,7 +264,58 @@ export const productHealthSignals: Record<
     errorRatePct: { series: series24h(0.5, 0.15), sloPct: 1.5 },
     saturationPct: 63,
   },
+  "office-sahayogi": {
+    p95LatencyMs: { series: series24h(130, 12), sloMs: 400 },
+    requestsPerSec: { series: series24h(45, 10) },
+    errorRatePct: { series: series24h(0.15, 0.05), sloPct: 1.5 },
+    saturationPct: 33,
+  },
+  "investor-sahayogi": {
+    p95LatencyMs: { series: series24h(190, 20), sloMs: 400 },
+    requestsPerSec: { series: series24h(30, 8) },
+    errorRatePct: { series: series24h(0.05, 0.02), sloPct: 1.5 },
+    saturationPct: 29,
+  },
+  "my-sahayogi": {
+    p95LatencyMs: { series: series24h(170, 18), sloMs: 400 },
+    requestsPerSec: { series: series24h(55, 12) },
+    errorRatePct: { series: series24h(0.2, 0.06), sloPct: 1.5 },
+    saturationPct: 37,
+  },
+  "studio-sahayogi": {
+    p95LatencyMs: { series: series24h(220, 25), sloMs: 400 },
+    requestsPerSec: { series: series24h(25, 6) },
+    errorRatePct: { series: series24h(0.1, 0.04), sloPct: 1.5 },
+    saturationPct: 44,
+  },
 };
+
+type Series = { x: number; y: number }[];
+const scaleSeries = (series: Series, k: number): Series => series.map((p) => ({ x: p.x, y: Math.round(p.y * k) }));
+
+// Spec §7: p95/p99 latency, last 24h, split success vs error. Derived from the
+// base p95 series so the mock stays internally consistent: failed requests run
+// ~2.2x slower than successful ones, and p99 sits ~2.4x above p95 (above the error-only p95, since errors are
+// the slow tail).
+export const productHealthSignals = Object.fromEntries(
+  Object.entries(baseHealthSignals).map(([id, sig]) => [
+    id,
+    {
+      ...sig,
+      p99LatencyMs: { series: scaleSeries(sig.p95LatencyMs.series, 2.4) },
+      p95Split: {
+        success: scaleSeries(sig.p95LatencyMs.series, 0.94),
+        error: scaleSeries(sig.p95LatencyMs.series, 2.2),
+      },
+    },
+  ]),
+) as Record<
+  string,
+  (typeof baseHealthSignals)[string] & {
+    p99LatencyMs: { series: Series };
+    p95Split: { success: Series; error: Series };
+  }
+>;
 
 // Simple node list: product -> dependent services, per spec §7.
 export const dependencyMap = [
@@ -272,13 +335,6 @@ export const syntheticChecks = [
   { id: "syn-4", check: "Login", product: "BoSS", status: "pass" as const, lastRun: "3m ago" },
   { id: "syn-5", check: "Invoice create", product: "BoSS", status: "pass" as const, lastRun: "3m ago" },
   { id: "syn-6", check: "Login", product: "Tax Sahayogi", status: "pass" as const, lastRun: "4m ago" },
-];
-
-export const incidentsBySeverity = [
-  { label: "Critical", value: 0, color: "var(--status-critical-fg)" },
-  { label: "High", value: 1, color: "var(--chart-3)" },
-  { label: "Medium", value: 2, color: "var(--chart-1)" },
-  { label: "Low", value: 3, color: "var(--status-neutral-fg)" },
 ];
 
 export const incidentRows = [
@@ -326,6 +382,15 @@ export const incidentRows = [
     linkedRelease: null,
     linkedReleaseId: null,
   },
+];
+
+// Open (not Resolved) incidents per severity, derived from incidentRows.
+const openIncidents = incidentRows.filter((i) => i.status !== "Resolved");
+export const incidentsBySeverity = [
+  { label: "Critical", value: 0, color: "var(--status-critical-fg)" },
+  { label: "High", value: openIncidents.filter((i) => i.severity === "high").length, color: "var(--chart-3)" },
+  { label: "Medium", value: openIncidents.filter((i) => i.severity === "medium").length, color: "var(--chart-1)" },
+  { label: "Low", value: openIncidents.filter((i) => i.severity === "low").length, color: "var(--status-neutral-fg)" },
 ];
 
 // 30-day trend, per spec §8.

@@ -8,7 +8,7 @@ export default function LineChart({
   thresholdY,
   thresholdLabel,
   fill = false,
-  showEndDot = false,
+  showEndDot = true,
 }: {
   series: SeriesPoint[];
   width?: number;
@@ -24,8 +24,13 @@ export default function LineChart({
   const values = thresholdY !== undefined ? [...ys, thresholdY] : ys;
   const minX = Math.min(...xs);
   const maxX = Math.max(...xs);
-  const minY = Math.min(...values) * 0.9;
-  const maxY = Math.max(...values) * 1.1 || 1;
+  // Pad by the data's own range (not a % of the value) so flat-ish series still
+  // use the full height instead of hugging one edge.
+  const lo = Math.min(...values);
+  const hi = Math.max(...values);
+  const pad = (hi - lo || Math.abs(hi) || 1) * 0.15;
+  const minY = lo - pad;
+  const maxY = hi + pad;
 
   const scaleX = (x: number) => ((x - minX) / (maxX - minX || 1)) * (width - 8) + 4;
   const scaleY = (y: number) => height - 4 - ((y - minY) / (maxY - minY || 1)) * (height - 8);
