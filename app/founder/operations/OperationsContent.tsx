@@ -319,39 +319,44 @@ function ReleasesTab() {
         <DataTable columns={columns} rows={filteredReleaseRows} getRowKey={(r) => r.id} pageSize={5} emptyTitle="No releases" emptyDescription="No releases for this product." />
       </div>
     </Card>
-    <FeatureFlagsCard />
+    <FeatureFlagsCard productFilter={productFilter ?? undefined} />
     </div>
   );
 }
 
-function FeatureFlagsCard() {
+function FeatureFlagsCard({ productFilter }: { productFilter?: string }) {
+  const rows = productFilter ? featureFlagRows.filter((f) => f.product === productFilter) : featureFlagRows;
   return (
     <Card title="Feature flags" description="Active rollout flags per product">
-      <ul className="flex flex-col gap-[var(--space-sm)]">
-        {featureFlagRows.map((f) => (
-          <li key={f.id}>
-            <div className="mb-1 flex items-center justify-between text-xs">
-              <span className="font-medium text-[var(--text-secondary)]">
-                {f.flagName} <span className="text-[var(--text-muted)]">&middot; {f.product}</span>
-              </span>
-              {f.killSwitchEnabled ? (
-                <StatusBadge status="critical" label="Kill switch armed" />
-              ) : (
-                <span className="text-[var(--text-muted)]">{f.rolloutPct}% rolled out</span>
-              )}
-            </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--search-bg)]">
-              <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${f.rolloutPct}%`,
-                  backgroundColor: f.killSwitchEnabled ? "var(--status-critical-fg)" : "var(--chart-1)",
-                }}
-              />
-            </div>
-          </li>
-        ))}
-      </ul>
+      {rows.length === 0 ? (
+        <p className="text-sm text-[var(--role-text)]">No feature flags for this product.</p>
+      ) : (
+        <ul className="flex flex-col gap-[var(--space-sm)]">
+          {rows.map((f) => (
+            <li key={f.id}>
+              <div className="mb-1 flex items-center justify-between text-xs">
+                <span className="font-medium text-[var(--text-secondary)]">
+                  {f.flagName} <span className="text-[var(--text-muted)]">&middot; {f.product}</span>
+                </span>
+                {f.killSwitchEnabled ? (
+                  <StatusBadge status="critical" label="Kill switch armed" />
+                ) : (
+                  <span className="text-[var(--text-muted)]">{f.rolloutPct}% rolled out</span>
+                )}
+              </div>
+              <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--search-bg)]">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${f.rolloutPct}%`,
+                    backgroundColor: f.killSwitchEnabled ? "var(--status-critical-fg)" : "var(--chart-1)",
+                  }}
+                />
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </Card>
   );
 }
