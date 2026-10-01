@@ -18,6 +18,7 @@ import {
   workspaceKpis,
   workspaceFunnel,
   workspaceRows,
+  provisioningDriftRows,
   subscriptionKpis,
   subscriptionStatusDonut,
   subscriptionRows,
@@ -25,9 +26,11 @@ import {
   releaseErrorRates,
   rolloutTimeline,
   releaseRows,
+  featureFlagRows,
   productHealthGrid,
   productHealthSignals,
   dependencyMap,
+  integrationRows,
   syntheticChecks,
   incidentsBySeverity,
   incidentRows,
@@ -99,32 +102,61 @@ function WorkspacesTab() {
     { key: "lastActivity", header: "Last activity", render: (r) => r.lastActivity },
   ];
 
+  const driftColumns: Column<(typeof provisioningDriftRows)[number]>[] = [
+    { key: "workspaceName", header: "Workspace", render: (r) => r.workspaceName, sortValue: (r) => r.workspaceName },
+    { key: "driftType", header: "Drift", render: (r) => r.driftType },
+    {
+      key: "severity",
+      header: "Severity",
+      render: (r) => <StatusBadge status={r.severity} label={r.severity} />,
+      filterConfig: {
+        type: "multiSelect",
+        accessor: (r) => r.severity,
+        options: ["warning", "critical"].map((v) => ({ value: v, label: v })),
+      },
+    },
+    { key: "detectedAt", header: "Detected", render: (r) => r.detectedAt },
+  ];
+
   return (
-    <Card title="Workspaces" description="Provisioning health and lifecycle across every workspace">
-      <div className="mb-4 grid grid-cols-2 gap-[var(--space-sm)] screen-sm:grid-cols-4">
-        <StatTile label="Total" value={workspaceKpis.total} tone="info" icon={<LayoutGrid size={16} />} />
-        <StatTile label="Active" value={workspaceKpis.active} tone="healthy" icon={<CheckCircle2 size={16} />} />
-        <StatTile label="Grace / restricted" value={workspaceKpis.graceOrRestricted} tone="warning" icon={<Clock size={16} />} />
-        <StatTile
-          label="Failed provisioning (24h)"
-          value={workspaceKpis.failedProvisioning24h}
-          tone={workspaceKpis.failedProvisioning24h > 0 ? "critical" : "healthy"}
-          icon={<AlertCircle size={16} />}
-        />
-      </div>
-      <div className="grid grid-cols-1 gap-[var(--space-md)] screen-lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-        <div className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-4" style={{ boxShadow: "var(--card-shadow)" }}>
-          <Funnel stages={workspaceFunnel} />
+    <div className="flex flex-col gap-[var(--space-md)]">
+      <Card title="Workspaces" description="Provisioning health and lifecycle across every workspace">
+        <div className="mb-4 grid grid-cols-2 gap-[var(--space-sm)] screen-sm:grid-cols-4">
+          <StatTile label="Total" value={workspaceKpis.total} tone="info" icon={<LayoutGrid size={16} />} />
+          <StatTile label="Active" value={workspaceKpis.active} tone="healthy" icon={<CheckCircle2 size={16} />} />
+          <StatTile label="Grace / restricted" value={workspaceKpis.graceOrRestricted} tone="warning" icon={<Clock size={16} />} />
+          <StatTile
+            label="Failed provisioning (24h)"
+            value={workspaceKpis.failedProvisioning24h}
+            tone={workspaceKpis.failedProvisioning24h > 0 ? "critical" : "healthy"}
+            icon={<AlertCircle size={16} />}
+          />
         </div>
+        <div className="grid grid-cols-1 gap-[var(--space-md)] screen-lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+          <div className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-4" style={{ boxShadow: "var(--card-shadow)" }}>
+            <Funnel stages={workspaceFunnel} />
+          </div>
+          <DataTable
+            columns={columns}
+            rows={workspaceRows}
+            getRowKey={(r) => r.id}
+            pageSize={5}
+            emptyTitle="No workspaces"
+          />
+        </div>
+      </Card>
+
+      <Card title="Provisioning drift" description="Workspaces whose live provisioned state no longer matches their intended plan">
         <DataTable
-          columns={columns}
-          rows={workspaceRows}
+          columns={driftColumns}
+          rows={provisioningDriftRows}
           getRowKey={(r) => r.id}
           pageSize={5}
-          emptyTitle="No workspaces"
+          emptyTitle="No provisioning drift"
+          emptyDescription="Every workspace's provisioned state matches its plan."
         />
-      </div>
-    </Card>
+      </Card>
+    </div>
   );
 }
 
@@ -209,6 +241,7 @@ function ReleasesTab() {
   ];
 
   return (
+    <div className="flex flex-col gap-[var(--space-md)]">
     <Card title="Releases — DORA scorecard" description="Deployment performance benchmarked against DORA elite/high/medium/low bands">
       <div className="grid grid-cols-2 gap-[var(--space-sm)] screen-sm:grid-cols-4">
         {doraScorecard.map((k) => {
@@ -271,6 +304,40 @@ function ReleasesTab() {
         </p>
         <DataTable columns={columns} rows={releaseRows} getRowKey={(r) => r.id} pageSize={5} emptyTitle="No releases" />
       </div>
+    </Card>
+    <FeatureFlagsCard />
+    </div>
+  );
+}
+
+function FeatureFlagsCard() {
+  return (
+    <Card title="Feature flags" description="Active rollout flags per product">
+      <ul className="flex flex-col gap-[var(--space-sm)]">
+        {featureFlagRows.map((f) => (
+          <li key={f.id}>
+            <div className="mb-1 flex items-center justify-between text-xs">
+              <span className="font-medium text-[var(--text-secondary)]">
+                {f.flagName} <span className="text-[var(--text-muted)]">&middot; {f.product}</span>
+              </span>
+              {f.killSwitchEnabled ? (
+                <StatusBadge status="critical" label="Kill switch armed" />
+              ) : (
+                <span className="text-[var(--text-muted)]">{f.rolloutPct}% rolled out</span>
+              )}
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--search-bg)]">
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${f.rolloutPct}%`,
+                  backgroundColor: f.killSwitchEnabled ? "var(--status-critical-fg)" : "var(--chart-1)",
+                }}
+              />
+            </div>
+          </li>
+        ))}
+      </ul>
     </Card>
   );
 }
@@ -362,6 +429,22 @@ function HealthTab() {
                 <span className="font-medium">{d.product}</span> &rarr; {d.service}
               </span>
               <StatusBadge status={d.status} label={d.status} />
+            </li>
+          ))}
+        </ul>
+      </Card>
+
+      <Card title="Integrations" description="Third-party and partner integration health, separate from internal service dependencies above">
+        <ul className="flex flex-col gap-2">
+          {integrationRows.map((i) => (
+            <li key={i.id} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--divider)] p-3 text-sm">
+              <span className="text-[var(--text-secondary)]">
+                <span className="font-medium">{i.name}</span> &middot; {i.product}
+                <span className="ml-2 text-xs text-[var(--text-muted)]">
+                  last sync {i.lastSyncAt} &middot; {i.errorCount24h} errors/24h
+                </span>
+              </span>
+              <StatusBadge status={i.status} label={i.status} />
             </li>
           ))}
         </ul>
