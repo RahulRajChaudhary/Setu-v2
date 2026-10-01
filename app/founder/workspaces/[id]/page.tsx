@@ -22,8 +22,8 @@ export default function WorkspaceDetailPage() {
     );
   }
 
-  const subscriptions = subscriptionRows.filter((s) => s.workspace === workspace.name);
-  const incidents = incidentRows.filter((i) => i.affectedWorkspaces.includes(workspace.name));
+  const subscriptions = subscriptionRows.filter((s) => s.workspaceId === workspace.id);
+  const incidents = incidentRows.filter((i) => i.affectedWorkspaceIds.includes(workspace.id));
 
   return (
     <div className="flex flex-col gap-[var(--space-lg)]">

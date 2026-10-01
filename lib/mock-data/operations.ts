@@ -44,12 +44,12 @@ export const subscriptionStatusDonut = [
 ];
 
 export const subscriptionRows = [
-  { id: "sub-1", product: "Chat with Sahayogi", workspace: "Northwind Retail", plan: "Scale", status: "Active", renewalDate: "2026-11-04" },
-  { id: "sub-2", product: "BoSS", workspace: "Acme Traders", plan: "Growth", status: "Restricted", renewalDate: "2026-10-02" },
-  { id: "sub-3", product: "Sahayogi One", workspace: "Bluepeak Logistics", plan: "Growth", status: "Grace", renewalDate: "2026-10-14" },
-  { id: "sub-4", product: "Tax Sahayogi", workspace: "Coral Health", plan: "Scale", status: "Active", renewalDate: "2027-01-20" },
-  { id: "sub-5", product: "Sahayogi Cloud", workspace: "Delta Fintech", plan: "Enterprise", status: "Active", renewalDate: "2026-12-11" },
-  { id: "sub-6", product: "Office Sahayogi", workspace: "Northwind Retail", plan: "Growth", status: "Active", renewalDate: "2026-11-30" },
+  { id: "sub-1", product: "Chat with Sahayogi", workspace: "Northwind Retail", workspaceId: "ws-1", plan: "Scale", status: "Active", renewalDate: "2026-11-04" },
+  { id: "sub-2", product: "BoSS", workspace: "Acme Traders", workspaceId: "ws-2", plan: "Growth", status: "Restricted", renewalDate: "2026-10-02" },
+  { id: "sub-3", product: "Sahayogi One", workspace: "Bluepeak Logistics", workspaceId: "ws-3", plan: "Growth", status: "Grace", renewalDate: "2026-10-14" },
+  { id: "sub-4", product: "Tax Sahayogi", workspace: "Coral Health", workspaceId: "ws-4", plan: "Scale", status: "Active", renewalDate: "2027-01-20" },
+  { id: "sub-5", product: "Sahayogi Cloud", workspace: "Delta Fintech", workspaceId: "ws-5", plan: "Enterprise", status: "Active", renewalDate: "2026-12-11" },
+  { id: "sub-6", product: "Office Sahayogi", workspace: "Northwind Retail", workspaceId: "ws-1", plan: "Growth", status: "Active", renewalDate: "2026-11-30" },
 ];
 
 export const doraScorecard = [
@@ -177,6 +177,7 @@ export const incidentRows = [
     commander: "Arjun M.",
     workspaces: 3,
     affectedWorkspaces: ["Northwind Retail", "Coral Health", "Delta Fintech"],
+    affectedWorkspaceIds: ["ws-1", "ws-4", "ws-5"],
     status: "Mitigating",
     timeOpen: "2h 10m",
     linkedRelease: "Chat with Sahayogi v3.4",
@@ -188,6 +189,7 @@ export const incidentRows = [
     commander: "Rhea S.",
     workspaces: 1,
     affectedWorkspaces: ["Acme Traders"],
+    affectedWorkspaceIds: ["ws-2"],
     status: "Monitoring",
     timeOpen: "45m",
     linkedRelease: null,
@@ -199,6 +201,9 @@ export const incidentRows = [
     commander: "Dev K.",
     workspaces: 6,
     affectedWorkspaces: ["Northwind Retail", "Bluepeak Logistics", "Coral Health", "Delta Fintech", "Acme Traders", "Studio workspace"],
+    // "Studio workspace" has no corresponding row in workspaceRows — a pre-existing
+    // mock-data gap. Left unmapped rather than inventing a fictitious workspace row.
+    affectedWorkspaceIds: ["ws-1", "ws-3", "ws-4", "ws-5", "ws-2"],
     status: "Resolved",
     timeOpen: "3h 5m",
     linkedRelease: null,
