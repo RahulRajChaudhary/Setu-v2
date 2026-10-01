@@ -44,6 +44,7 @@ export default function ComplianceRiskContent() {
     },
     { key: "statement", header: "Statement", render: (r) => r.statement },
     { key: "frameworks", header: "Frameworks", render: (r) => <span className="text-xs text-[var(--role-text)]">{r.frameworks}</span> },
+    { key: "owner", header: "Owner", render: (r) => r.owner, sortValue: (r) => r.owner },
     { key: "dueDate", header: "Due date", render: (r) => r.dueDate, sortValue: (r) => r.dueDate },
     {
       key: "status",

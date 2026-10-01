@@ -39,9 +39,12 @@ export default function ControlDetailPage() {
         <p className="font-mono-id text-xs text-[var(--text-muted)]">{control.id}</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-[var(--space-md)] screen-sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-[var(--space-md)] screen-sm:grid-cols-4">
         <Card title="Status">
           <StatusBadge status={CONTROL_STATUS[control.status]} label={control.status} />
+        </Card>
+        <Card title="Owner">
+          <p className="text-sm font-medium text-[var(--text-secondary)]">{control.owner}</p>
         </Card>
         <Card title="Frameworks mapped">
           <p className="text-sm text-[var(--text-secondary)]">{control.frameworks}</p>

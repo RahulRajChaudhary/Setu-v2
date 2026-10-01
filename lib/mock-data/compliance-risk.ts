@@ -19,10 +19,10 @@ export const findingsOverdueList = [
 ];
 
 export const controlsTable = [
-  { id: "ctrl-1", statement: "Logical access reviewed quarterly", frameworks: "ISO 27001, DPDP Act", dueDate: "2026-10-01", status: "On track" as const },
-  { id: "ctrl-2", statement: "Encryption at rest for customer PII", frameworks: "ISO 27001, GDPR", dueDate: "2026-09-15", status: "Effective" as const },
-  { id: "ctrl-3", statement: "Vendor DPA on file before onboarding", frameworks: "DPDP Act, GDPR", dueDate: "2026-09-20", status: "Exception" as const },
-  { id: "ctrl-4", statement: "Incident response runbook tested", frameworks: "ISO 27001", dueDate: "2026-11-01", status: "Effective" as const },
+  { id: "ctrl-1", statement: "Logical access reviewed quarterly", frameworks: "ISO 27001, DPDP Act", owner: "Security Admin", dueDate: "2026-10-01", status: "On track" as const },
+  { id: "ctrl-2", statement: "Encryption at rest for customer PII", frameworks: "ISO 27001, GDPR", owner: "Priya N.", dueDate: "2026-09-15", status: "Effective" as const },
+  { id: "ctrl-3", statement: "Vendor DPA on file before onboarding", frameworks: "DPDP Act, GDPR", owner: "Priya N.", dueDate: "2026-09-20", status: "Exception" as const },
+  { id: "ctrl-4", statement: "Incident response runbook tested", frameworks: "ISO 27001", owner: "Arjun M.", dueDate: "2026-11-01", status: "Effective" as const },
 ];
 
 export const topRisks: RiskRow[] = [
