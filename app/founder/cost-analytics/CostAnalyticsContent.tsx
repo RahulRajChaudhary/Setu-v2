@@ -181,11 +181,10 @@ function AdoptionTab() {
   const sorted = [...usageVsPlanAllowance].sort((a, b) => b.value - a.value);
   const nearLimit = sorted.filter((p) => p.value >= 80);
   const avg = Math.round(sorted.reduce((sum, p) => sum + p.value, 0) / sorted.length);
-  const top = sorted[0];
 
   return (
     <div className="flex flex-col gap-[var(--space-md)]">
-      <div className="grid grid-cols-1 gap-[var(--space-sm)] screen-sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-[var(--space-sm)] screen-sm:grid-cols-2">
         <StatTile
           label="Products near plan limit"
           value={nearLimit.length}
@@ -194,13 +193,6 @@ function AdoptionTab() {
           note={nearLimit.map((p) => p.label).join(", ") || "All within allowance"}
         />
         <StatTile label="Average plan usage" value={`${avg}%`} tone="info" icon={<Gauge size={16} />} note={`Across ${sorted.length} products`} />
-        <StatTile
-          label="Closest to limit"
-          value={`${top.value}%`}
-          tone={top.value >= 90 ? "critical" : "warning"}
-          icon={<TrendingUp size={16} />}
-          note={top.label}
-        />
       </div>
 
       <Card
