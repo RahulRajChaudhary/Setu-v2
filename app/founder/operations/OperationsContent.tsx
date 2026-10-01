@@ -41,39 +41,29 @@ import {
   incidentsLinkedToReleasesPct,
 } from "@/lib/mock-data/operations";
 
+// Fixed "today" for the mock layer so renewal windows are stable across reloads.
+const MOCK_TODAY = "2026-10-01";
+
 const SEVERITY_RANK: Record<HealthStatus, number> = { critical: 0, warning: 1, healthy: 2 };
 const bySeverity = <T extends { status: HealthStatus }>(rows: T[]) =>
   [...rows].sort((a, b) => SEVERITY_RANK[a.status] - SEVERITY_RANK[b.status]);
 
 // Everything below is derived from the same mock rows the tabs render, so the
-// header strip and tab badges can never disagree with the tables.
+// header strip can never disagree with the tables.
 const openIncidents = incidentRows.filter((i) => i.status !== "Resolved");
 const highOpenIncidents = openIncidents.filter((i) => i.severity === "high");
 const rollbackDecisions = releaseRows.filter((r) => r.approvalRef !== null);
 const unhealthyProducts = productHealthGrid.filter((p) => p.status !== "healthy");
 const failingChecks = syntheticChecks.filter((c) => c.status === "fail");
+const workspacesWithOpenIncidents = new Set(openIncidents.flatMap((i) => i.affectedWorkspaceIds)).size;
 const subscriptionsAtRisk = subscriptionKpis.grace + subscriptionKpis.restricted;
 
 const TABS: Tab[] = [
-  {
-    id: "workspaces",
-    label: "Workspaces",
-    badge: {
-      count: provisioningDriftRows.length,
-      tone: provisioningDriftRows.some((d) => d.severity === "critical") ? "critical" : "warning",
-    },
-  },
-  { id: "subscriptions", label: "Subscriptions", badge: { count: subscriptionKpis.restricted, tone: "critical" } },
-  { id: "releases", label: "Releases", badge: { count: rollbackDecisions.length, tone: "critical" } },
-  {
-    id: "health",
-    label: "Health",
-    badge: {
-      count: unhealthyProducts.length,
-      tone: unhealthyProducts.some((p) => p.status === "critical") ? "critical" : "warning",
-    },
-  },
-  { id: "incidents", label: "Incidents", badge: { count: openIncidents.length, tone: highOpenIncidents.length > 0 ? "critical" : "warning" } },
+  { id: "workspaces", label: "Workspaces" },
+  { id: "subscriptions", label: "Subscriptions" },
+  { id: "releases", label: "Releases" },
+  { id: "health", label: "Health" },
+  { id: "incidents", label: "Incidents" },
 ];
 
 type AttentionItem = { key: string; tone: StatusLevel; text: string; href: string };
@@ -255,8 +245,6 @@ function WorkspacesTab() {
       <Card title="Workspaces" description="One row per tenant account — provisioning health, plan and lifecycle. For per-product entitlements, see the Subscriptions tab.">
         <div className="grid grid-cols-1 gap-[var(--space-md)] screen-lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <div className="grid grid-cols-2 content-start gap-[var(--space-sm)]">
-          <StatTile label="Total" value={workspaceKpis.total} tone="info" icon={<LayoutGrid size={16} />} note="All tenant accounts" />
-          <StatTile label="Active" value={workspaceKpis.active} tone="healthy" icon={<CheckCircle2 size={16} />} note={`${Math.round((workspaceKpis.active / workspaceKpis.total) * 100)}% of all workspaces`} />
           <StatTile label="Grace / restricted" value={workspaceKpis.graceOrRestricted} tone="warning" icon={<Clock size={16} />} note="View subscriptions" href="/founder/operations?tab=subscriptions" />
           <StatTile
             label="Failed provisioning (24h)"
@@ -265,9 +253,18 @@ function WorkspacesTab() {
             icon={<AlertCircle size={16} />}
             note={`${provisioningDriftRows.length} drift records below`}
           />
+          <StatTile label="On 2+ products" value={`${workspaceKpis.multiProductAdoptionPct}%`} tone="info" icon={<Layers size={16} />} note="Multi-product adoption" />
+          <StatTile
+            label="With open incidents"
+            value={workspacesWithOpenIncidents}
+            tone={workspacesWithOpenIncidents > 0 ? "warning" : "healthy"}
+            icon={<LayoutGrid size={16} />}
+            note="View incidents"
+            href="/founder/operations?tab=incidents"
+          />
         </div>
         <div className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-4" style={{ boxShadow: "var(--card-shadow)" }}>
-          <p className="mb-2 text-xs font-semibold text-[var(--role-text)]">Workspace lifecycle</p>
+          <p className="mb-2 text-xs font-semibold text-[var(--role-text)]">Workspace lifecycle &middot; {workspaceKpis.total} total</p>
           <Funnel stages={workspaceFunnel} />
         </div>
         </div>
@@ -312,6 +309,10 @@ function SubscriptionsTab() {
     );
   }, [search, productFilteredRows]);
 
+  const renewingSoon = subscriptionRows.filter((r) => {
+    const days = (new Date(r.renewalDate).getTime() - new Date(MOCK_TODAY).getTime()) / 86_400_000;
+    return days >= 0 && days <= 30;
+  });
   const paidPlans = subscriptionKpis.planMix.filter((p) => p.plan !== "Trial");
   const paidPlanTotal = paidPlans.reduce((sum, p) => sum + p.count, 0);
   const paidPlanNote = paidPlans.map((p) => `${p.plan} ${p.count}`).join(" · ");
@@ -379,10 +380,14 @@ function SubscriptionsTab() {
     >
       <div className="grid grid-cols-1 gap-[var(--space-md)] screen-lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
       <div className="grid grid-cols-2 content-start gap-[var(--space-sm)]">
-        <StatTile label="Active" value={subscriptionKpis.active} tone="healthy" icon={<CheckCircle2 size={16} />} note="In good standing" />
-        <StatTile label="Grace" value={subscriptionKpis.grace} tone="warning" icon={<Clock size={16} />} note="Renewal at risk" />
-        <StatTile label="Restricted" value={subscriptionKpis.restricted} tone="critical" icon={<AlertCircle size={16} />} note="Access limited" />
         <StatTile label="Paid plans" value={paidPlanTotal} tone="info" icon={<Layers size={16} />} note={paidPlanNote} />
+        <StatTile
+          label="Renewing in 30 days"
+          value={renewingSoon.length}
+          tone={renewingSoon.length > 0 ? "warning" : "healthy"}
+          icon={<Clock size={16} />}
+          note={renewingSoon.map((r) => r.workspace).join(", ") || "None due"}
+        />
       </div>
       <div className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-4" style={{ boxShadow: "var(--card-shadow)" }}>
         <p className="mb-2 text-xs font-semibold text-[var(--role-text)]">Subscription status mix</p>
