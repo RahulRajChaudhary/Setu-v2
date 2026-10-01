@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -8,6 +8,8 @@ import { Search, Plus, Bell, ExternalLink, History, Settings } from "lucide-reac
 import { personaConfigFromPathname } from "@/lib/personas";
 import AppsLauncher from "@/components/shell/AppsLauncher";
 import ThemeToggle from "@/components/shell/ThemeToggle";
+import { products } from "@/lib/mock-data/products";
+import { workspaceRows, incidentRows } from "@/lib/mock-data/operations";
 
 const NOTIFICATIONS = [
   {
@@ -30,12 +32,26 @@ const NOTIFICATIONS = [
   },
 ];
 
+type SearchResult = { id: string; type: string; label: string; sublabel: string; href: string };
+
+const SEARCH_INDEX: SearchResult[] = [
+  ...products.map((p) => ({ id: p.id, type: "Product", label: p.name, sublabel: p.brand, href: `/founder/products/${p.id}` })),
+  ...workspaceRows.map((w) => ({ id: w.id, type: "Workspace", label: w.name, sublabel: w.plan, href: `/founder/workspaces/${w.id}` })),
+  ...incidentRows.map((i) => ({ id: i.id, type: "Incident", label: i.title, sublabel: i.id, href: `/founder/incidents/${i.id}` })),
+];
+
 export default function Header() {
   const [openMenu, setOpenMenu] = useState<
     "profile" | "notifications" | "apps" | null
   >(null);
   const pathname = usePathname();
   const persona = personaConfigFromPathname(pathname);
+  const [query, setQuery] = useState("");
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (q.length < 2) return [];
+    return SEARCH_INDEX.filter((r) => r.label.toLowerCase().includes(q) || r.id.toLowerCase().includes(q)).slice(0, 8);
+  }, [query]);
 
   function toggle(menu: "profile" | "notifications" | "apps") {
     setOpenMenu((current) => (current === menu ? null : menu));
@@ -91,6 +107,7 @@ export default function Header() {
       <div className="flex min-w-0 flex-1 items-center justify-center px-1 screen-sm:px-2">
         <div
           className="
+            relative
             flex h-11 w-full min-w-0
             max-w-[30rem]
             items-center
@@ -111,7 +128,9 @@ export default function Header() {
 
           <input
             type="text"
-            placeholder="Search KPIs, approvals, audit logs..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search products, workspaces, incidents..."
             className="
               min-w-0 w-full
               bg-transparent
@@ -123,6 +142,34 @@ export default function Header() {
               screen-sm:text-sm
             "
           />
+
+          {results.length > 0 && (
+            <div
+              className="
+                absolute left-0 top-[calc(100%+0.25rem)] z-50
+                w-full overflow-hidden rounded-xl border
+                border-[var(--divider)] bg-[var(--surface)] shadow-xl
+              "
+            >
+              <ul className="divide-y divide-[var(--divider)]">
+                {results.map((r) => (
+                  <li key={`${r.type}-${r.id}`}>
+                    <Link
+                      href={r.href}
+                      onClick={() => setQuery("")}
+                      className="tap-pop flex items-center justify-between gap-2 px-4 py-2.5 text-left transition-colors hover:bg-[var(--search-bg)]"
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium text-[var(--text-heading)]">{r.label}</span>
+                        <span className="text-xs text-[var(--text-muted)]">{r.sublabel}</span>
+                      </span>
+                      <span className="shrink-0 text-xs font-medium text-[var(--role-text)]">{r.type}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
 
