@@ -321,3 +321,58 @@ export const mttrTrend30d = Array.from({ length: 30 }, (_, day) => ({
 export const incidentsLinkedToReleasesPct = Math.round(
   (incidentRows.filter((i) => i.linkedRelease !== null).length / incidentRows.length) * 100,
 );
+
+// Provisioning drift — workspaces whose live provisioned state no longer
+// matches their intended plan. Gives workspaceKpis.failedProvisioning24h
+// actual rows instead of being a dead-end count.
+export type ProvisioningDriftRow = {
+  id: string;
+  workspaceId: string;
+  workspaceName: string;
+  driftType: string;
+  detectedAt: string;
+  severity: "warning" | "critical";
+};
+
+export const provisioningDriftRows: ProvisioningDriftRow[] = [
+  { id: "drift-1", workspaceId: "ws-2", workspaceName: "Acme Traders", driftType: "Plan says Growth, provisioned compute tier is Scale", detectedAt: "3h ago", severity: "critical" },
+  { id: "drift-2", workspaceId: "ws-3", workspaceName: "Bluepeak Logistics", driftType: "Entitlement flag 'advanced-reporting' enabled outside plan", detectedAt: "26m ago", severity: "warning" },
+  { id: "drift-3", workspaceId: "ws-5", workspaceName: "Delta Fintech", driftType: "Seat count exceeds Enterprise plan cap by 4", detectedAt: "1h ago", severity: "warning" },
+];
+
+// Third-party/partner integrations — vendor-facing, distinct from the
+// internal service dependency map above (dependencyMap).
+export type IntegrationRow = {
+  id: string;
+  name: string;
+  product: string;
+  status: "healthy" | "warning" | "critical";
+  lastSyncAt: string;
+  errorCount24h: number;
+};
+
+export const integrationRows: IntegrationRow[] = [
+  { id: "int-1", name: "WhatsApp Cloud API", product: "Chat with Sahayogi", status: "critical", lastSyncAt: "4m ago", errorCount24h: 38 },
+  { id: "int-2", name: "Payment Gateway", product: "BoSS", status: "warning", lastSyncAt: "11m ago", errorCount24h: 6 },
+  { id: "int-3", name: "GST Filing API", product: "Tax Sahayogi", status: "warning", lastSyncAt: "22m ago", errorCount24h: 3 },
+  { id: "int-4", name: "Auth Service (SSO)", product: "Sahayogi One", status: "healthy", lastSyncAt: "1m ago", errorCount24h: 0 },
+  { id: "int-5", name: "Cloud Storage Provider", product: "Sahayogi Cloud", status: "healthy", lastSyncAt: "2m ago", errorCount24h: 0 },
+];
+
+// Feature flags — active rollout flags per product, complements the
+// existing release rollout timeline above (rolloutTimeline).
+export type FeatureFlagRow = {
+  id: string;
+  flagName: string;
+  product: string;
+  rolloutPct: number;
+  killSwitchEnabled: boolean;
+  updatedAt: string;
+};
+
+export const featureFlagRows: FeatureFlagRow[] = [
+  { id: "flag-1", flagName: "new-invoice-renderer", product: "BoSS", rolloutPct: 50, killSwitchEnabled: false, updatedAt: "2026-09-29" },
+  { id: "flag-2", flagName: "whatsapp-delivery-v2", product: "Chat with Sahayogi", rolloutPct: 42, killSwitchEnabled: true, updatedAt: "2026-09-27" },
+  { id: "flag-3", flagName: "gst-auto-reconcile", product: "Tax Sahayogi", rolloutPct: 100, killSwitchEnabled: false, updatedAt: "2026-09-18" },
+  { id: "flag-4", flagName: "multi-workspace-sso", product: "Sahayogi One", rolloutPct: 10, killSwitchEnabled: false, updatedAt: "2026-09-30" },
+];
