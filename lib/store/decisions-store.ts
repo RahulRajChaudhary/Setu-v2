@@ -56,3 +56,36 @@ export function useAuditLog(): AuditEvent[] {
     () => auditEvents,
   );
 }
+
+// Founder flags a cost anomaly to the Operations inbox (roles guide, "Usage and
+// cost": read only, flag an anomaly). The Founder cannot act on it further —
+// the flag is recorded in the audit log so Operations and auditors can see it.
+let flaggedAnomalies: string[] = [];
+const NO_FLAGS: string[] = [];
+
+export function flagCostAnomaly(anomaly: { id: string; scope: string; metric: string }) {
+  if (flaggedAnomalies.includes(anomaly.id)) return;
+  flaggedAnomalies = [...flaggedAnomalies, anomaly.id];
+  eventCounter += 1;
+  const event: AuditEvent = {
+    id: `evt-session-${eventCounter}`,
+    time: new Date().toISOString().replace("T", " ").slice(0, 19),
+    actor: "founder@sahayogi.in",
+    action: "Flagged cost anomaly to Operations inbox",
+    entity: `${anomaly.scope} — ${anomaly.metric}`,
+    before: "Unflagged",
+    after: "Flagged for Operations review",
+    result: "Success",
+    correlationId: `corr-${anomaly.id}`,
+  };
+  auditLog = [event, ...auditLog];
+  emit();
+}
+
+export function useFlaggedAnomalies(): string[] {
+  return useSyncExternalStore(
+    subscribe,
+    () => flaggedAnomalies,
+    () => NO_FLAGS,
+  );
+}

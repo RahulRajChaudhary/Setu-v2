@@ -4,7 +4,7 @@ import { useState } from "react";
 
 export type Line = { label: string; color: string; series: { x: number; y: number }[]; dashed?: boolean };
 
-const PAD = { l: 36, r: 22, t: 8, b: 20 };
+const PAD = { l: 44, r: 22, t: 8, b: 20 };
 
 // Multi-series line chart with a shared crosshair + tooltip. One y-axis only.
 export default function MultiLineChart({
@@ -16,6 +16,7 @@ export default function MultiLineChart({
   width: W = 960,
   height: H = 170,
   zeroBased = true,
+  format = (n: number) => String(n),
 }: {
   lines: Line[];
   thresholdY?: number;
@@ -26,6 +27,8 @@ export default function MultiLineChart({
   height?: number;
   /** false = scale the y-axis to the data range (for trends that never approach 0). */
   zeroBased?: boolean;
+  /** Formats y values on the axis and in the tooltip (e.g. currency). */
+  format?: (n: number) => string;
 }) {
   const [hover, setHover] = useState<number | null>(null);
   const xs = lines[0].series.map((p) => p.x);
@@ -72,7 +75,7 @@ export default function MultiLineChart({
             <g key={t}>
               <line x1={PAD.l} x2={W - PAD.r} y1={sy(t)} y2={sy(t)} stroke="var(--divider)" strokeWidth={1} />
               <text x={PAD.l - 4} y={sy(t) + 3} textAnchor="end" fontSize={W < 600 ? 14 : 11} fill="var(--text-muted)">
-                {t}
+                {format(t)}
               </text>
             </g>
           ))}
@@ -118,7 +121,7 @@ export default function MultiLineChart({
             {lines.map((l) => (
               <p key={l.label} className="flex items-center gap-1.5 text-[var(--text-secondary)]">
                 <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: l.color }} />
-                {l.label}: <span className="font-semibold text-[var(--text-heading)]">{l.series[hover!].y}{unit}</span>
+                {l.label}: <span className="font-semibold text-[var(--text-heading)]">{format(l.series[hover!].y)}{unit}</span>
               </p>
             ))}
           </div>
