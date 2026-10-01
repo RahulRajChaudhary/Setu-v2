@@ -548,7 +548,7 @@ function HealthTab() {
     <div className="flex flex-col gap-[var(--space-md)]">
       <Card
         title="Product health"
-        description="Worst first. Sparklines show the last 24h against the SLO (dashed); expand a row for p95/p99 latency by success vs error."
+        description="Worst first. Sparklines show the last 24h (p95 turns red once it passes its SLO); expand a row for p95/p99 latency by success vs error."
         action={
           productFilter ? (
             <Link href="/founder/operations?tab=health" className="text-xs font-medium text-[var(--icon-btn-navy)] hover:underline">
@@ -682,12 +682,12 @@ function IncidentsTab() {
           <ToggleChart data={incidentsBySeverity} max={Math.max(...incidentsBySeverity.map((d) => d.value), 1)} suffix="" defaultType="bar" />
         </div>
         <div className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-4" style={{ boxShadow: "var(--card-shadow)" }}>
-          <p className="mb-1 text-xs font-semibold text-[var(--role-text)]">MTTA, 30d (min)</p>
-          <LineChart series={mttaTrend30d} height={56} color="var(--chart-3)" />
+          <p className="mb-1 text-xs font-semibold text-[var(--role-text)]">MTTA, last 30 days (min)</p>
+          <MultiLineChart lines={[{ label: "MTTA", color: "var(--chart-3)", series: mttaTrend30d }]} unit=" min" zeroBased={false} width={360} height={150} xLabel={dayLabel} />
         </div>
         <div className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-4" style={{ boxShadow: "var(--card-shadow)" }}>
-          <p className="mb-1 text-xs font-semibold text-[var(--role-text)]">MTTR, 30d (min)</p>
-          <LineChart series={mttrTrend30d} height={56} color="var(--chart-4)" />
+          <p className="mb-1 text-xs font-semibold text-[var(--role-text)]">MTTR, last 30 days (min)</p>
+          <MultiLineChart lines={[{ label: "MTTR", color: "var(--chart-4)", series: mttrTrend30d }]} unit=" min" zeroBased={false} width={360} height={150} xLabel={dayLabel} />
         </div>
       </div>
       <div className="mb-4">
@@ -708,6 +708,7 @@ function IncidentsTab() {
 const HEALTH_COLS =
   "screen-lg:grid-cols-[minmax(10rem,1.3fr)_5.5rem_minmax(8rem,1fr)_minmax(8rem,1fr)_minmax(8rem,1fr)_minmax(6rem,0.8fr)] screen-lg:items-center screen-lg:gap-4";
 const ERROR_SLO_PCT = 1.5;
+const dayLabel = (x: number) => (x === 29 ? "today" : `${29 - x}d ago`);
 
 function HealthSummaryBar({ products }: { products: { status: HealthStatus }[] }) {
   const counts = (["critical", "warning", "healthy"] as const).map((st) => ({
@@ -792,9 +793,17 @@ function HealthRow({
       <MetricCell label="p95 latency">
         {signals ? (
           <div className="flex items-center gap-2">
-            <span className="w-14 shrink-0 text-sm font-semibold text-[var(--text-heading)]">{Math.round(lastP95 ?? 0)} ms</span>
+            <div className="w-16 shrink-0">
+              <p className="text-sm font-semibold text-[var(--text-heading)]">{Math.round(lastP95 ?? 0)} ms</p>
+              <p className="text-[0.6875rem] text-[var(--text-muted)]">SLO {signals.p95LatencyMs.sloMs}</p>
+            </div>
             <div className="min-w-0 flex-1">
-              <LineChart series={signals.p95LatencyMs.series} thresholdY={signals.p95LatencyMs.sloMs} height={28} />
+              <LineChart
+                series={signals.p95LatencyMs.series}
+                color={(lastP95 ?? 0) >= signals.p95LatencyMs.sloMs ? "var(--status-critical-fg)" : "var(--chart-1)"}
+                fill
+                height={32}
+              />
             </div>
           </div>
         ) : (
@@ -806,7 +815,7 @@ function HealthRow({
           <div className="flex items-center gap-2">
             <span className="w-14 shrink-0 text-sm font-semibold text-[var(--text-heading)]">{Math.round(lastRps ?? 0)}/s</span>
             <div className="min-w-0 flex-1">
-              <LineChart series={signals.requestsPerSec.series} color="var(--chart-2)" height={28} />
+              <LineChart series={signals.requestsPerSec.series} color="var(--chart-2)" fill height={32} />
             </div>
           </div>
         ) : (
