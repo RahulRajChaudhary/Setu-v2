@@ -7,8 +7,10 @@ export const workspaceKpis = {
   criticalExceptions: 2,
 };
 
+// Reconciliation (mock): total 214 = Trial 14 + Active 187 + At risk 9 + Churned 4.
+// Paid plan mix 98+80+18 = 196 = Active 187 + At risk 9 (trial 14 on top = 210 non-churned).
 export const workspaceFunnel = [
-  { label: "Trial", value: 46, color: "var(--chart-1)" },
+  { label: "Trial", value: 14, color: "var(--chart-1)" },
   { label: "Active", value: 187, color: "var(--chart-2)" },
   { label: "At risk", value: 9, color: "var(--chart-3)" },
   { label: "Churned", value: 4, color: "var(--chart-4)" },
@@ -27,15 +29,15 @@ export const subscriptionKpis = {
   grace: 8,
   restricted: 4,
   planMix: [
-    { plan: "Trial", count: 46 },
-    { plan: "Growth", count: 89 },
-    { plan: "Scale", count: 62 },
-    { plan: "Enterprise", count: 17 },
+    { plan: "Trial", count: 14 },
+    { plan: "Growth", count: 98 },
+    { plan: "Scale", count: 80 },
+    { plan: "Enterprise", count: 18 },
   ],
 };
 
 export const subscriptionStatusDonut = [
-  { label: "Trial", value: 46, color: "var(--chart-1)" },
+  { label: "Trial", value: 14, color: "var(--chart-1)" },
   { label: "Active", value: 178, color: "var(--chart-2)" },
   { label: "Grace", value: 8, color: "var(--chart-3)" },
   { label: "Restricted", value: 4, color: "var(--chart-4)" },
@@ -227,8 +229,8 @@ function series24h(base: number, jitter: number) {
 }
 
 // Per-product Golden Signals (latency/traffic/errors/saturation), keyed by
-// productHealthGrid.id — spec §7. Only a subset of products carry the full
-// signal set for the mock; the rest show status-grid only, same as today.
+// productHealthGrid.id — spec §7. Every product carries a full signal set
+// in the mock so the health matrix has no empty rows.
 export const productHealthSignals: Record<
   string,
   {
@@ -267,6 +269,30 @@ export const productHealthSignals: Record<
     requestsPerSec: { series: series24h(70, 15) },
     errorRatePct: { series: series24h(0.5, 0.15), sloPct: 1.5 },
     saturationPct: 63,
+  },
+  "office-sahayogi": {
+    p95LatencyMs: { series: series24h(130, 12), sloMs: 400 },
+    requestsPerSec: { series: series24h(45, 10) },
+    errorRatePct: { series: series24h(0.15, 0.05), sloPct: 1.5 },
+    saturationPct: 33,
+  },
+  "investor-sahayogi": {
+    p95LatencyMs: { series: series24h(190, 20), sloMs: 400 },
+    requestsPerSec: { series: series24h(30, 8) },
+    errorRatePct: { series: series24h(0.05, 0.02), sloPct: 1.5 },
+    saturationPct: 29,
+  },
+  "my-sahayogi": {
+    p95LatencyMs: { series: series24h(170, 18), sloMs: 400 },
+    requestsPerSec: { series: series24h(55, 12) },
+    errorRatePct: { series: series24h(0.2, 0.06), sloPct: 1.5 },
+    saturationPct: 37,
+  },
+  "studio-sahayogi": {
+    p95LatencyMs: { series: series24h(220, 25), sloMs: 400 },
+    requestsPerSec: { series: series24h(25, 6) },
+    errorRatePct: { series: series24h(0.1, 0.04), sloPct: 1.5 },
+    saturationPct: 44,
   },
 };
 
