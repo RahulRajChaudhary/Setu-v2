@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { LayoutGrid, CheckCircle2, Clock, Rocket, AlertCircle, RefreshCw, Layers } from "lucide-react";
 import Card from "@/components/shared/Card";
@@ -208,6 +209,12 @@ function SubscriptionsTab() {
 }
 
 function ReleasesTab() {
+  const searchParams = useSearchParams();
+  const productFilter = searchParams.get("product");
+  const filteredReleaseRows = productFilter
+    ? releaseRows.filter((r) => r.product === productFilter)
+    : releaseRows;
+
   const columns: Column<(typeof releaseRows)[number]>[] = [
     {
       key: "product",
@@ -299,10 +306,17 @@ function ReleasesTab() {
         </div>
       </div>
       <div className="mt-4">
-        <p className="mb-2 text-xs font-semibold text-[var(--role-text)]">
-          Releases — a rollback badge links to its escalated Operations Inbox entry
-        </p>
-        <DataTable columns={columns} rows={releaseRows} getRowKey={(r) => r.id} pageSize={5} emptyTitle="No releases" />
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <p className="text-xs font-semibold text-[var(--role-text)]">
+            Releases — a rollback badge links to its escalated Operations Inbox entry
+          </p>
+          {productFilter && (
+            <Link href="/founder/operations?tab=releases" className="text-xs font-medium text-[var(--icon-btn-navy)] hover:underline">
+              Filtered to {productFilter} &middot; Clear
+            </Link>
+          )}
+        </div>
+        <DataTable columns={columns} rows={filteredReleaseRows} getRowKey={(r) => r.id} pageSize={5} emptyTitle="No releases" emptyDescription="No releases for this product." />
       </div>
     </Card>
     <FeatureFlagsCard />
@@ -343,11 +357,27 @@ function FeatureFlagsCard() {
 }
 
 function HealthTab() {
+  const searchParams = useSearchParams();
+  const productFilter = searchParams.get("product");
+  const filteredHealthGrid = productFilter
+    ? productHealthGrid.filter((p) => p.id === productFilter)
+    : productHealthGrid;
+
   return (
     <div className="flex flex-col gap-[var(--space-md)]">
-      <Card title="Health" description="Golden-signal status per product, last 30 days">
+      <Card
+        title="Health"
+        description="Golden-signal status per product, last 30 days"
+        action={
+          productFilter ? (
+            <Link href="/founder/operations?tab=health" className="text-xs font-medium text-[var(--icon-btn-navy)] hover:underline">
+              Filtered to {filteredHealthGrid[0]?.name ?? productFilter} &middot; Clear
+            </Link>
+          ) : undefined
+        }
+      >
         <div className="flex flex-wrap gap-[var(--space-sm)]">
-          {productHealthGrid.map((p) => {
+          {filteredHealthGrid.map((p) => {
             const tone = AREA_TONE[p.status];
             const StatusIcon = p.status === "healthy" ? CheckCircle2 : p.status === "warning" ? Clock : AlertCircle;
             return (
@@ -376,7 +406,7 @@ function HealthTab() {
 
       <Card title="Golden signals per product" description="p95 latency, traffic, error rate (with SLO line) and resource saturation, last 24h">
         <div className="flex flex-col gap-[var(--space-md)]">
-          {productHealthGrid
+          {filteredHealthGrid
             .filter((p) => productHealthSignals[p.id])
             .map((p) => {
               const signals = productHealthSignals[p.id];
