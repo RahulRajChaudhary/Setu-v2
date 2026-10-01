@@ -30,6 +30,7 @@ import DrillLink from "@/components/shared/DrillLink";
 import AnalyticsBarChart from "@/components/shared/charts/AnalyticsBarChart";
 import AreaTrendChart from "@/components/shared/charts/AreaTrendChart";
 import RolloutProgressBar from "@/components/shared/charts/RolloutProgressBar";
+import type { DataFreshness } from "@/components/shared/StaleIndicator";
 import {
   releaseKpis,
   releases,
@@ -45,22 +46,22 @@ const FAILURE_RATE = 0.2;
 
 function useKpiRefresh() {
   const [updatedAt, setUpdatedAt] = useState<Date>(() => new Date());
-  const [stale, setStale] = useState(false);
+  const [freshness, setFreshness] = useState<DataFreshness | undefined>(undefined);
 
   useEffect(() => {
     const id = setInterval(() => {
       const failed = Math.random() < FAILURE_RATE;
       if (failed) {
-        setStale(true);
+        setFreshness("delayed");
         return;
       }
       setUpdatedAt(new Date());
-      setStale(false);
+      setFreshness(undefined);
     }, REFRESH_MS);
     return () => clearInterval(id);
   }, []);
 
-  return { updatedAt, stale };
+  return { updatedAt, freshness };
 }
 
 const ROLLOUT_STATUS_LABEL: Record<RolloutStatus, string> = {
@@ -105,7 +106,7 @@ const DEPLOY_RANGE_OPTIONS: { label: string; value: DeploymentRangeWeeks }[] = [
 ];
 
 export default function EngineeringLeadDashboardPage() {
-  const { updatedAt, stale } = useKpiRefresh();
+  const { updatedAt, freshness } = useKpiRefresh();
   const [releaseList, setReleaseList] = useState<Release[]>(releases);
   const [errorFilter, setErrorFilter] = useState<"all" | "escalated">("all");
   const [deployRangeWeeks, setDeployRangeWeeks] = useState<DeploymentRangeWeeks>(8);
@@ -267,7 +268,7 @@ export default function EngineeringLeadDashboardPage() {
             note="in a non-terminal state"
             status="neutral"
             updatedAt={updatedAt}
-            stale={stale}
+            freshness={freshness}
             icon={<Rocket size={22} />}
             iconBg={STATUS_ICON_TONE.neutral.bg}
             iconFg={STATUS_ICON_TONE.neutral.fg}
@@ -283,7 +284,7 @@ export default function EngineeringLeadDashboardPage() {
             note="deployments causing rollback/hotfix ÷ total"
             status={releaseKpis.changeFailureRate.status}
             updatedAt={updatedAt}
-            stale={stale}
+            freshness={freshness}
             trendDirection={releaseKpis.changeFailureRate.trendDirection}
             trendValue={releaseKpis.changeFailureRate.trendValue}
             icon={<Percent size={22} />}
@@ -298,7 +299,7 @@ export default function EngineeringLeadDashboardPage() {
             note="this period"
             status={releaseKpis.deploymentFailures.status}
             updatedAt={updatedAt}
-            stale={stale}
+            freshness={freshness}
             icon={<AlertCircle size={22} />}
             iconBg={STATUS_ICON_TONE[releaseKpis.deploymentFailures.status].bg}
             iconFg={STATUS_ICON_TONE[releaseKpis.deploymentFailures.status].fg}
@@ -311,7 +312,7 @@ export default function EngineeringLeadDashboardPage() {
             note="repeat errors post-deployment"
             status={releaseKpis.recurringExceptions.status}
             updatedAt={updatedAt}
-            stale={stale}
+            freshness={freshness}
             icon={<FileWarning size={22} />}
             iconBg={STATUS_ICON_TONE[releaseKpis.recurringExceptions.status].bg}
             iconFg={STATUS_ICON_TONE[releaseKpis.recurringExceptions.status].fg}
@@ -324,7 +325,7 @@ export default function EngineeringLeadDashboardPage() {
             note="this period"
             status={rolledBackCount > 0 ? "critical" : "healthy"}
             updatedAt={updatedAt}
-            stale={stale}
+            freshness={freshness}
             icon={<RotateCcw size={22} />}
             iconBg={STATUS_ICON_TONE[rolledBackCount > 0 ? "critical" : "healthy"].bg}
             iconFg={STATUS_ICON_TONE[rolledBackCount > 0 ? "critical" : "healthy"].fg}
@@ -337,7 +338,7 @@ export default function EngineeringLeadDashboardPage() {
             note="releases with a linked incident/error spike"
             status={linkedIncidentCount > 0 ? "warning" : "healthy"}
             updatedAt={updatedAt}
-            stale={stale}
+            freshness={freshness}
             icon={<AlertTriangle size={22} />}
             iconBg={STATUS_ICON_TONE[linkedIncidentCount > 0 ? "warning" : "healthy"].bg}
             iconFg={STATUS_ICON_TONE[linkedIncidentCount > 0 ? "warning" : "healthy"].fg}
@@ -351,7 +352,7 @@ export default function EngineeringLeadDashboardPage() {
             note="tracked this period"
             status="neutral"
             updatedAt={updatedAt}
-            stale={stale}
+            freshness={freshness}
             icon={<PackageCheck size={22} />}
             iconBg={STATUS_ICON_TONE.neutral.bg}
             iconFg={STATUS_ICON_TONE.neutral.fg}

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowUp } from "lucide-react";
-import StaleIndicator from "./StaleIndicator";
+import StaleIndicator, { type DataFreshness } from "./StaleIndicator";
 import type { StatusLevel } from "./StatusBadge";
 
 const DOT: Record<StatusLevel, string> = {
@@ -65,7 +65,7 @@ export default function KPITile({
   drillHref,
   drillLabel,
   updatedAt,
-  stale,
+  freshness,
   trend,
   trendDirection,
   trendValue,
@@ -81,7 +81,7 @@ export default function KPITile({
   drillHref?: string;
   drillLabel?: string;
   updatedAt: Date;
-  stale?: boolean;
+  freshness?: DataFreshness;
   trend?: ReactNode;
   trendDirection?: TrendDirection;
   trendValue?: string;
@@ -161,8 +161,8 @@ export default function KPITile({
             </div>
           )}
         </div>
-        {stale ? (
-          <StaleIndicator lastGoodAt={updatedAt} />
+        {freshness ? (
+          <StaleIndicator lastGoodAt={updatedAt} state={freshness} />
         ) : (
           <span className="shrink-0 whitespace-nowrap text-[clamp(0.625rem,3.2cqi,0.6875rem)] font-medium leading-none text-[var(--text-muted)]">
             {formatRelative(updatedAt)}

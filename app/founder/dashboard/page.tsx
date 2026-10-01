@@ -45,6 +45,7 @@ import {
 import type { Severity } from "@/lib/mock-data/types";
 import { workspaceKpis } from "@/lib/mock-data/operations";
 import { complianceKpis } from "@/lib/mock-data/compliance-risk";
+import type { DataFreshness } from "@/components/shared/StaleIndicator";
 
 const REFRESH_MS = 60_000;
 const FAILURE_RATE = 0.2;
@@ -52,23 +53,24 @@ const FAILURE_RATE = 0.2;
 function useKpiSnapshot() {
   const [snapshot, setSnapshot] = useState<KpiSnapshot>(() => generateKpiSnapshot());
   const [updatedAt, setUpdatedAt] = useState<Date>(() => new Date());
-  const [stale, setStale] = useState(false);
+  const [freshness, setFreshness] = useState<DataFreshness | undefined>(undefined);
 
   useEffect(() => {
     const id = setInterval(() => {
       const failed = Math.random() < FAILURE_RATE;
       if (failed) {
-        setStale(true);
+        const roll = Math.random();
+        setFreshness(roll < 0.5 ? "delayed" : roll < 0.8 ? "partial" : "unknown");
         return;
       }
       setSnapshot(generateKpiSnapshot());
       setUpdatedAt(new Date());
-      setStale(false);
+      setFreshness(undefined);
     }, REFRESH_MS);
     return () => clearInterval(id);
   }, []);
 
-  return { snapshot, updatedAt, stale };
+  return { snapshot, updatedAt, freshness };
 }
 
 const SEVERITY_STATUS: Record<Severity, "healthy" | "warning" | "critical"> = {
@@ -86,7 +88,7 @@ const GROWTH_RANGE_OPTIONS: { label: string; value: GrowthRangeDays }[] = [
 
 export default function ControlRoomPage() {
   const router = useRouter();
-  const { snapshot, updatedAt, stale } = useKpiSnapshot();
+  const { snapshot, updatedAt, freshness } = useKpiSnapshot();
   const [growthRangeDays, setGrowthRangeDays] = useState<GrowthRangeDays>(30);
   const growthTrend = useMemo(() => buildGrowthTrend(growthRangeDays), [growthRangeDays]);
   const newCustomersTotal = growthTrend[growthTrend.length - 1]?.newCustomers ?? 0;
@@ -125,7 +127,7 @@ export default function ControlRoomPage() {
               status={snapshot.productsHealthy.status}
               drillHref="/founder/products"
               updatedAt={updatedAt}
-              stale={stale}
+              freshness={freshness}
               icon={<HeartPulse size={22} />}
               iconBg="#FCE7F3"
               iconFg="#DB2777"
@@ -139,7 +141,7 @@ export default function ControlRoomPage() {
               status={snapshot.waitingForApproval.status}
               drillHref="/founder/approvals"
               updatedAt={updatedAt}
-              stale={stale}
+              freshness={freshness}
               icon={<ClipboardCheck size={22} />}
               iconBg="#D1FAE5"
               iconFg="#059669"
@@ -151,9 +153,9 @@ export default function ControlRoomPage() {
               value={snapshot.openIncidents.count}
               note="unresolved"
               status={snapshot.openIncidents.status}
-              drillHref="/founder/operations"
+              drillHref="/founder/operations?tab=incidents"
               updatedAt={updatedAt}
-              stale={stale}
+              freshness={freshness}
               icon={<AlertCircle size={22} />}
               iconBg="#FEE2E2"
               iconFg="#DC2626"
@@ -167,7 +169,7 @@ export default function ControlRoomPage() {
               status={snapshot.platformCostTrend.status}
               drillHref="/founder/cost-analytics"
               updatedAt={updatedAt}
-              stale={stale}
+              freshness={freshness}
               icon={<TrendingUp size={22} />}
               iconBg="#CCFBF1"
               iconFg="#0D9488"
@@ -183,7 +185,7 @@ export default function ControlRoomPage() {
               status={workspaceKpis.multiProductAdoptionPct >= 50 ? "healthy" : "warning"}
               drillHref="/founder/products"
               updatedAt={updatedAt}
-              stale={stale}
+              freshness={freshness}
               icon={<Layers size={22} />}
               iconBg="#DBEAFE"
               iconFg="#2563EB"
@@ -196,7 +198,7 @@ export default function ControlRoomPage() {
               status={complianceKpis.findingsOverdue > 0 ? "critical" : "healthy"}
               drillHref="/founder/compliance-risk"
               updatedAt={updatedAt}
-              stale={stale}
+              freshness={freshness}
               icon={<ShieldCheck size={22} />}
               iconBg="#CFFAFE"
               iconFg="#0891B2"
@@ -214,7 +216,7 @@ export default function ControlRoomPage() {
               status={workspaceKpis.criticalExceptions > 0 ? "critical" : "healthy"}
               drillHref="/founder/operations"
               updatedAt={updatedAt}
-              stale={stale}
+              freshness={freshness}
               icon={<AlertOctagon size={22} />}
               iconBg="#FEE2E2"
               iconFg="#DC2626"
