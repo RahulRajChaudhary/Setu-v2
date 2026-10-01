@@ -85,21 +85,21 @@ function buildAttention(): AttentionItem[] {
     items.push({
       key: "rollback",
       tone: "critical",
-      text: `${rollbackDecisions.length} rollback awaiting your decision`,
+      text: `${rollbackDecisions.length} rollback awaiting you`,
       href: "/founder/approvals",
     });
   if (highOpenIncidents.length > 0)
     items.push({
       key: "incidents",
       tone: "critical",
-      text: `${highOpenIncidents.length} high-severity incident open`,
+      text: `${highOpenIncidents.length} high-severity incident`,
       href: "/founder/operations?tab=incidents",
     });
   if (unhealthyProducts.length > 0)
     items.push({
       key: "health",
       tone: unhealthyProducts.some((p) => p.status === "critical") ? "critical" : "warning",
-      text: `${unhealthyProducts.length} of ${productHealthGrid.length} products not healthy`,
+      text: `${unhealthyProducts.length}/${productHealthGrid.length} products unhealthy`,
       href: "/founder/operations?tab=health",
     });
   if (failingChecks.length > 0)
@@ -113,7 +113,7 @@ function buildAttention(): AttentionItem[] {
     items.push({
       key: "subs",
       tone: "warning",
-      text: `${subscriptionsAtRisk} subscriptions in grace / restricted`,
+      text: `${subscriptionsAtRisk} subscriptions at risk`,
       href: "/founder/operations?tab=subscriptions",
     });
   return items;
@@ -129,8 +129,12 @@ function AttentionStrip() {
     );
   }
   return (
-    <section aria-label="Needs your attention" className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-3" style={{ boxShadow: "var(--card-shadow)" }}>
-      <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Needs your attention</h2>
+    <section
+      aria-label="Needs your attention"
+      className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-[var(--divider)] bg-[var(--surface)] px-3 py-2"
+      style={{ boxShadow: "var(--card-shadow)" }}
+    >
+      <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Needs attention</h2>
       <ul className="flex flex-wrap gap-2">
         {items.map((i) => (
           <li key={i.key}>
@@ -250,9 +254,10 @@ function WorkspacesTab() {
   return (
     <div className="flex flex-col gap-[var(--space-md)]">
       <Card title="Workspaces" description="One row per tenant account — provisioning health, plan and lifecycle. For per-product entitlements, see the Subscriptions tab.">
-        <div className="mb-4 grid grid-cols-2 gap-[var(--space-sm)] screen-sm:grid-cols-4">
-          <StatTile label="Total" value={workspaceKpis.total} tone="info" icon={<LayoutGrid size={16} />} />
-          <StatTile label="Active" value={workspaceKpis.active} tone="healthy" icon={<CheckCircle2 size={16} />} />
+        <div className="grid grid-cols-1 gap-[var(--space-md)] screen-lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+        <div className="grid grid-cols-2 content-start gap-[var(--space-sm)]">
+          <StatTile label="Total" value={workspaceKpis.total} tone="info" icon={<LayoutGrid size={16} />} note="All tenant accounts" />
+          <StatTile label="Active" value={workspaceKpis.active} tone="healthy" icon={<CheckCircle2 size={16} />} note={`${Math.round((workspaceKpis.active / workspaceKpis.total) * 100)}% of all workspaces`} />
           <StatTile label="Grace / restricted" value={workspaceKpis.graceOrRestricted} tone="warning" icon={<Clock size={16} />} note="View subscriptions" href="/founder/operations?tab=subscriptions" />
           <StatTile
             label="Failed provisioning (24h)"
@@ -263,7 +268,9 @@ function WorkspacesTab() {
           />
         </div>
         <div className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-4" style={{ boxShadow: "var(--card-shadow)" }}>
+          <p className="mb-2 text-xs font-semibold text-[var(--role-text)]">Workspace lifecycle</p>
           <Funnel stages={workspaceFunnel} />
+        </div>
         </div>
         <div className="mt-[var(--space-md)]">
           <TableToolbar search={search} onSearchChange={setSearch} searchPlaceholder="Search workspaces by name or plan..." />
@@ -371,14 +378,17 @@ function SubscriptionsTab() {
         ) : undefined
       }
     >
-      <div className="mb-4 grid grid-cols-2 gap-[var(--space-sm)] screen-sm:grid-cols-4">
-        <StatTile label="Active" value={subscriptionKpis.active} tone="healthy" icon={<CheckCircle2 size={16} />} />
-        <StatTile label="Grace" value={subscriptionKpis.grace} tone="warning" icon={<Clock size={16} />} />
-        <StatTile label="Restricted" value={subscriptionKpis.restricted} tone="critical" icon={<AlertCircle size={16} />} />
+      <div className="grid grid-cols-1 gap-[var(--space-md)] screen-lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+      <div className="grid grid-cols-2 content-start gap-[var(--space-sm)]">
+        <StatTile label="Active" value={subscriptionKpis.active} tone="healthy" icon={<CheckCircle2 size={16} />} note="In good standing" />
+        <StatTile label="Grace" value={subscriptionKpis.grace} tone="warning" icon={<Clock size={16} />} note="Renewal at risk" />
+        <StatTile label="Restricted" value={subscriptionKpis.restricted} tone="critical" icon={<AlertCircle size={16} />} note="Access limited" />
         <StatTile label="Paid plans" value={paidPlanTotal} tone="info" icon={<Layers size={16} />} note={paidPlanNote} />
       </div>
       <div className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-4" style={{ boxShadow: "var(--card-shadow)" }}>
+        <p className="mb-2 text-xs font-semibold text-[var(--role-text)]">Subscription status mix</p>
         <ToggleChart data={subscriptionStatusDonut} defaultType="pie" />
+      </div>
       </div>
       <div className="mt-[var(--space-md)]">
         <TableToolbar search={search} onSearchChange={setSearch} searchPlaceholder="Search by product, workspace, or plan..." />
@@ -538,7 +548,7 @@ function HealthTab() {
     <div className="flex flex-col gap-[var(--space-md)]">
       <Card
         title="Product health"
-        description="Uptime, golden signals and saturation per product — worst first. Sparklines cover the last 24h; the dashed line is the SLO. Expand a row for p95/p99 latency split by success vs error."
+        description="Worst first. Sparklines show the last 24h against the SLO (dashed); expand a row for p95/p99 latency by success vs error."
         action={
           productFilter ? (
             <Link href="/founder/operations?tab=health" className="text-xs font-medium text-[var(--icon-btn-navy)] hover:underline">
