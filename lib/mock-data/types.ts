@@ -34,4 +34,5 @@ export type RiskRow = {
   treatmentStatus: string;
   dueDate: string;
   code?: string;
+  productId?: string;
 };

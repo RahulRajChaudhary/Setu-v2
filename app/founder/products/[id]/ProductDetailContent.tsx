@@ -11,7 +11,6 @@ import TabBar, { useActiveTab, type Tab } from "@/components/shared/TabBar";
 import LineChart from "@/components/shared/charts/LineChart";
 import { products } from "@/lib/mock-data/products";
 import {
-  productHealthGrid,
   releaseRows,
   dependencyMap,
   integrationRows,
@@ -20,6 +19,8 @@ import {
   incidentRows,
 } from "@/lib/mock-data/operations";
 import { costAnomalies } from "@/lib/mock-data/cost-analytics";
+import { topRisks } from "@/lib/mock-data/compliance-risk";
+import { summarizeProduct } from "@/lib/mock-data/product-summary";
 
 const TABS: Tab[] = [
   { id: "overview", label: "Overview" },
@@ -40,7 +41,6 @@ export default function ProductDetailContent() {
   const params = useParams<{ id: string }>();
   const activeTab = useActiveTab(TABS);
   const product = products.find((p) => p.id === params.id);
-  const healthRow = productHealthGrid.find((p) => p.id === params.id);
   const productReleases = product
     ? releaseRows
         .filter((r) => r.product === product.name)
@@ -55,6 +55,7 @@ export default function ProductDetailContent() {
   const activeIncidentCount = product
     ? incidentRows.filter((i) => i.productId === product.id && i.status !== "Resolved").length
     : 0;
+  const productRisks = product ? topRisks.filter((r) => r.productId === product.id) : [];
 
   if (!product) {
     return (
@@ -70,42 +71,80 @@ export default function ProductDetailContent() {
     );
   }
 
+  const summary = summarizeProduct(product);
+
   return (
     <div className="flex flex-col gap-[var(--space-lg)]">
       <Breadcrumbs items={[{ label: "Product 360", href: "/founder/products" }, { label: product.name }]} />
-      <div>
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-[length:var(--font-page-title)] font-bold tracking-tight text-[var(--text-heading)]">{product.name}</h1>
-          <span className="inline-flex items-center rounded-full bg-[var(--search-bg)] px-2 py-0.5 text-xs font-medium text-[var(--text-secondary)]">
-            {product.brand}
-          </span>
+      <div className="flex items-start gap-3">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--icon-btn-navy)] text-sm font-semibold text-white">
+          {product.name
+            .trim()
+            .split(/\s+/)
+            .slice(0, 2)
+            .map((w) => w[0])
+            .join("")
+            .toUpperCase()}
+        </span>
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-[length:var(--font-page-title)] font-bold tracking-tight text-[var(--text-heading)]">{product.name}</h1>
+            <span className="rounded-full bg-[var(--search-bg)] px-2 py-0.5 font-mono text-xs font-medium text-[var(--text-secondary)]">
+              {product.id}
+            </span>
+            <StatusBadge
+              status={product.lifecycleStage === "GA" ? "healthy" : product.lifecycleStage === "Beta" ? "info" : "neutral"}
+              label={product.lifecycleStage}
+            />
+          </div>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">{product.description}</p>
+          <p className="mt-1 text-xs text-[var(--role-text)]">
+            Owner: <span className="font-medium text-[var(--text-secondary)]">{product.owner}</span> &middot; Technical owner:{" "}
+            <span className="font-medium text-[var(--text-secondary)]">{product.technicalOwner}</span> &middot; Launched {product.launchedOn}
+          </p>
         </div>
-        <p className="mt-1 text-sm text-[var(--text-muted)]">{product.description}</p>
       </div>
 
       <TabBar tabs={TABS} />
 
       {activeTab === "overview" && (
         <div className="flex flex-col gap-[var(--space-lg)]">
-          <div className="grid grid-cols-1 gap-[var(--space-md)] screen-sm:grid-cols-3">
-            <Card title="Health">
-              <StatusBadge status={product.health} label={product.health} />
-              {healthRow && (
-                <div className="mt-2 text-xs text-[var(--role-text)]">
-                  <p>Uptime, 30d: {healthRow.uptime30d}%</p>
-                  <p>Error rate: {healthRow.errorRatePct}%</p>
-                </div>
-              )}
-            </Card>
-            <Card title="Dependencies">
-              <p className="text-2xl font-semibold text-[var(--text-secondary)]">{product.dependencyCount}</p>
-              <p className="text-xs text-[var(--role-text)]">dependent services</p>
-            </Card>
-            <Card title="Adoption">
-              <p className="text-2xl font-semibold text-[var(--text-secondary)]">{product.adoptionPct}%</p>
-              <p className="text-xs text-[var(--role-text)]">of eligible workspaces</p>
-            </Card>
-          </div>
+          <Card title="Overview">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-4 screen-sm:grid-cols-3 screen-lg:grid-cols-6">
+              <OverviewStat label="Health">
+                <StatusBadge status={summary.health} label={summary.health} />
+                {summary.uptime30d !== null && (
+                  <p className="mt-1 text-[0.6875rem] text-[var(--role-text)]">
+                    Uptime {summary.uptime30d}% &middot; Err {summary.errorRatePct}%
+                  </p>
+                )}
+              </OverviewStat>
+              <OverviewStat label="Current version">
+                <p className="font-mono text-sm font-semibold text-[var(--text-secondary)]">{summary.latestVersion ?? "—"}</p>
+              </OverviewStat>
+              <OverviewStat label="Workspaces">
+                <p className="text-sm font-semibold text-[var(--text-secondary)]">
+                  {summary.activeWorkspaceCount} active <span className="text-[var(--text-muted)]">/ {summary.totalWorkspaceCount}</span>
+                </p>
+              </OverviewStat>
+              <OverviewStat label="Open incidents">
+                <p className={`text-sm font-semibold ${activeIncidentCount > 0 ? "text-[var(--status-critical-fg)]" : "text-[var(--text-secondary)]"}`}>
+                  {activeIncidentCount}
+                </p>
+              </OverviewStat>
+              <OverviewStat label="Adoption">
+                <p className="text-sm font-semibold text-[var(--text-secondary)]">{product.adoptionPct}%</p>
+              </OverviewStat>
+              <OverviewStat label="Dependencies">
+                <p className="text-sm font-semibold text-[var(--text-secondary)]">
+                  {product.dependencyCount}
+                  {summary.dependencyIssueCount > 0 && (
+                    <span className="ml-1 text-[0.6875rem] font-medium text-[var(--status-warning-fg)]">{summary.dependencyIssueCount} flagged</span>
+                  )}
+                </p>
+              </OverviewStat>
+            </div>
+          </Card>
 
           {productCostAnomaly && (
             <Card title="Cost anomaly">
@@ -125,6 +164,23 @@ export default function ProductDetailContent() {
               </DrillLink>
             </Card>
           )}
+          {productRisks.length > 0 && (
+            <Card title="Open risks">
+              <ul className="flex flex-col gap-2">
+                {productRisks.map((r) => (
+                  <li key={r.id}>
+                    <Link href={`/founder/risks/${r.id}`} className="text-sm font-medium text-[var(--icon-btn-navy)] hover:underline">
+                      {r.label}
+                    </Link>
+                    <span className="ml-2 text-xs text-[var(--text-muted)]">&middot; {r.treatmentStatus}</span>
+                  </li>
+                ))}
+              </ul>
+              <DrillLink href="/founder/compliance-risk" params={{ tab: "risks" }}>
+                View all risks in Compliance &amp; Risk
+              </DrillLink>
+            </Card>
+          )}
 
           <Card title="Usage trend, last 30 days">
             <LineChart series={product.usageTrend30d.map((y, x) => ({ x, y }))} height={100} />
@@ -135,11 +191,11 @@ export default function ProductDetailContent() {
       {activeTab === "health" && (
         <Card title={`${product.name} — health`}>
           <div className="flex flex-col items-start gap-2">
-            <StatusBadge status={product.health} label={product.health} />
-            {healthRow && (
+            <StatusBadge status={summary.health} label={summary.health} />
+            {summary.uptime30d !== null && (
               <div className="text-xs text-[var(--role-text)]">
-                <p>Uptime, 30d: {healthRow.uptime30d}%</p>
-                <p>Error rate: {healthRow.errorRatePct}%</p>
+                <p>Uptime, 30d: {summary.uptime30d}%</p>
+                <p>Error rate: {summary.errorRatePct}%</p>
               </div>
             )}
             <DrillLink href="/founder/operations" params={{ tab: "health", product: product.id }}>
@@ -258,6 +314,15 @@ export default function ProductDetailContent() {
           )}
         </Card>
       )}
+    </div>
+  );
+}
+
+function OverviewStat({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p className="text-[0.6875rem] text-[var(--text-muted)]">{label}</p>
+      <div className="mt-0.5">{children}</div>
     </div>
   );
 }

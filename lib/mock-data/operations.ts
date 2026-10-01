@@ -174,17 +174,34 @@ export const releaseRows = [
   },
 ];
 
-export const productHealthGrid = [
-  { id: "chat-sahayogi", name: "Chat with Sahayogi", status: "critical" as const, uptime30d: 99.82, errorRatePct: 2.1 },
-  { id: "boss", name: "BoSS", status: "warning" as const, uptime30d: 99.9, errorRatePct: 0.6 },
-  { id: "sahayogi-one", name: "Sahayogi One", status: "healthy" as const, uptime30d: 99.98, errorRatePct: 0.1 },
-  { id: "sahayogi-cloud", name: "Sahayogi Cloud", status: "healthy" as const, uptime30d: 99.95, errorRatePct: 0.3 },
-  { id: "tax-sahayogi", name: "Tax Sahayogi", status: "warning" as const, uptime30d: 99.88, errorRatePct: 0.5 },
-  { id: "office-sahayogi", name: "Office Sahayogi", status: "healthy" as const, uptime30d: 99.97, errorRatePct: 0.15 },
-  { id: "investor-sahayogi", name: "Investor Sahayogi", status: "healthy" as const, uptime30d: 99.99, errorRatePct: 0.05 },
-  { id: "my-sahayogi", name: "My Sahayogi", status: "healthy" as const, uptime30d: 99.93, errorRatePct: 0.2 },
-  { id: "studio-sahayogi", name: "Studio Sahayogi", status: "healthy" as const, uptime30d: 99.96, errorRatePct: 0.1 },
+export type HealthStatus = "healthy" | "warning" | "critical";
+
+// Single source of truth for product health: derived from the raw facts
+// (uptime/error rate), not hand-typed, so it can't drift from the numbers
+// sitting right next to it. Thresholds chosen to match prior hand-set
+// values exactly; tune here if the SLO changes.
+export function computeProductHealth(uptime30d: number, errorRatePct: number): HealthStatus {
+  if (errorRatePct >= 1.5 || uptime30d < 99.5) return "critical";
+  if (errorRatePct >= 0.5 || uptime30d < 99.9) return "warning";
+  return "healthy";
+}
+
+const productHealthFacts = [
+  { id: "chat-sahayogi", name: "Chat with Sahayogi", uptime30d: 99.82, errorRatePct: 2.1 },
+  { id: "boss", name: "BoSS", uptime30d: 99.9, errorRatePct: 0.6 },
+  { id: "sahayogi-one", name: "Sahayogi One", uptime30d: 99.98, errorRatePct: 0.1 },
+  { id: "sahayogi-cloud", name: "Sahayogi Cloud", uptime30d: 99.95, errorRatePct: 0.3 },
+  { id: "tax-sahayogi", name: "Tax Sahayogi", uptime30d: 99.88, errorRatePct: 0.5 },
+  { id: "office-sahayogi", name: "Office Sahayogi", uptime30d: 99.97, errorRatePct: 0.15 },
+  { id: "investor-sahayogi", name: "Investor Sahayogi", uptime30d: 99.99, errorRatePct: 0.05 },
+  { id: "my-sahayogi", name: "My Sahayogi", uptime30d: 99.93, errorRatePct: 0.2 },
+  { id: "studio-sahayogi", name: "Studio Sahayogi", uptime30d: 99.96, errorRatePct: 0.1 },
 ];
+
+export const productHealthGrid = productHealthFacts.map((p) => ({
+  ...p,
+  status: computeProductHealth(p.uptime30d, p.errorRatePct),
+}));
 
 function series24h(base: number, jitter: number) {
   return Array.from({ length: 24 }, (_, hour) => ({

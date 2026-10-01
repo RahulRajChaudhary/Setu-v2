@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { LayoutGrid, CheckCircle2, Clock, Rocket, AlertCircle, RefreshCw, Layers } from "lucide-react";
 import Card from "@/components/shared/Card";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
@@ -10,11 +10,13 @@ import DataTable, { type Column } from "@/components/shared/DataTable";
 import StatusBadge from "@/components/shared/StatusBadge";
 import StatTile from "@/components/shared/StatTile";
 import TabBar, { useActiveTab, type Tab } from "@/components/shared/TabBar";
+import TableToolbar from "@/components/shared/TableToolbar";
 import Funnel from "@/components/shared/charts/Funnel";
 import ToggleChart from "@/components/shared/charts/ToggleChart";
 import Gauge from "@/components/shared/charts/Gauge";
 import LineChart from "@/components/shared/charts/LineChart";
 import { PairedBarChart } from "@/components/shared/charts/BarChart";
+import { products } from "@/lib/mock-data/products";
 import {
   workspaceKpis,
   workspaceFunnel,
@@ -67,6 +69,17 @@ export default function OperationsContent() {
 }
 
 function WorkspacesTab() {
+  const [search, setSearch] = useState("");
+
+  const openIncidentCount = (workspaceId: string) =>
+    incidentRows.filter((i) => i.affectedWorkspaceIds.includes(workspaceId) && i.status !== "Resolved").length;
+
+  const filteredWorkspaceRows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (q === "") return workspaceRows;
+    return workspaceRows.filter((w) => w.name.toLowerCase().includes(q) || w.plan.toLowerCase().includes(q));
+  }, [search]);
+
   const columns: Column<(typeof workspaceRows)[number]>[] = [
     {
       key: "name",
@@ -81,7 +94,7 @@ function WorkspacesTab() {
     { key: "plan", header: "Plan", render: (r) => r.plan, sortValue: (r) => r.plan },
     {
       key: "status",
-      header: "Status",
+      header: "Account status",
       render: (r) => r.status,
       sortValue: (r) => r.status,
       filterConfig: {
@@ -99,6 +112,21 @@ function WorkspacesTab() {
         accessor: (r) => r.health,
         options: ["healthy", "warning", "critical"].map((v) => ({ value: v, label: v })),
       },
+    },
+    {
+      key: "incidents",
+      header: "Open incidents",
+      render: (r) => {
+        const count = openIncidentCount(r.id);
+        return count > 0 ? (
+          <Link href="/founder/operations?tab=incidents" className="font-medium text-[var(--status-critical-fg)] hover:underline">
+            {count}
+          </Link>
+        ) : (
+          <span className="text-[var(--text-muted)]">0</span>
+        );
+      },
+      sortValue: (r) => openIncidentCount(r.id),
     },
     { key: "lastActivity", header: "Last activity", render: (r) => r.lastActivity },
   ];
@@ -121,7 +149,7 @@ function WorkspacesTab() {
 
   return (
     <div className="flex flex-col gap-[var(--space-md)]">
-      <Card title="Workspaces" description="Provisioning health and lifecycle across every workspace">
+      <Card title="Workspaces" description="One row per tenant account — provisioning health, plan and lifecycle. For per-product entitlements, see the Subscriptions tab.">
         <div className="mb-4 grid grid-cols-2 gap-[var(--space-sm)] screen-sm:grid-cols-4">
           <StatTile label="Total" value={workspaceKpis.total} tone="info" icon={<LayoutGrid size={16} />} />
           <StatTile label="Active" value={workspaceKpis.active} tone="healthy" icon={<CheckCircle2 size={16} />} />
@@ -133,16 +161,18 @@ function WorkspacesTab() {
             icon={<AlertCircle size={16} />}
           />
         </div>
-        <div className="grid grid-cols-1 gap-[var(--space-md)] screen-lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-          <div className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-4" style={{ boxShadow: "var(--card-shadow)" }}>
-            <Funnel stages={workspaceFunnel} />
-          </div>
+        <div className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-4" style={{ boxShadow: "var(--card-shadow)" }}>
+          <Funnel stages={workspaceFunnel} />
+        </div>
+        <div className="mt-[var(--space-md)]">
+          <TableToolbar search={search} onSearchChange={setSearch} searchPlaceholder="Search workspaces by name or plan..." />
           <DataTable
             columns={columns}
-            rows={workspaceRows}
+            rows={filteredWorkspaceRows}
             getRowKey={(r) => r.id}
             pageSize={5}
-            emptyTitle="No workspaces"
+            emptyTitle="No workspaces match"
+            emptyDescription="Try a different search term."
           />
         </div>
       </Card>
@@ -164,23 +194,45 @@ function WorkspacesTab() {
 function SubscriptionsTab() {
   const searchParams = useSearchParams();
   const productFilter = searchParams.get("product");
-  const filteredSubscriptionRows = productFilter
-    ? subscriptionRows.filter((s) => s.product === productFilter)
-    : subscriptionRows;
+  const [search, setSearch] = useState("");
+
+  const productFilteredRows = productFilter ? subscriptionRows.filter((s) => s.product === productFilter) : subscriptionRows;
+  const filteredSubscriptionRows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (q === "") return productFilteredRows;
+    return productFilteredRows.filter(
+      (s) => s.product.toLowerCase().includes(q) || s.workspace.toLowerCase().includes(q) || s.plan.toLowerCase().includes(q)
+    );
+  }, [search, productFilteredRows]);
+
   const totalPlanMix = subscriptionKpis.planMix.reduce((sum, p) => sum + p.count, 0);
 
   const columns: Column<(typeof subscriptionRows)[number]>[] = [
     {
       key: "product",
       header: "Product",
-      render: (r) => (
-        <Link href={`/founder/subscriptions/${r.id}`} className="font-medium text-[var(--icon-btn-navy)] hover:underline">
-          {r.product}
-        </Link>
-      ),
+      render: (r) => {
+        const productId = products.find((p) => p.name === r.product)?.id;
+        return productId ? (
+          <Link href={`/founder/products/${productId}`} className="font-medium text-[var(--icon-btn-navy)] hover:underline">
+            {r.product}
+          </Link>
+        ) : (
+          <span className="font-medium text-[var(--text-secondary)]">{r.product}</span>
+        );
+      },
       sortValue: (r) => r.product,
     },
-    { key: "workspace", header: "Workspace", render: (r) => r.workspace, sortValue: (r) => r.workspace },
+    {
+      key: "workspace",
+      header: "Workspace",
+      render: (r) => (
+        <Link href={`/founder/workspaces/${r.workspaceId}`} className="font-medium text-[var(--icon-btn-navy)] hover:underline">
+          {r.workspace}
+        </Link>
+      ),
+      sortValue: (r) => r.workspace,
+    },
     { key: "plan", header: "Plan", render: (r) => r.plan, sortValue: (r) => r.plan },
     {
       key: "status",
@@ -193,12 +245,21 @@ function SubscriptionsTab() {
       },
     },
     { key: "renewalDate", header: "Renewal", render: (r) => r.renewalDate, sortValue: (r) => r.renewalDate },
+    {
+      key: "details",
+      header: "",
+      render: (r) => (
+        <Link href={`/founder/subscriptions/${r.id}`} className="text-xs font-medium text-[var(--icon-btn-navy)] hover:underline">
+          Details &rarr;
+        </Link>
+      ),
+    },
   ];
 
   return (
     <Card
       title="Subscriptions"
-      description="Status distribution across active plan commitments"
+      description="One row per product a workspace subscribes to — commercial entitlement status, not account health. For account-level health, see the Workspaces tab."
       action={
         productFilter ? (
           <Link href="/founder/operations?tab=subscriptions" className="text-xs font-medium text-[var(--icon-btn-navy)] hover:underline">
@@ -213,11 +274,19 @@ function SubscriptionsTab() {
         <StatTile label="Restricted" value={subscriptionKpis.restricted} tone="critical" icon={<AlertCircle size={16} />} />
         <StatTile label="Plan mix" value={totalPlanMix} tone="info" icon={<Layers size={16} />} />
       </div>
-      <div className="grid grid-cols-1 gap-[var(--space-md)] screen-lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-        <div className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-4" style={{ boxShadow: "var(--card-shadow)" }}>
-          <ToggleChart data={subscriptionStatusDonut} defaultType="pie" />
-        </div>
-        <DataTable columns={columns} rows={filteredSubscriptionRows} getRowKey={(r) => r.id} pageSize={5} emptyTitle="No subscriptions" />
+      <div className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-4" style={{ boxShadow: "var(--card-shadow)" }}>
+        <ToggleChart data={subscriptionStatusDonut} defaultType="pie" />
+      </div>
+      <div className="mt-[var(--space-md)]">
+        <TableToolbar search={search} onSearchChange={setSearch} searchPlaceholder="Search by product, workspace, or plan..." />
+        <DataTable
+          columns={columns}
+          rows={filteredSubscriptionRows}
+          getRowKey={(r) => r.id}
+          pageSize={5}
+          emptyTitle="No subscriptions match"
+          emptyDescription="Try a different search term, or clear the product filter."
+        />
       </div>
     </Card>
   );

@@ -13,12 +13,6 @@ import {
 export type ThemeMode = "light" | "dark" | "system";
 type ResolvedTheme = "light" | "dark";
 
-// No client-side persistence by design: this project has no backend/auth yet to
-// own the source of truth for a per-user preference, and localStorage isn't
-// acceptable (it wouldn't follow the user across devices). Mode lives in memory
-// for the session and defaults to "system" on every load. When a real backend
-// preference endpoint exists, wire it up here — setMode's callback and the
-// initial-mode resolution below are the only two places that need to change.
 const DEFAULT_MODE: ThemeMode = "system";
 
 type ThemeContextValue = {

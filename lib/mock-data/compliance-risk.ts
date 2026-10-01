@@ -26,9 +26,9 @@ export const controlsTable = [
 ];
 
 export const topRisks: RiskRow[] = [
-  { id: "r1", label: "Vendor SSO provider single point of failure (Sahayogi One)", owner: "Priya N.", likelihood: 4, impact: 5, treatmentStatus: "Escalated", dueDate: "2026-09-24", code: "RISK-1042" },
-  { id: "r2", label: "WhatsApp Business API throughput cap during peak broadcast", owner: "Arjun M.", likelihood: 3, impact: 4, treatmentStatus: "In treatment", dueDate: "2026-10-02" },
-  { id: "r3", label: "Data residency gap for multi-state GST filings (Tax Sahayogi)", owner: "Priya N.", likelihood: 2, impact: 4, treatmentStatus: "Monitoring", dueDate: "2026-10-15" },
+  { id: "r1", label: "Vendor SSO provider single point of failure (Sahayogi One)", owner: "Priya N.", likelihood: 4, impact: 5, treatmentStatus: "Escalated", dueDate: "2026-09-24", code: "RISK-1042", productId: "sahayogi-one" },
+  { id: "r2", label: "WhatsApp Business API throughput cap during peak broadcast", owner: "Arjun M.", likelihood: 3, impact: 4, treatmentStatus: "In treatment", dueDate: "2026-10-02", productId: "chat-sahayogi" },
+  { id: "r3", label: "Data residency gap for multi-state GST filings (Tax Sahayogi)", owner: "Priya N.", likelihood: 2, impact: 4, treatmentStatus: "Monitoring", dueDate: "2026-10-15", productId: "tax-sahayogi" },
   { id: "r4", label: "Concentration risk: single cloud region", owner: "Arjun M.", likelihood: 2, impact: 5, treatmentStatus: "Monitoring", dueDate: "2026-11-05" },
   { id: "r5", label: "Key-person dependency, platform on-call", owner: "Founder", likelihood: 3, impact: 3, treatmentStatus: "In treatment", dueDate: "2026-10-20" },
 ];
