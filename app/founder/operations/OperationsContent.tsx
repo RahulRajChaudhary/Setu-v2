@@ -13,9 +13,7 @@ import TabBar, { useActiveTab, type Tab } from "@/components/shared/TabBar";
 import TableToolbar from "@/components/shared/TableToolbar";
 import Funnel from "@/components/shared/charts/Funnel";
 import ToggleChart from "@/components/shared/charts/ToggleChart";
-import Gauge from "@/components/shared/charts/Gauge";
 import LineChart from "@/components/shared/charts/LineChart";
-import { PairedBarChart } from "@/components/shared/charts/BarChart";
 import { products } from "@/lib/mock-data/products";
 import {
   workspaceKpis,
@@ -462,36 +460,9 @@ function ReleasesTab() {
           );
         })}
       </div>
-      <div className="mt-4 grid grid-cols-1 gap-[var(--space-md)] screen-lg:grid-cols-2">
-        <div>
-          <p className="mb-2 text-xs font-semibold text-[var(--role-text)]">Error rate before/after release</p>
-          <PairedBarChart data={releaseErrorRates} />
-        </div>
-        <div>
-          <p className="mb-2 text-xs font-semibold text-[var(--role-text)]">Rollout timeline</p>
-          <div className="flex flex-col gap-[var(--space-sm)]">
-            {rolloutTimeline.map((r) => (
-              <div key={r.id}>
-                <div className="mb-1 flex items-center justify-between text-xs">
-                  <span className="font-medium text-[var(--text-secondary)]">{r.product}</span>
-                  <StatusBadge
-                    status={r.status === "rollback" ? "critical" : r.status === "in-progress" ? "info" : "healthy"}
-                    label={r.status}
-                  />
-                </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--search-bg)]">
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${r.pctRolledOut}%`,
-                      backgroundColor: r.status === "rollback" ? "var(--status-critical-fg)" : "var(--chart-1)",
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      <div className="mt-4">
+        <p className="mb-2 text-xs font-semibold text-[var(--role-text)]">Rollout progress and error-rate impact — rollbacks first</p>
+        <ReleaseImpactList />
       </div>
       <div className="mt-4">
         <div className="mb-2 flex items-center justify-between gap-2">
@@ -565,8 +536,8 @@ function HealthTab() {
   return (
     <div className="flex flex-col gap-[var(--space-md)]">
       <Card
-        title="Health"
-        description="Golden-signal status per product, last 30 days — worst first"
+        title="Product health"
+        description="Uptime, golden signals and saturation per product — worst first. Sparklines cover the last 24h; the dashed line is the SLO."
         action={
           productFilter ? (
             <Link href="/founder/operations?tab=health" className="text-xs font-medium text-[var(--icon-btn-navy)] hover:underline">
@@ -575,81 +546,25 @@ function HealthTab() {
           ) : undefined
         }
       >
-        <div className="flex flex-wrap gap-[var(--space-sm)]">
-          {filteredHealthGrid.map((p) => {
-            const tone = AREA_TONE[p.status];
-            const StatusIcon = p.status === "healthy" ? CheckCircle2 : p.status === "warning" ? Clock : AlertCircle;
-            return (
-              <div
-                key={p.id}
-                className="card-interactive flex min-w-0 grow basis-[calc((100%-var(--space-sm))/2)] flex-col gap-2 rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-3 screen-sm:basis-[calc((100%-(var(--space-sm)*3))/4)]"
-                style={{ boxShadow: "var(--card-shadow)" }}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
-                    style={{ background: tone.bg, color: tone.fg }}
-                  >
-                    <StatusIcon size={16} />
-                  </span>
-                  <StatusBadge status={p.status} label={p.status} />
-                </div>
-                <span className="text-sm font-medium text-[var(--text-heading)]">{p.name}</span>
-                <p className="text-xs text-[var(--text-muted)]">Uptime 30d: {p.uptime30d}%</p>
-                <p className="text-xs text-[var(--text-muted)]">Error rate: {p.errorRatePct}%</p>
-              </div>
-            );
-          })}
+        <HealthSummaryBar products={filteredHealthGrid} />
+        <div className="mt-[var(--space-md)] overflow-hidden rounded-xl border border-[var(--divider)]">
+          <div className={`hidden bg-[var(--surface-muted)] px-4 py-2 text-xs font-semibold text-[var(--text-muted)] screen-lg:grid ${HEALTH_COLS}`}>
+            <span>Product</span>
+            <span>Uptime 30d</span>
+            <span>Error rate vs SLO</span>
+            <span>p95 latency</span>
+            <span>Requests / sec</span>
+            <span>Saturation</span>
+          </div>
+          <ul className="divide-y divide-[var(--divider)]">
+            {filteredHealthGrid.map((p) => (
+              <HealthRow key={p.id} product={p} signals={productHealthSignals[p.id]} />
+            ))}
+          </ul>
         </div>
       </Card>
 
-      <Card title="Golden signals per product" description="p95 latency, traffic, error rate (with SLO line) and resource saturation, last 24h">
-        <div className="flex flex-col gap-[var(--space-md)]">
-          {filteredHealthGrid
-            .filter((p) => productHealthSignals[p.id])
-            .map((p) => {
-              const signals = productHealthSignals[p.id];
-              return (
-                <div key={p.id} className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-4" style={{ boxShadow: "var(--card-shadow)" }}>
-                  <p className="mb-3 text-sm font-semibold text-[var(--text-heading)]">{p.name}</p>
-                  <div className="grid grid-cols-1 gap-[var(--space-md)] screen-lg:grid-cols-4">
-                    <div>
-                      <p className="mb-1 text-[0.6875rem] font-medium text-[var(--role-text)]">p95 latency (ms)</p>
-                      <LineChart
-                        series={signals.p95LatencyMs.series}
-                        thresholdY={signals.p95LatencyMs.sloMs}
-                        thresholdLabel="SLO"
-                        height={64}
-                      />
-                    </div>
-                    <div>
-                      <p className="mb-1 text-[0.6875rem] font-medium text-[var(--role-text)]">Requests / sec</p>
-                      <LineChart series={signals.requestsPerSec.series} color="var(--chart-2)" height={64} />
-                    </div>
-                    <div>
-                      <p className="mb-1 text-[0.6875rem] font-medium text-[var(--role-text)]">Error rate % (SLO line)</p>
-                      <LineChart
-                        series={signals.errorRatePct.series}
-                        thresholdY={signals.errorRatePct.sloPct}
-                        thresholdLabel="SLO"
-                        color="var(--chart-4)"
-                        height={64}
-                      />
-                    </div>
-                    <div>
-                      <p className="mb-1 text-[0.6875rem] font-medium text-[var(--role-text)]">Saturation</p>
-                      <Gauge
-                        value={signals.saturationPct}
-                        status={signals.saturationPct >= 80 ? "critical" : signals.saturationPct >= 60 ? "warning" : "healthy"}
-                      />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-        </div>
-      </Card>
-
+      <div className="grid grid-cols-1 gap-[var(--space-md)] screen-lg:grid-cols-2">
       <Card title="Dependency map" description="Product to dependent service, with live status">
         {filteredDependencyMap.length === 0 ? (
           <p className="text-sm text-[var(--role-text)]">No service dependencies for this product.</p>
@@ -661,26 +576,6 @@ function HealthTab() {
                   <span className="font-medium">{d.product}</span> &rarr; {d.service}
                 </span>
                 <StatusBadge status={d.status} label={d.status} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
-
-      <Card title="Integrations" description="Third-party and partner integration health, separate from internal service dependencies above">
-        {filteredIntegrationRows.length === 0 ? (
-          <p className="text-sm text-[var(--role-text)]">No integrations for this product.</p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {filteredIntegrationRows.map((i) => (
-              <li key={i.id} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--divider)] p-3 text-sm">
-                <span className="text-[var(--text-secondary)]">
-                  <span className="font-medium">{i.name}</span> &middot; {i.product}
-                  <span className="ml-2 text-xs text-[var(--text-muted)]">
-                    last sync {i.lastSyncAt} &middot; {i.errorCount24h} errors/24h
-                  </span>
-                </span>
-                <StatusBadge status={i.status} label={i.status} />
               </li>
             ))}
           </ul>
@@ -706,6 +601,28 @@ function HealthTab() {
           </ul>
         )}
       </Card>
+      </div>
+
+      <Card title="Integrations" description="Third-party and partner integration health, separate from internal service dependencies above">
+        {filteredIntegrationRows.length === 0 ? (
+          <p className="text-sm text-[var(--role-text)]">No integrations for this product.</p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {filteredIntegrationRows.map((i) => (
+              <li key={i.id} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--divider)] p-3 text-sm">
+                <span className="text-[var(--text-secondary)]">
+                  <span className="font-medium">{i.name}</span> &middot; {i.product}
+                  <span className="ml-2 text-xs text-[var(--text-muted)]">
+                    last sync {i.lastSyncAt} &middot; {i.errorCount24h} errors/24h
+                  </span>
+                </span>
+                <StatusBadge status={i.status} label={i.status} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+
     </div>
   );
 }
@@ -774,6 +691,179 @@ function IncidentsTab() {
       </div>
       <DataTable columns={columns} rows={incidentRows} getRowKey={(r) => r.id} pageSize={5} emptyTitle="No incidents" />
     </Card>
+  );
+}
+
+const HEALTH_COLS =
+  "screen-lg:grid-cols-[minmax(10rem,1.3fr)_5.5rem_minmax(8rem,1fr)_minmax(8rem,1fr)_minmax(8rem,1fr)_minmax(6rem,0.8fr)] screen-lg:items-center screen-lg:gap-4";
+const ERROR_SLO_PCT = 1.5;
+
+function HealthSummaryBar({ products }: { products: { status: HealthStatus }[] }) {
+  const counts = (["critical", "warning", "healthy"] as const).map((st) => ({
+    status: st,
+    count: products.filter((p) => p.status === st).length,
+  }));
+  return (
+    <div>
+      <div className="flex h-2.5 w-full gap-0.5 overflow-hidden rounded-full" role="img" aria-label={counts.map((c) => `${c.count} ${c.status}`).join(", ")}>
+        {counts
+          .filter((c) => c.count > 0)
+          .map((c) => (
+            <div key={c.status} style={{ flex: c.count, backgroundColor: AREA_TONE[c.status].fg }} />
+          ))}
+      </div>
+      <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--text-secondary)]">
+        {counts.map((c) => (
+          <li key={c.status} className="flex items-center gap-1.5">
+            <StatusDot status={c.status} />
+            <span className="font-semibold text-[var(--text-heading)]">{c.count}</span> {c.status}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function MetricCell({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="min-w-0">
+      <p className="mb-0.5 text-[0.6875rem] font-medium text-[var(--text-muted)] screen-lg:hidden">{label}</p>
+      {children}
+    </div>
+  );
+}
+
+function HealthRow({
+  product,
+  signals,
+}: {
+  product: (typeof productHealthGrid)[number];
+  signals?: (typeof productHealthSignals)[string];
+}) {
+  const tone = AREA_TONE[product.status];
+  const lastP95 = signals?.p95LatencyMs.series.at(-1)?.y;
+  const lastRps = signals?.requestsPerSec.series.at(-1)?.y;
+  const errPct = Math.min(100, (product.errorRatePct / ERROR_SLO_PCT) * 100);
+  const sat = signals?.saturationPct;
+  const satStatus: HealthStatus | undefined = sat === undefined ? undefined : sat >= 80 ? "critical" : sat >= 60 ? "warning" : "healthy";
+  return (
+    <li
+      className={`grid grid-cols-2 gap-3 px-4 py-3 ${HEALTH_COLS}`}
+      style={{ borderLeft: `3px solid ${tone.fg}` }}
+    >
+      <div className="col-span-2 flex items-center gap-2 screen-lg:col-span-1">
+        <StatusBadge status={product.status} label={product.status} />
+        <Link href={`/founder/products/${product.id}`} className="truncate text-sm font-semibold text-[var(--text-heading)] hover:underline">
+          {product.name}
+        </Link>
+      </div>
+      <MetricCell label="Uptime 30d">
+        <p className="text-sm font-semibold text-[var(--text-heading)]">{product.uptime30d}%</p>
+      </MetricCell>
+      <MetricCell label="Error rate vs SLO">
+        <div className="flex items-center gap-2">
+          <span className="w-12 shrink-0 text-sm font-semibold text-[var(--text-heading)]">{product.errorRatePct}%</span>
+          <div className="relative h-1.5 flex-1 rounded-full bg-[var(--surface-muted)]" title={`SLO ${ERROR_SLO_PCT}%`}>
+            <div className="h-full rounded-full" style={{ width: `${errPct}%`, backgroundColor: tone.fg }} />
+          </div>
+        </div>
+      </MetricCell>
+      <MetricCell label="p95 latency">
+        {signals ? (
+          <div className="flex items-center gap-2">
+            <span className="w-14 shrink-0 text-sm font-semibold text-[var(--text-heading)]">{Math.round(lastP95 ?? 0)} ms</span>
+            <div className="min-w-0 flex-1">
+              <LineChart series={signals.p95LatencyMs.series} thresholdY={signals.p95LatencyMs.sloMs} height={28} />
+            </div>
+          </div>
+        ) : (
+          <span className="text-xs text-[var(--text-muted)]">No signal data</span>
+        )}
+      </MetricCell>
+      <MetricCell label="Requests / sec">
+        {signals ? (
+          <div className="flex items-center gap-2">
+            <span className="w-14 shrink-0 text-sm font-semibold text-[var(--text-heading)]">{Math.round(lastRps ?? 0)}/s</span>
+            <div className="min-w-0 flex-1">
+              <LineChart series={signals.requestsPerSec.series} color="var(--chart-2)" height={28} />
+            </div>
+          </div>
+        ) : (
+          <span className="text-xs text-[var(--text-muted)]">&mdash;</span>
+        )}
+      </MetricCell>
+      <MetricCell label="Saturation">
+        {sat !== undefined && satStatus ? (
+          <div className="flex items-center gap-2">
+            <span className="w-9 shrink-0 text-sm font-semibold text-[var(--text-heading)]">{sat}%</span>
+            <div className="h-1.5 flex-1 rounded-full bg-[var(--surface-muted)]">
+              <div className="h-full rounded-full" style={{ width: `${sat}%`, backgroundColor: AREA_TONE[satStatus].fg }} />
+            </div>
+          </div>
+        ) : (
+          <span className="text-xs text-[var(--text-muted)]">&mdash;</span>
+        )}
+      </MetricCell>
+    </li>
+  );
+}
+
+function ErrorDelta({ before, after }: { before: number; after: number }) {
+  const delta = Math.round((after - before) * 100) / 100;
+  const status: StatusLevel = delta >= 1 ? "critical" : delta > 0.1 ? "warning" : "healthy";
+  const sign = delta > 0 ? "+" : "";
+  return <StatusBadge status={status} label={delta === 0 ? "no change" : `${sign}${delta} pt`} />;
+}
+
+function ReleaseImpactList() {
+  return (
+    <ul className="divide-y divide-[var(--divider)] rounded-xl border border-[var(--divider)]">
+      <li className="hidden bg-[var(--surface-muted)] px-4 py-2 text-xs font-semibold text-[var(--text-muted)] screen-lg:grid screen-lg:grid-cols-[minmax(10rem,1.2fr)_minmax(10rem,1.5fr)_minmax(10rem,1fr)_6rem] screen-lg:gap-4">
+        <span>Release</span>
+        <span>Rollout</span>
+        <span>Error rate before &rarr; after</span>
+        <span className="text-right">Change</span>
+      </li>
+      {[...rolloutTimeline]
+        .sort((x, y) => Number(y.status === "rollback") - Number(x.status === "rollback"))
+        .map((r) => {
+          const rate = releaseErrorRates.find((e) => e.label === r.product);
+          const color = r.status === "rollback" ? "var(--status-critical-fg)" : r.status === "in-progress" ? "var(--chart-1)" : "var(--status-healthy-fg)";
+          return (
+            <li
+              key={r.id}
+              className="grid grid-cols-1 gap-2 px-4 py-3 screen-lg:grid-cols-[minmax(10rem,1.2fr)_minmax(10rem,1.5fr)_minmax(10rem,1fr)_6rem] screen-lg:items-center screen-lg:gap-4"
+              style={{ borderLeft: `3px solid ${color}` }}
+            >
+              <div className="flex items-center gap-2">
+                <Link href={`/founder/releases/${r.id}`} className="truncate text-sm font-semibold text-[var(--text-heading)] hover:underline">
+                  {r.product}
+                </Link>
+                <StatusBadge
+                  status={r.status === "rollback" ? "critical" : r.status === "in-progress" ? "info" : "healthy"}
+                  label={r.status === "rollback" ? "rollback escalated" : r.status}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-[var(--surface-muted)]">
+                  <div className="h-full rounded-full" style={{ width: `${r.pctRolledOut}%`, backgroundColor: color }} />
+                </div>
+                <span className="w-9 text-right text-xs font-semibold text-[var(--text-heading)]">{r.pctRolledOut}%</span>
+              </div>
+              <p className="text-sm text-[var(--text-secondary)]">
+                {rate ? (
+                  <>
+                    {rate.before}% &rarr; <span className="font-semibold text-[var(--text-heading)]">{rate.after}%</span>
+                  </>
+                ) : (
+                  "—"
+                )}
+              </p>
+              <div className="screen-lg:text-right">{rate && <ErrorDelta before={rate.before} after={rate.after} />}</div>
+            </li>
+          );
+        })}
+    </ul>
   );
 }
 
