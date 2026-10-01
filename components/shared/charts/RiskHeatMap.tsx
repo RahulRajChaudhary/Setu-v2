@@ -13,7 +13,17 @@ function bandFor(score: number) {
   return BAND.find((b) => score >= b.min)!;
 }
 
-export default function RiskHeatMap({ risks }: { risks: RiskPoint[] }) {
+export default function RiskHeatMap({
+  risks,
+  showList = true,
+  rankDots = false,
+}: {
+  risks: RiskPoint[];
+  /** Repeat the risk names + scores under the map (turn off when a ranked list sits beside it). */
+  showList?: boolean;
+  /** Label each dot with the risk's position in `risks` (1-based) instead of a count, so it ties to a ranked list. */
+  rankDots?: boolean;
+}) {
   const rows = [5, 4, 3, 2, 1];
   const cols = [1, 2, 3, 4, 5];
 
@@ -47,10 +57,10 @@ export default function RiskHeatMap({ risks }: { risks: RiskPoint[] }) {
                   >
                     {cellRisks.length > 0 && (
                       <span
-                        className="flex h-[1.25rem] w-[1.25rem] items-center justify-center rounded-full bg-white text-[0.625rem] font-bold shadow-sm"
+                        className="flex h-[1.25rem] min-w-[1.25rem] items-center justify-center rounded-full bg-white text-[0.625rem] font-bold shadow-sm"
                         style={{ color: band.fg }}
                       >
-                        {cellRisks.length}
+                        {rankDots ? cellRisks.map((r) => risks.indexOf(r) + 1).join(",") : cellRisks.length}
                       </span>
                     )}
                   </div>
@@ -79,6 +89,7 @@ export default function RiskHeatMap({ risks }: { risks: RiskPoint[] }) {
         ))}
       </div>
 
+      {showList && (
       <div className="flex flex-col gap-1.5 border-t border-[var(--divider)] pt-2.5">
         {risks.map((r) => {
           const band = bandFor(r.likelihood * r.impact);
@@ -92,6 +103,7 @@ export default function RiskHeatMap({ risks }: { risks: RiskPoint[] }) {
           );
         })}
       </div>
+      )}
     </div>
   );
 }
