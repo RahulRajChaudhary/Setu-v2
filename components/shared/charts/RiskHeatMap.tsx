@@ -80,7 +80,7 @@ export default function RiskHeatMap({
       </div>
 
       <div className="flex flex-wrap items-center gap-3 border-t border-[var(--divider)] pt-2.5">
-        <span className="text-[0.6875rem] font-medium text-[var(--text-muted)]">Score = likelihood &times; impact</span>
+        <span className="text-[0.6875rem] font-medium text-[var(--text-muted)]">Score = likelihood &times; impact &middot; hover a cell for its risks</span>
         {BAND.map((b) => (
           <span key={b.word} className="flex items-center gap-1.5 text-[0.6875rem] text-[var(--text-secondary)]">
             <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ background: b.bg, boxShadow: `inset 0 0 0 1px ${b.fg}33` }} />
@@ -90,19 +90,19 @@ export default function RiskHeatMap({
       </div>
 
       {showList && (
-      <div className="flex flex-col gap-1.5 border-t border-[var(--divider)] pt-2.5">
-        {risks.map((r) => {
-          const band = bandFor(r.likelihood * r.impact);
-          return (
-            <div key={r.id} className="flex items-center justify-between gap-2 text-xs">
-              <span className="truncate text-[var(--text-secondary)]">{r.label}</span>
-              <span className="shrink-0 rounded-full px-2 py-0.5 text-[0.625rem] font-semibold" style={{ background: band.bg, color: band.fg }}>
-                {band.word} &middot; {r.likelihood * r.impact}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+        <div className="flex flex-col gap-1.5 border-t border-[var(--divider)] pt-2.5">
+          {risks.map((r) => {
+            const band = bandFor(r.likelihood * r.impact);
+            return (
+              <div key={r.id} className="flex items-center justify-between gap-2 text-xs">
+                <span className="truncate text-[var(--text-secondary)]">{r.label}</span>
+                <span className="shrink-0 rounded-full px-2 py-0.5 text-[0.625rem] font-semibold" style={{ background: band.bg, color: band.fg }}>
+                  {band.word} &middot; {r.likelihood * r.impact}
+                </span>
+              </div>
+            );
+          })}
+        </div>
       )}
     </div>
   );

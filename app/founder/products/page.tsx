@@ -122,12 +122,7 @@ export default function ProductsPage() {
     <div className="flex flex-col gap-[var(--space-md)]">
       <Breadcrumbs items={[{ label: "Product 360" }]} />
 
-      <div>
-        <h1 className="text-[length:var(--font-page-title)] font-bold tracking-tight text-[var(--text-heading)]">Product 360</h1>
-        <p className="mt-0.5 text-sm text-[var(--text-muted)]">
-          {productList.length} products catalogued · open one for the full executive view.
-        </p>
-      </div>
+      
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-[14rem] flex-1">

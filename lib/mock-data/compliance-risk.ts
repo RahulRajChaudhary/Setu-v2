@@ -8,22 +8,25 @@ export const controlsEffectiveByFramework = [
 ];
 
 export const findingsOverdueList = [
-  { id: "fnd-1", title: "Vendor DPA renewal — Twilio", owner: "Priya N.", daysOverdue: 4 },
-  { id: "fnd-2", title: "Access review — BoSS service accounts", owner: "Security Admin", daysOverdue: 9 },
-  { id: "fnd-3", title: "Evidence upload — ISO A.12.4 logging", owner: "Priya N.", daysOverdue: 2 },
+  { id: "fnd-1", title: "Vendor DPA renewal — Twilio", owner: "Priya N.", daysOverdue: 4, controlId: "ctrl-3" },
+  { id: "fnd-2", title: "Access review — BoSS service accounts", owner: "Security Admin", daysOverdue: 9, controlId: "ctrl-1" },
+  { id: "fnd-3", title: "Evidence upload — ISO A.12.4 logging", owner: "Priya N.", daysOverdue: 2, controlId: null },
 ];
 
+// evidenceCount/evidenceCurrent model the OneTrust-style "evidence backing a
+// control" chain (docs/Setu_Compliance_Vendor_Monitoring_Research.md item 3)
+// — a control's status is a word, evidence is what actually backs it.
 export const controlsTable = [
-  { id: "ctrl-1", statement: "Logical access reviewed quarterly", frameworks: "ISO 27001, DPDP Act", owner: "Security Admin", dueDate: "2026-10-01", status: "On track" as const },
-  { id: "ctrl-2", statement: "Encryption at rest for customer PII", frameworks: "ISO 27001, GDPR", owner: "Priya N.", dueDate: "2026-09-15", status: "Effective" as const },
-  { id: "ctrl-3", statement: "Vendor DPA on file before onboarding", frameworks: "DPDP Act, GDPR", owner: "Priya N.", dueDate: "2026-09-20", status: "Exception" as const },
-  { id: "ctrl-4", statement: "Incident response runbook tested", frameworks: "ISO 27001", owner: "Arjun M.", dueDate: "2026-11-01", status: "Effective" as const },
-  { id: "ctrl-5", statement: "Backups restored and verified quarterly", frameworks: "ISO 27001", owner: "Arjun M.", dueDate: "2026-10-08", status: "On track" as const },
-  { id: "ctrl-6", statement: "Privacy notice reviewed annually", frameworks: "DPDP Act, GDPR", owner: "Priya N.", dueDate: "2026-10-12", status: "On track" as const },
-  { id: "ctrl-7", statement: "Privileged access logged and alerted", frameworks: "ISO 27001", owner: "Security Admin", dueDate: "2026-10-15", status: "Exception" as const },
-  { id: "ctrl-8", statement: "Data subject request SLA met (30 days)", frameworks: "GDPR, DPDP Act", owner: "Priya N.", dueDate: "2026-10-20", status: "On track" as const },
-  { id: "ctrl-9", statement: "Third-party risk assessments completed", frameworks: "ISO 27001, DPDP Act", owner: "Priya N.", dueDate: "2026-10-28", status: "On track" as const },
-  { id: "ctrl-10", statement: "Security awareness training completed", frameworks: "ISO 27001", owner: "Rhea S.", dueDate: "2026-12-05", status: "Effective" as const },
+  { id: "ctrl-1", statement: "Logical access reviewed quarterly", frameworks: "ISO 27001, DPDP Act", owner: "Security Admin", dueDate: "2026-10-01", status: "On track" as const, evidenceCount: 2, evidenceCurrent: true },
+  { id: "ctrl-2", statement: "Encryption at rest for customer PII", frameworks: "ISO 27001, GDPR", owner: "Priya N.", dueDate: "2026-09-15", status: "Effective" as const, evidenceCount: 3, evidenceCurrent: true },
+  { id: "ctrl-3", statement: "Vendor DPA on file before onboarding", frameworks: "DPDP Act, GDPR", owner: "Priya N.", dueDate: "2026-09-20", status: "Exception" as const, evidenceCount: 1, evidenceCurrent: false },
+  { id: "ctrl-4", statement: "Incident response runbook tested", frameworks: "ISO 27001", owner: "Arjun M.", dueDate: "2026-11-01", status: "Effective" as const, evidenceCount: 2, evidenceCurrent: true },
+  { id: "ctrl-5", statement: "Backups restored and verified quarterly", frameworks: "ISO 27001", owner: "Arjun M.", dueDate: "2026-10-08", status: "On track" as const, evidenceCount: 2, evidenceCurrent: true },
+  { id: "ctrl-6", statement: "Privacy notice reviewed annually", frameworks: "DPDP Act, GDPR", owner: "Priya N.", dueDate: "2026-10-12", status: "On track" as const, evidenceCount: 1, evidenceCurrent: true },
+  { id: "ctrl-7", statement: "Privileged access logged and alerted", frameworks: "ISO 27001", owner: "Security Admin", dueDate: "2026-10-15", status: "Exception" as const, evidenceCount: 1, evidenceCurrent: false },
+  { id: "ctrl-8", statement: "Data subject request SLA met (30 days)", frameworks: "GDPR, DPDP Act", owner: "Priya N.", dueDate: "2026-10-20", status: "On track" as const, evidenceCount: 2, evidenceCurrent: true },
+  { id: "ctrl-9", statement: "Third-party risk assessments completed", frameworks: "ISO 27001, DPDP Act", owner: "Priya N.", dueDate: "2026-10-28", status: "On track" as const, evidenceCount: 1, evidenceCurrent: true },
+  { id: "ctrl-10", statement: "Security awareness training completed", frameworks: "ISO 27001", owner: "Rhea S.", dueDate: "2026-12-05", status: "Effective" as const, evidenceCount: 3, evidenceCurrent: true },
 ];
 
 // Derived from the rows above (spec §10) so the KPI cards can never disagree
@@ -43,9 +46,26 @@ export const topRisks: RiskRow[] = [
   { id: "r3", label: "Data residency gap for multi-state GST filings (Tax Sahayogi)", owner: "Priya N.", likelihood: 2, impact: 4, treatmentStatus: "Monitoring", dueDate: "2026-10-15", productId: "tax-sahayogi" },
 ];
 
-export const vendorTable = [
-  { id: "v1", vendor: "Twilio", service: "SMS delivery", criticality: "High" as const, renewalDate: "2026-09-30", lastReview: "2026-06-12" },
-  { id: "v2", vendor: "Okta", service: "SSO / identity", criticality: "Critical" as const, renewalDate: "2026-12-01", lastReview: "2026-07-01" },
-  { id: "v3", vendor: "AWS", service: "Cloud infrastructure", criticality: "Critical" as const, renewalDate: "2027-03-15", lastReview: "2026-08-01" },
-  { id: "v4", vendor: "Meta (WhatsApp BSP)", service: "WhatsApp messaging", criticality: "High" as const, renewalDate: "2026-10-10", lastReview: "2026-05-20" },
+export type VendorCriticality = "Critical" | "High" | "Medium";
+
+// Single source of truth for vendor criticality: derived from the residual
+// risk score (OneTrust-style inherent-vs-residual), not hand-typed — same
+// reasoning as Product.health (docs/Setu_Compliance_Vendor_Monitoring_Research.md
+// item 1). Thresholds chosen to match prior hand-set values exactly.
+export function computeVendorCriticality(residualRisk: number): VendorCriticality {
+  if (residualRisk >= 75) return "Critical";
+  if (residualRisk >= 50) return "High";
+  return "Medium";
+}
+
+const vendorFacts = [
+  { id: "v1", vendor: "Twilio", service: "SMS delivery", inherentRisk: 70, residualRisk: 55, renewalDate: "2026-09-30", lastReview: "2026-06-12", monitoringFlag: "DPA renewal overdue (fnd-1)" },
+  { id: "v2", vendor: "Okta", service: "SSO / identity", inherentRisk: 90, residualRisk: 82, renewalDate: "2026-12-01", lastReview: "2026-07-01" },
+  { id: "v3", vendor: "AWS", service: "Cloud infrastructure", inherentRisk: 85, residualRisk: 78, renewalDate: "2027-03-15", lastReview: "2026-08-01" },
+  { id: "v4", vendor: "Meta (WhatsApp BSP)", service: "WhatsApp messaging", inherentRisk: 68, residualRisk: 60, renewalDate: "2026-10-10", lastReview: "2026-05-20" },
 ];
+
+export const vendorTable = vendorFacts.map((v) => ({
+  ...v,
+  criticality: computeVendorCriticality(v.residualRisk),
+}));

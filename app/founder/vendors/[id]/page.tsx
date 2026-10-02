@@ -33,7 +33,13 @@ export default function VendorDetailPage() {
 
       <div className="grid grid-cols-1 gap-[var(--space-md)] screen-sm:grid-cols-3">
         <Card title="Criticality tier">
-          <StatusBadge status={vendor.criticality === "Critical" ? "critical" : "warning"} label={vendor.criticality} />
+          <StatusBadge
+            status={vendor.criticality === "Critical" ? "critical" : vendor.criticality === "High" ? "warning" : "info"}
+            label={vendor.criticality}
+          />
+          <p className="mt-2 text-xs text-[var(--role-text)]">
+            Residual risk {vendor.residualRisk} &middot; inherent {vendor.inherentRisk}
+          </p>
         </Card>
         <Card title="DPA / contract renewal">
           <p className="text-sm font-medium text-[var(--text-secondary)]">{vendor.renewalDate}</p>
@@ -42,6 +48,12 @@ export default function VendorDetailPage() {
           <p className="text-sm text-[var(--text-secondary)]">{vendor.lastReview}</p>
         </Card>
       </div>
+
+      {vendor.monitoringFlag && (
+        <Card title="Monitoring">
+          <StatusBadge status="warning" label={vendor.monitoringFlag} />
+        </Card>
+      )}
     </div>
   );
 }

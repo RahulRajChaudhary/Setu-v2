@@ -1,17 +1,18 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { AlertOctagon, CalendarClock, ClipboardX, Handshake, ShieldAlert, UserCheck } from "lucide-react";
 import Card from "@/components/shared/Card";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import TabBar, { useActiveTab } from "@/components/shared/TabBar";
+import TableToolbar from "@/components/shared/TableToolbar";
 import DataTable, { type Column } from "@/components/shared/DataTable";
 import StatusBadge, { type StatusLevel } from "@/components/shared/StatusBadge";
 import StatTile from "@/components/shared/StatTile";
-import TableToolbar from "@/components/shared/TableToolbar";
 import FrameworkScoreGrid from "@/components/shared/charts/FrameworkScoreGrid";
 import RiskHeatMap from "@/components/shared/charts/RiskHeatMap";
+import { products } from "@/lib/mock-data/products";
 import {
   complianceKpis,
   controlsEffectiveByFramework,
@@ -126,6 +127,16 @@ function ComplianceTab() {
       sortValue: (r) => r.dueDate,
     },
     {
+      key: "evidence",
+      header: "Evidence",
+      render: (r) => (
+        <span className={r.evidenceCurrent ? "text-[var(--text-secondary)]" : "text-[var(--status-warning-fg)]"}>
+          {r.evidenceCount} item{r.evidenceCount === 1 ? "" : "s"} &middot; {r.evidenceCurrent ? "current" : "stale"}
+        </span>
+      ),
+      sortValue: (r) => r.evidenceCount,
+    },
+    {
       key: "status",
       header: "Status",
       render: (r) => <StatusBadge status={CONTROL_STATUS[r.status]} label={r.status} />,
@@ -182,6 +193,11 @@ function ComplianceTab() {
                 <div className="mt-2 flex items-center gap-2">
                   <UserCheck size={12} className="shrink-0 text-[var(--text-muted)]" />
                   <span className="text-xs text-[var(--role-text)]">{f.owner}</span>
+                  {f.controlId && (
+                    <Link href={`/founder/controls/${f.controlId}`} className="text-xs font-medium text-[var(--icon-btn-navy)] hover:underline">
+                      {f.controlId}
+                    </Link>
+                  )}
                   <div className="ml-auto h-1.5 w-24 rounded-full bg-[var(--surface-muted)]" title="Relative to the longest-overdue finding">
                     <div className="h-full rounded-full" style={{ width: `${(f.daysOverdue / maxOverdue) * 100}%`, backgroundColor: "var(--status-critical-fg)" }} />
                   </div>
@@ -220,9 +236,19 @@ function ComplianceTab() {
 }
 
 function RisksTab() {
+  const [vendorSearch, setVendorSearch] = useState("");
+
   const criticalRisks = topRisks.filter((r) => r.likelihood * r.impact >= 16).length;
   const escalated = topRisks.filter((r) => r.treatmentStatus === "Escalated").length;
   const renewingSoon = vendorTable.filter((v) => daysFromToday(v.renewalDate) <= 30);
+
+  // No manual useMemo: vendorTable is a .map()-derived export, so the React
+  // Compiler can't preserve a manual memo over it (react-hooks/preserve-manual-
+  // memoization). Plain computation lets the compiler auto-memoize instead.
+  const vq = vendorSearch.trim().toLowerCase();
+  const filteredVendors = vendorTable.filter(
+    (v) => vq === "" || v.vendor.toLowerCase().includes(vq) || v.service.toLowerCase().includes(vq),
+  );
 
   const vendorColumns: Column<(typeof vendorTable)[number]>[] = [
     {
@@ -237,18 +263,39 @@ function RisksTab() {
     },
     { key: "service", header: "Service", render: (r) => r.service },
     {
+      key: "residualRisk",
+      header: "Risk score",
+      render: (r) => (
+        <span className="text-[var(--text-secondary)]">
+          {r.residualRisk} <span className="text-xs text-[var(--text-muted)]">(inherent {r.inherentRisk})</span>
+        </span>
+      ),
+      sortValue: (r) => r.residualRisk,
+    },
+    {
       key: "criticality",
       header: "Criticality",
-      render: (r) => <StatusBadge status={r.criticality === "Critical" ? "critical" : "warning"} label={r.criticality} />,
-      sortValue: (r) => (r.criticality === "Critical" ? 0 : 1),
+      render: (r) => (
+        <StatusBadge status={r.criticality === "Critical" ? "critical" : r.criticality === "High" ? "warning" : "info"} label={r.criticality} />
+      ),
       filterConfig: {
         type: "multiSelect",
         accessor: (r) => r.criticality,
-        options: ["Critical", "High"].map((v) => ({ value: v, label: v })),
+        options: ["Critical", "High", "Medium"].map((v) => ({ value: v, label: v })),
       },
     },
     { key: "renewalDate", header: "DPA / contract renewal", render: (r) => <DueLabel date={r.renewalDate} soonDays={30} />, sortValue: (r) => r.renewalDate },
     { key: "lastReview", header: "Last review", render: (r) => r.lastReview, sortValue: (r) => r.lastReview },
+    {
+      key: "monitoring",
+      header: "Monitoring",
+      render: (r) =>
+        r.monitoringFlag ? (
+          <StatusBadge status="warning" label={r.monitoringFlag} />
+        ) : (
+          <span className="text-xs text-[var(--text-muted)]">No flags</span>
+        ),
+    },
   ];
 
   return (
@@ -279,7 +326,7 @@ function RisksTab() {
       </div>
 
       <div className="grid grid-cols-1 gap-[var(--space-md)] screen-lg:grid-cols-2">
-        <Card title="Risk heat map" description="Likelihood × impact; each dot is the risk’s rank in the list beside it">
+        <Card title="Risk heat map" description="Likelihood × impact; each dot is the risk's rank in the list beside it">
           <RiskHeatMap risks={topRisks} showList={false} rankDots />
         </Card>
 
@@ -288,6 +335,7 @@ function RisksTab() {
             {topRisks.map((r, i) => {
               const score = r.likelihood * r.impact;
               const band = riskBand(score);
+              const product = r.productId ? products.find((p) => p.id === r.productId) : undefined;
               return (
                 <li key={r.id} className="flex items-start gap-3 rounded-lg border border-[var(--divider)] p-3">
                   <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--surface-muted)] text-xs font-bold text-[var(--text-secondary)]">
@@ -306,6 +354,14 @@ function RisksTab() {
                       <span>{r.treatmentStatus}</span>
                       <span aria-hidden>&middot;</span>
                       <DueLabel date={r.dueDate} done={false} />
+                      {product && (
+                        <>
+                          <span aria-hidden>&middot;</span>
+                          <Link href={`/founder/products/${product.id}`} className="font-medium text-[var(--icon-btn-navy)] hover:underline">
+                            {product.name}
+                          </Link>
+                        </>
+                      )}
                     </p>
                   </div>
                   <StatusBadge status={band.status} label={`${band.word} · ${score}`} />
@@ -317,7 +373,15 @@ function RisksTab() {
       </div>
 
       <Card title="Vendor criticality" description="Renewal dates are relative to today; sort by criticality or renewal">
-        <DataTable columns={vendorColumns} rows={vendorTable} getRowKey={(r) => r.id} pageSize={6} emptyTitle="No vendors" />
+        <TableToolbar search={vendorSearch} onSearchChange={setVendorSearch} searchPlaceholder="Search vendors by name or service..." />
+        <DataTable
+          columns={vendorColumns}
+          rows={filteredVendors}
+          getRowKey={(r) => r.id}
+          pageSize={6}
+          emptyTitle="No vendors match"
+          emptyDescription="Try a different search term."
+        />
       </Card>
     </div>
   );
